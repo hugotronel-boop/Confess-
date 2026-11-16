@@ -77,8 +77,22 @@ function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setT
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 async function loadNotificationCount(){if(!session){$('notificationCount').hidden=true;return}const {count,error}=await db.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',session.user.id).eq('is_read',false);if(error){console.warn(error);return}const n=count||0;$('notificationCount').textContent=n>99?'99+':String(n);$('notificationCount').hidden=n===0}
+let notificationChannel=null,notificationChannelUser=null;
+function startNotificationRealtime(){
+ const userId=session?.user?.id||null;
+ if(!userId){if(notificationChannel){db.removeChannel(notificationChannel);notificationChannel=null;notificationChannelUser=null}return}
+ if(notificationChannel&&notificationChannelUser===userId)return;
+ if(notificationChannel)db.removeChannel(notificationChannel);
+ notificationChannelUser=userId;
+ notificationChannel=db.channel('confess-notifications-'+userId)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+userId},payload=>{
+   loadNotificationCount();
+   if(document.visibilityState==='visible')toast('Tu as une nouvelle notification 🔔');
+  })
+  .subscribe(status=>{if(status==='SUBSCRIBED')loadNotificationCount()});
+}
 function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').textContent=name[0].toUpperCase();$('composeAvatar').textContent=name[0].toUpperCase();$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.'}
-async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();loadNotificationCount()}
+async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
 async function loadFeed(){
@@ -186,7 +200,7 @@ $('mobileProfile').onclick=()=>$('profileNav').click();
 db.auth.onAuthStateChange((event,nextSession)=>{
  // Le callback Auth reste synchrone : les appels Supabase sont différés
  // pour éviter de bloquer le verrou interne de gestion de session.
- if(event==='SIGNED_OUT'){session=null;profile=null;setUser();loadNotificationCount();loadFeed();return}
+ if(event==='SIGNED_OUT'){session=null;profile=null;setUser();startNotificationRealtime();loadNotificationCount();loadFeed();return}
  if(nextSession){session=nextSession;setUser()}
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session CONFESS:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
