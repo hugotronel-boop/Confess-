@@ -28,6 +28,18 @@ main{width:min(720px,100%);margin:25px auto;padding:0 15px}.heading{display:flex
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
 let currentUser=null,items=[];
+let notificationChannel=null,notificationChannelUser=null,loading=false;
+function startNotificationRealtime(){
+ const userId=currentUser?.id||null;
+ if(!userId){if(notificationChannel){db.removeChannel(notificationChannel);notificationChannel=null;notificationChannelUser=null}return}
+ if(notificationChannel&&notificationChannelUser===userId)return;
+ if(notificationChannel)db.removeChannel(notificationChannel);
+ notificationChannelUser=userId;
+ notificationChannel=db.channel('confess-notifications-page-'+userId)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+userId},()=>{if(!loading)load()})
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+userId},()=>{if(!loading)load()})
+  .subscribe();
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
@@ -47,14 +59,16 @@ case 'appeal_received':return {icon:'📨',title:who+' a déposé un recours',su
 case 'appeal_decision':return {icon:'⚖️',title:'La modération a répondu à ton recours',sub:'Consulte la décision et la réponse de l’équipe'};
 default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur CONFESS'};
 }}
-async function load(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
+async function load(){if(loading)return;loading=true;const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){startNotificationRealtime();loading=false;$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
+startNotificationRealtime();
 const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,conversation_id,sanction_id,appeal_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
-if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';return}
+if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';loading=false;return}
 items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
 if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
-if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';return}
+if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';loading=false;return}
 $('list').innerHTML=items.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('');
 $('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotification(b.dataset.notif));
+loading=false;
 }
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
