@@ -134,12 +134,14 @@ async function loadFeed(){
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
    <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
    <button class="action" data-report="${p.id}">⚑ Signaler</button>
+   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button>':''}
   </div></article>`}).join('');
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
  $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
+ $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
  const target=new URLSearchParams(location.search).get('post');if(target){const el=document.querySelector('[data-post=\"'+CSS.escape(target)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';setTimeout(()=>el.style.outline='',2400)}}
 }
 async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
@@ -177,6 +179,20 @@ async function toggleCommentLike(id){
 }
 async function reportTarget(targetColumn,id){if(!session)return toast('Connecte-toi pour signaler ce contenu.');const choices=['spam','harassment','hate','violence','sexual','self_harm','privacy','other'];const labels=['Spam ou publicité','Harcèlement','Discours haineux','Violence ou menace','Contenu sexuel','Automutilation','Atteinte à la vie privée','Autre'];const pick=prompt('Motif du signalement :\n1. Spam ou publicité\n2. Harcèlement\n3. Discours haineux\n4. Violence ou menace\n5. Contenu sexuel\n6. Automutilation\n7. Atteinte à la vie privée\n8. Autre');if(!pick)return;const index=Number(pick)-1;if(!Number.isInteger(index)||index<0||index>=choices.length)return toast('Choisis un motif entre 1 et 8.');const details=prompt('Précisions (facultatif) :')||'';const payload={reporter_id:session.user.id,[targetColumn]:id,reason:choices[index],details:details.slice(0,2000)};const {error}=await db.from('reports').insert(payload);if(error){toast("Le signalement n'a pas pu être envoyé.");console.error(error)}else toast('Merci. Ton signalement a été transmis à la modération.')}
 async function reportPost(id){return reportTarget('post_id',id)}
+async function editPost(id){
+ const post=postsCache.find(p=>p.id===id);
+ if(!post||!session||post.author_profile_id!==session.user.id)return;
+ const next=prompt('Modifie ta publication (5 000 caractères maximum) :',post.body);
+ if(next===null)return;
+ const body=next.trim();
+ if(!body)return toast('Une publication ne peut pas être vide.');
+ if(body.length>5000)return toast('Maximum 5 000 caractères.');
+ if(body===post.body)return;
+ const {data,error}=await db.from('posts').update({body,updated_at:new Date().toISOString()}).eq('id',id).eq('author_profile_id',session.user.id).select('id').maybeSingle();
+ if(error){console.error(error);toast('Impossible de modifier ta publication.');return}
+ if(!data){toast('Publication introuvable ou tu ne peux pas la modifier.');return}
+ toast('Publication modifiée ✨');await loadFeed();
+}
 $('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
