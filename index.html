@@ -38,7 +38,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
   <div class="sidecard">
    <div class="side-title">Menu</div>
    <button class="navitem active" id="homeNav"><span>⌂</span> Fil d'actualité</button>
-   <button class="navitem" id="savedNav"><span>▣</span> Publications enregistrées</button>\n   <button class="navitem" id="messagesNav"><span>💬</span> Messages privés</button>
+   <button class="navitem" id="savedNav"><span>▣</span> Publications enregistrées</button>
+   <button class="navitem" id="messagesNav"><span>💬</span> Messages privés</button>
    <button class="navitem" id="profileNav"><span>◉</span> Mon profil</button>
   </div>
   <div class="sidecard" style="margin-top:13px"><div class="side-title">Explorer les thèmes</div><div class="category-list" id="categories"><div class="loading">Chargement…</div></div></div>
@@ -127,7 +128,10 @@ $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour r
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
 $('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))$('commentsOverlay').classList.remove('show')});
 $('authBtn').onclick=()=>location.href=session?'profile.html':'auth.html';
-$('notificationsBtn').onclick=()=>location.href='notifications.html';\n$('messagesBtn').onclick=()=>location.href='messages.html';\n$('messagesNav').onclick=()=>$('messagesBtn').click();\n$('mobileMessages').onclick=()=>$('messagesBtn').click();
+$('notificationsBtn').onclick=()=>location.href='notifications.html';
+$('messagesBtn').onclick=()=>location.href='messages.html';
+$('messagesNav').onclick=()=>$('messagesBtn').click();
+$('mobileMessages').onclick=()=>$('messagesBtn').click();
 $('mobileNotifications').onclick=()=>$('notificationsBtn').click();
 $('sortSelect').onchange=loadFeed;
 $('homeNav').onclick=()=>{savedOnly=false;currentCategory=null;updateCategoryUI();loadFeed()};
