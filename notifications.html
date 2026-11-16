@@ -33,6 +33,7 @@ function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function message(n,actor){const who=actor?.username||'Quelqu’un';switch(n.kind){
 case 'follow':return {icon:'👋',title:who+' a commencé à te suivre',sub:'Découvre son profil'};
+case 'message':return {icon:'💬',title:who+' t’a envoyé un message',sub:'Ouvre ta conversation privée'};
 case 'reaction':return {icon:'❤️',title:who+' a aimé ta publication',sub:'Une réaction à ta confession'};
 case 'reaction_anonymous':return {icon:'❤️',title:'Quelqu’un a aimé ta publication',sub:'La personne a choisi de rester anonyme'};
 case 'comment':return {icon:'💬',title:who+' a commenté ta publication',sub:'Une nouvelle réponse à lire'};
@@ -44,7 +45,7 @@ case 'comment_reaction_anonymous':return {icon:'✨',title:'Quelqu’un a réagi
 default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur CONFESS'};
 }}
 async function load(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
-const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
+const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,conversation_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
 if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';return}
 items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
 if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
@@ -54,6 +55,7 @@ $('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotifica
 }
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
+else if(n.kind==='message'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
 else if(n.post_id)location.href='index.html?post='+encodeURIComponent(n.post_id);
 else location.href='index.html';
 }
