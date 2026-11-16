@@ -134,7 +134,7 @@ async function loadFeed(){
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
    <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
    <button class="action" data-report="${p.id}">⚑ Signaler</button>
-   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button>':''}
+   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button><button class="action" data-delete="'+p.id+'">🗑️ Supprimer</button>':''}
   </div></article>`}).join('');
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
@@ -142,6 +142,7 @@ async function loadFeed(){
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
  $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
  $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
+ $('feed').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
  const target=new URLSearchParams(location.search).get('post');if(target){const el=document.querySelector('[data-post=\"'+CSS.escape(target)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';setTimeout(()=>el.style.outline='',2400)}}
 }
 async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
@@ -179,6 +180,14 @@ async function toggleCommentLike(id){
 }
 async function reportTarget(targetColumn,id){if(!session)return toast('Connecte-toi pour signaler ce contenu.');const choices=['spam','harassment','hate','violence','sexual','self_harm','privacy','other'];const labels=['Spam ou publicité','Harcèlement','Discours haineux','Violence ou menace','Contenu sexuel','Automutilation','Atteinte à la vie privée','Autre'];const pick=prompt('Motif du signalement :\n1. Spam ou publicité\n2. Harcèlement\n3. Discours haineux\n4. Violence ou menace\n5. Contenu sexuel\n6. Automutilation\n7. Atteinte à la vie privée\n8. Autre');if(!pick)return;const index=Number(pick)-1;if(!Number.isInteger(index)||index<0||index>=choices.length)return toast('Choisis un motif entre 1 et 8.');const details=prompt('Précisions (facultatif) :')||'';const payload={reporter_id:session.user.id,[targetColumn]:id,reason:choices[index],details:details.slice(0,2000)};const {error}=await db.from('reports').insert(payload);if(error){toast("Le signalement n'a pas pu être envoyé.");console.error(error)}else toast('Merci. Ton signalement a été transmis à la modération.')}
 async function reportPost(id){return reportTarget('post_id',id)}
+async function deletePost(id){
+ const post=postsCache.find(p=>p.id===id);
+ if(!post||!session||post.author_profile_id!==session.user.id)return;
+ if(!confirm('Supprimer cette publication de ton fil ? Les réponses et réactions seront conservées pour préserver l’historique.'))return;
+ const {error}=await db.from('posts').update({status:'deleted',updated_at:new Date().toISOString()}).eq('id',id).eq('author_profile_id',session.user.id);
+ if(error){console.error(error);toast('Impossible de supprimer cette publication.');return}
+ toast('Publication supprimée de ton fil.');await loadFeed();
+}
 async function editPost(id){
  const post=postsCache.find(p=>p.id===id);
  if(!post||!session||post.author_profile_id!==session.user.id)return;
