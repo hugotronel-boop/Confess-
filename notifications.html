@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100e1b"><title>CONFESS — Notifications</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
+<style>
+:root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0%,#38204b 0,transparent 28%),var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,sans-serif;min-height:100vh}
+.top{position:sticky;top:0;z-index:5;background:#100e1bed;backdrop-filter:blur(18px);border-bottom:1px solid #ffffff12;padding:12px max(16px,calc((100vw - 760px)/2));display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px}.mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--orange));display:grid;place-items:center;font-weight:950;font-size:21px;color:#201326}.brand strong{letter-spacing:2px;font-size:19px}
+.back,.markall{border:1px solid var(--line);background:var(--panel);color:#eee;border-radius:30px;padding:10px 14px;font-size:12px;cursor:pointer}
+main{width:min(720px,100%);margin:25px auto;padding:0 15px}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 3px 15px}.heading h1{font-size:23px;margin:0}.heading p{font-size:12px;color:var(--muted);margin:5px 0 0}
+.list{display:grid;gap:10px}.item{width:100%;display:flex;gap:13px;align-items:flex-start;text-align:left;background:var(--panel);border:1px solid #ffffff13;border-radius:18px;padding:15px;color:white;cursor:pointer}.item.unread{background:linear-gradient(110deg,#32203d,#1b1830 70%);border-color:#ff5ba744}.symbol{width:43px;height:43px;flex:none;border-radius:15px;background:#ffffff10;display:grid;place-items:center;font-size:20px}.copy{flex:1;min-width:0}.copy strong{font-size:13px;line-height:1.45;font-weight:750}.copy p{font-size:11px;color:var(--muted);margin:5px 0 0}.dot{width:8px;height:8px;border-radius:50%;background:var(--pink);margin:7px 2px 0}
+.empty,.loading{padding:45px 15px;text-align:center;color:var(--muted);font-size:13px;background:var(--panel);border:1px solid #ffffff12;border-radius:18px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#302744;border:1px solid #ffffff22;color:#fff;padding:12px 16px;border-radius:13px;font-size:12px;z-index:20;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+@media(max-width:520px){main{margin:18px auto}.heading h1{font-size:21px}.item{padding:13px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button></header>
+<main>
+ <div class="heading"><div><h1>Notifications 🔔</h1><p>Tout ce qui se passe autour de tes publications.</p></div><button class="markall" id="markAll">Tout lire</button></div>
+ <div class="list" id="list"><div class="loading">On récupère tes notifications…</div></div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(()=> {
+const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
+let currentUser=null,items=[];
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
+function message(n,actor){const who=actor?.username||'Quelqu’un';switch(n.kind){
+case 'follow':return {icon:'👋',title:who+' a commencé à te suivre',sub:'Découvre son profil'};
+case 'reaction':return {icon:'❤️',title:who+' a aimé ta publication',sub:'Une réaction à ta confession'};
+case 'reaction_anonymous':return {icon:'❤️',title:'Quelqu’un a aimé ta publication',sub:'La personne a choisi de rester anonyme'};
+case 'comment':return {icon:'💬',title:who+' a commenté ta publication',sub:'Une nouvelle réponse à lire'};
+case 'comment_anonymous':return {icon:'🎭',title:'Quelqu’un a commenté ta publication',sub:'La personne a répondu anonymement'};
+case 'reply':return {icon:'↩️',title:who+' a répondu à ton commentaire',sub:'La discussion continue'};
+case 'reply_anonymous':return {icon:'🎭',title:'Quelqu’un a répondu à ton commentaire',sub:'La personne a répondu anonymement'};
+case 'comment_reaction':return {icon:'✨',title:who+' a réagi à ton commentaire',sub:'Ton commentaire a reçu une réaction'};
+case 'comment_reaction_anonymous':return {icon:'✨',title:'Quelqu’un a réagi à ton commentaire',sub:'La réaction est anonyme'};
+default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur CONFESS'};
+}}
+async function load(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
+const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
+if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';return}
+items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
+if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
+if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';return}
+$('list').innerHTML=items.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('');
+$('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotification(b.dataset.notif));
+}
+async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
+if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
+else if(n.post_id)location.href='index.html?post='+encodeURIComponent(n.post_id);
+else location.href='index.html';
+}
+$('markAll').onclick=async()=>{if(!currentUser)return;const {error}=await db.from('notifications').update({is_read:true}).eq('user_id',currentUser.id).eq('is_read',false);if(error){toast('Impossible de tout marquer comme lu.');return}toast('Toutes les notifications sont lues.');load()};
+load();
+})();
+</script>
+</body></html>
