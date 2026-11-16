@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100e1b"><title>CONFESS — Explorer</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
+<style>
+:root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 0%,#38204b 0,transparent 30%),var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,sans-serif;padding-bottom:35px}button,input{font:inherit}
+.top{position:sticky;top:0;z-index:5;background:#100e1bed;backdrop-filter:blur(18px);border-bottom:1px solid #ffffff12;padding:12px max(16px,calc((100vw - 900px)/2));display:flex;justify-content:space-between;align-items:center}.brand{display:flex;align-items:center;gap:10px}.mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--orange));display:grid;place-items:center;font-weight:950;font-size:21px;color:#201326}.brand strong{letter-spacing:2px;font-size:19px}.back{border:1px solid var(--line);background:var(--panel);color:#eee;border-radius:30px;padding:9px 13px;font-size:12px}
+main{width:min(800px,100%);margin:24px auto;padding:0 15px}.hero{background:linear-gradient(125deg,#42203f,#26203f 62%,#30203c);border:1px solid #ffffff14;border-radius:25px;padding:22px;margin-bottom:15px}.hero h1{font-size:23px;margin:0 0 6px}.hero p{color:#ded4e8;font-size:13px;margin:0}.search{display:flex;gap:9px;background:var(--panel);border:1px solid #ffffff13;border-radius:18px;padding:12px;margin-bottom:20px}.search input{flex:1;min-width:0;background:#100e1b;border:1px solid var(--line);border-radius:12px;padding:12px;color:white;outline:none}.search input:focus{border-color:var(--pink)}.primary{border:0;border-radius:12px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#241326;font-weight:850;padding:11px 16px;font-size:13px}.tabs{display:flex;gap:8px;overflow:auto;margin:0 0 14px}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:#ddd;border-radius:30px;padding:9px 13px;font-size:12px}.tab.active{background:#ff5ba71c;border-color:var(--pink);color:#ff9bc9}.section{display:flex;justify-content:space-between;align-items:center;margin:19px 3px 11px}.section h2{font-size:16px;margin:0}.muted{font-size:11px;color:var(--muted)}.member,.post{background:var(--panel);border:1px solid #ffffff13;border-radius:18px;padding:15px;margin-bottom:10px}.member{display:flex;gap:12px;align-items:center}.avatar{width:43px;height:43px;flex:none;border-radius:15px;background:linear-gradient(135deg,#ff5ba7,#8f6bff);display:grid;place-items:center;font-weight:850;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.member-info{min-width:0;flex:1}.member-info strong{font-size:13px}.member-info p{font-size:11px;color:var(--muted);margin:4px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.open{border:1px solid var(--line);background:#ffffff08;color:#eee;border-radius:11px;padding:8px 11px;font-size:11px}.post-meta{font-size:11px;color:var(--muted);margin-bottom:9px}.post-body{font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.empty,.loading{text-align:center;padding:28px 12px;color:var(--muted);font-size:13px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#302744;border:1px solid #ffffff22;color:#fff;padding:12px 16px;border-radius:13px;font-size:12px;z-index:20;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+@media(max-width:520px){main{margin:16px auto}.hero{padding:18px}.search{padding:9px}.search input{font-size:13px}.primary{padding:10px 12px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button></header>
+<main>
+<section class="hero"><h1>Explore CONFESS 🔎</h1><p>Retrouve des discussions, des sujets et des membres de la communauté.</p></section>
+<form class="search" id="searchForm"><input id="searchInput" type="search" maxlength="80" placeholder="Un sujet, un mot-clé, un pseudo…" autocomplete="off"><button class="primary" type="submit">Rechercher</button></form>
+<div class="tabs"><button class="tab active" data-mode="all">Tout</button><button class="tab" data-mode="posts">Publications</button><button class="tab" data-mode="members">Membres</button></div>
+<div id="results"><div class="empty">Lance une recherche pour découvrir CONFESS 👀</div></div>
+</main><div class="toast" id="toast"></div>
+<script>
+(()=> {
+const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
+let mode='all',lastQuery='';
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ago(v){const d=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(d<3600)return Math.floor(d/60)+' min';if(d<86400)return Math.floor(d/3600)+' h';if(d<604800)return Math.floor(d/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
+function switchMode(next){mode=next;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));if(lastQuery)search(lastQuery)}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
+$('searchForm').addEventListener('submit',e=>{e.preventDefault();search($('searchInput').value)});
+async function search(raw){
+ const q=raw.trim();if(q.length<2){toast('Entre au moins 2 caractères pour rechercher.');return}lastQuery=q;$('results').innerHTML='<div class="loading">On cherche…</div>';
+ const safe=q.replace(/[%_]/g,' ');
+ let members=[],posts=[];
+ if(mode!=='posts'){
+  const {data,error}=await db.from('profiles').select('id,username,bio,avatar_path').ilike('username','%'+safe+'%').order('username').limit(20);
+  if(error)console.error(error);else members=data||[];
+ }
+ if(mode!=='members'){
+  const {data,error}=await db.from('posts').select('id,body,is_anonymous,author_label,created_at,categories(label)').eq('status','published').ilike('body','%'+safe+'%').order('created_at',{ascending:false}).limit(30);
+  if(error)console.error(error);else posts=data||[];
+ }
+ let html='';
+ if(mode!=='posts')html+='<div class="section"><h2>Membres</h2><span class="muted">'+members.length+' résultat(s)</span></div>'+(members.length?members.map(m=>{let avatar=m.avatar_path?'<img alt="" src="'+esc(db.storage.from('confess-avatars').getPublicUrl(m.avatar_path).data.publicUrl)+'">':esc((m.username||'?')[0].toUpperCase());return '<article class="member"><div class="avatar">'+avatar+'</div><div class="member-info"><strong>@'+esc(m.username)+'</strong><p>'+esc(m.bio||'Membre de CONFESS')+'</p></div><button class="open" data-member="'+esc(m.id)+'">Voir</button></article>'}).join(''):'<div class="empty">Aucun membre trouvé.</div>');
+ if(mode!=='members')html+='<div class="section"><h2>Publications</h2><span class="muted">'+posts.length+' résultat(s)</span></div>'+(posts.length?posts.map(p=>'<article class="post"><div class="post-meta">'+(p.is_anonymous?'🎭 '+esc(p.author_label):'💬 '+esc(p.author_label))+' · '+ago(p.created_at)+' · '+esc(p.categories?.label||'Discussion')+'</div><div class="post-body">'+esc(p.body)+'</div></article>').join(''):'<div class="empty">Aucune publication trouvée.</div>');
+ $('results').innerHTML=html;
+ $('results').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
+}
+})();
+</script>
+</body></html>
