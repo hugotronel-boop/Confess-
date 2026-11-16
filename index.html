@@ -87,6 +87,14 @@ async function loadFeed(){
  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
  const {data,error}=await query;if(error){$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';console.error(error);return}
  let rows=data||[];
+ if(session){
+  const [{data:muted},{data:blocked}]=await Promise.all([
+   db.from('user_mutes').select('muted_user_id').eq('user_id',session.user.id),
+   db.from('user_blocks').select('blocked_id').eq('blocker_id',session.user.id)
+  ]);
+  const hiddenAuthors=new Set([...(muted||[]).map(x=>x.muted_user_id),...(blocked||[]).map(x=>x.blocked_id)]);
+  if(hiddenAuthors.size)rows=rows.filter(post=>!post.author_profile_id||!hiddenAuthors.has(post.author_profile_id));
+ }
  if(savedOnly){
   if(!session){$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver tes publications enregistrées.</div>';return}
   const {data:marks}=await db.from('post_bookmarks').select('post_id').eq('user_id',session.user.id);
