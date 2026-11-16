@@ -137,7 +137,13 @@ $('mobileHome').onclick=()=>$('homeNav').click();
 $('mobileExplore').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});toast('Choisis un thème dans Explorer sur grand écran.')};
 $('mobileWrite').onclick=()=>{if(!session){toast('Connecte-toi pour publier.');return}$('postBody').focus();window.scrollTo({top:$('composer').offsetTop-65,behavior:'smooth'})};
 $('mobileProfile').onclick=()=>$('profileNav').click();
-db.auth.onAuthStateChange(async()=>{await loadSession();loadFeed()});
+db.auth.onAuthStateChange((event,nextSession)=>{
+ // Le callback Auth reste synchrone : les appels Supabase sont différés
+ // pour éviter de bloquer le verrou interne de gestion de session.
+ if(event==='SIGNED_OUT'){session=null;profile=null;setUser();loadNotificationCount();loadFeed();return}
+ if(nextSession){session=nextSession;setUser()}
+ setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session CONFESS:',error);toast("Impossible de vérifier la connexion.")})},0);
+});
 (async()=>{await loadSession();await loadCategories();await loadFeed()})();
 })();
 </script>
