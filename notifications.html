@@ -42,10 +42,13 @@ case 'reply':return {icon:'↩️',title:who+' a répondu à ton commentaire',su
 case 'reply_anonymous':return {icon:'🎭',title:'Quelqu’un a répondu à ton commentaire',sub:'La personne a répondu anonymement'};
 case 'comment_reaction':return {icon:'✨',title:who+' a réagi à ton commentaire',sub:'Ton commentaire a reçu une réaction'};
 case 'comment_reaction_anonymous':return {icon:'✨',title:'Quelqu’un a réagi à ton commentaire',sub:'La réaction est anonyme'};
+case 'sanction_issued':return {icon:'⚖️',title:'Une décision de modération te concerne',sub:'Consulte le motif et les détails dans tes sanctions'};
+case 'appeal_received':return {icon:'📨',title:who+' a déposé un recours',sub:'Une contestation attend ton examen'};
+case 'appeal_decision':return {icon:'⚖️',title:'La modération a répondu à ton recours',sub:'Consulte la décision et la réponse de l’équipe'};
 default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur CONFESS'};
 }}
 async function load(){const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
-const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,conversation_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
+const {data,error}=await db.from('notifications').select('id,actor_id,kind,post_id,comment_id,conversation_id,sanction_id,appeal_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
 if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';return}
 items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
 if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
@@ -56,6 +59,7 @@ $('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotifica
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
 else if(n.kind==='message'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
+else if(['sanction_issued','appeal_received','appeal_decision'].includes(n.kind))location.href='appeals.html'+(n.appeal_id?'?appeal='+encodeURIComponent(n.appeal_id):'');
 else if(n.post_id)location.href='index.html?post='+encodeURIComponent(n.post_id);
 else location.href='index.html';
 }
