@@ -38,6 +38,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
   <div class="sidecard">
    <div class="side-title">Menu</div>
    <button class="navitem active" id="homeNav"><span>⌂</span> Fil d'actualité</button>
+  <button class="navitem" id="exploreNav"><span>⌕</span> Explorer</button>
    <button class="navitem" id="savedNav"><span>▣</span> Publications enregistrées</button>
    <button class="navitem" id="messagesNav"><span>💬</span> Messages privés</button>
    <button class="navitem" id="profileNav"><span>◉</span> Mon profil</button>
@@ -138,7 +139,8 @@ $('homeNav').onclick=()=>{savedOnly=false;currentCategory=null;updateCategoryUI(
 $('savedNav').onclick=()=>{savedOnly=true;currentCategory=null;updateCategoryUI();loadFeed()};
 $('profileNav').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('mobileHome').onclick=()=>$('homeNav').click();
-$('mobileExplore').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});toast('Choisis un thème dans Explorer sur grand écran.')};
+$('mobileExplore').onclick=()=>location.href='explore.html';
+$('exploreNav').onclick=()=>$('mobileExplore').click();
 $('mobileWrite').onclick=()=>{if(!session){toast('Connecte-toi pour publier.');return}$('postBody').focus();window.scrollTo({top:$('composer').offsetTop-65,behavior:'smooth'})};
 $('mobileProfile').onclick=()=>$('profileNav').click();
 db.auth.onAuthStateChange((event,nextSession)=>{
