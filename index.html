@@ -31,7 +31,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <body>
 <header class="top">
  <div class="brand"><div class="mark">C</div><div><strong>CONFESS</strong><small>DIS LES CHOSES.</small></div></div>
- <div class="topright"><button class="bell" id="notificationsBtn" aria-label="Notifications">♧<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
+ <div class="topright"><button class="bell" id="notificationsBtn" aria-label="Notifications">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
 </header>
 <div class="layout">
  <aside class="side leftside">
@@ -61,7 +61,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
   <div class="rightcard"><h3>🛡️ Un espace plus sûr</h3><p>Ne partage jamais tes mots de passe, coordonnées bancaires ou informations privées dans une publication publique.</p></div>
  </aside>
 </div>
-<nav class="bottomnav"><button id="mobileHome"><b>⌂</b>Accueil</button><button id="mobileExplore"><b>⌕</b>Explorer</button><button id="mobileWrite"><b>＋</b>Publier</button><button id="mobileNotifications"><b>♧</b>Actus</button><button id="mobileProfile"><b>◉</b>Profil</button></nav>
+<nav class="bottomnav"><button id="mobileHome"><b>⌂</b>Accueil</button><button id="mobileExplore"><b>⌕</b>Explorer</button><button id="mobileWrite"><b>＋</b>Publier</button><button id="mobileNotifications"><b>🔔</b>Actus</button><button id="mobileProfile"><b>◉</b>Profil</button></nav>
 <div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentsList"></div><div class="rule"><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
 <div class="toast" id="toast"></div>
 <script>
