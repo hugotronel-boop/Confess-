@@ -108,13 +108,31 @@
     if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return message('profileMessage',"Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.",'error');
     const {data:{user}} = await client.auth.getUser();
     if (!user) return message('profileMessage',"Ta session a expiré. Reconnecte-toi.",'error');
-    const {error} = await client.from('profiles').update({username}).eq('id',user.id);
+    const {data:updatedProfile,error} = await client.from('profiles').update({username}).eq('id',user.id).select('id').maybeSingle();
     if (error) {
       message('profileMessage', error.code === '23505' ? "Ce pseudonyme est déjà utilisé, choisis-en un autre." : error.message, 'error');
-    } else { message('profileMessage',"Ton pseudonyme est enregistré ! On t’emmène sur CONFESS…",'success'); setTimeout(() => location.href = 'index.html', 650); }
+    } else if (!updatedProfile) {
+      message('profileMessage',"Ton profil n'a pas été trouvé. Déconnecte-toi puis reconnecte-toi pour réessayer.",'error');
+    } else {
+      message('profileMessage',"Ton pseudonyme est enregistré ! On t’emmène sur CONFESS…",'success');
+      setTimeout(() => location.href = 'index.html', 650);
+    }
   });
   $('logoutBtn').addEventListener('click', async () => { await client.auth.signOut(); await showSession(); });
-  client.auth.onAuthStateChange(() => { showSession(); });
+  // Ne pas rappeler getSession() directement depuis le callback Auth :
+  // on diffère le rafraîchissement pour laisser Supabase terminer son événement.
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      $('authCard').classList.remove('hide');
+      $('profileCard').classList.remove('show');
+      return;
+    }
+    if (session) {
+      $('authCard').classList.add('hide');
+      $('profileCard').classList.add('show');
+    }
+    setTimeout(() => { showSession().catch(err => message('profileMessage', err.message || "Impossible de vérifier ta session.", 'error')); }, 0);
+  });
   showSession();
 })();
 </script>
