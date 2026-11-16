@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100e1b"><title>CONFESS — Le fil</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
+<style>
+:root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--panel2:#24203b;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font-family:Inter,system-ui,-apple-system,sans-serif;padding-bottom:90px}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.top{position:sticky;top:0;z-index:10;background:#100e1beF;backdrop-filter:blur(18px);border-bottom:1px solid #ffffff12;padding:13px max(16px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px}.mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--orange));display:grid;place-items:center;font-weight:950;font-size:21px;color:#201326}.brand strong{letter-spacing:2px;font-size:20px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:0}
+.topright{display:flex;gap:9px;align-items:center}.pill{border:1px solid var(--line);background:var(--panel);color:#eee;border-radius:30px;padding:9px 13px;font-size:12px}.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff5ba7,#8f6bff);display:grid;place-items:center;font-weight:800}
+.layout{width:min(1080px,100%);margin:0 auto;padding:22px 16px;display:grid;grid-template-columns:220px minmax(0,1fr) 220px;gap:20px}
+.side{position:sticky;top:82px;align-self:start}.sidecard,.composer,.post,.welcome,.rightcard{background:var(--panel);border:1px solid #ffffff12;border-radius:21px;padding:17px}.side-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;margin:4px 8px 12px}
+.navitem{width:100%;border:0;background:transparent;color:#ddd8eb;text-align:left;padding:11px 12px;border-radius:12px;display:flex;gap:11px;align-items:center;font-size:14px}.navitem.active,.navitem:hover{background:#ffffff10;color:white}.navitem span:first-child{font-size:18px;width:22px}
+.category-list{display:grid;gap:4px}.cat{width:100%;display:flex;align-items:center;gap:9px;text-align:left;border:0;background:transparent;color:#d7d1e7;padding:9px 10px;border-radius:11px;font-size:13px}.cat.active,.cat:hover{background:#ff5ba71c;color:#ff9bc9}
+.center{min-width:0}.welcome{margin-bottom:15px;background:linear-gradient(120deg,#42203f,#26203f 60%,#30203c);padding:20px}.welcome h1{font-size:22px;margin:0 0 6px}.welcome p{color:#d7cce0;font-size:13px;margin:0;line-height:1.5}
+.composer{margin-bottom:15px}.compose-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.compose-top strong{font-size:14px}.compose-top small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.compose-input{width:100%;min-height:86px;resize:vertical;background:#100e1b;border:1px solid var(--line);border-radius:14px;padding:13px;color:white;outline:none}.compose-input:focus,.field:focus{border-color:var(--pink)}
+.compose-bottom{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-top:11px;flex-wrap:wrap}.compose-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{background:#100e1b;border:1px solid var(--line);color:#eee;border-radius:11px;padding:9px 10px;font-size:12px;outline:none;max-width:100%}.anon-label{display:flex;align-items:center;gap:7px;color:#d9d4e8;font-size:12px}.anon-label input{accent-color:var(--pink)}
+.primary{border:0;border-radius:12px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#241326;font-weight:850;padding:11px 17px;font-size:13px}.primary:disabled{opacity:.5}
+.feed-head{display:flex;justify-content:space-between;align-items:center;margin:20px 3px 12px}.feed-head h2{font-size:17px;margin:0}.feed-head select{background:var(--panel);border:1px solid var(--line);color:#ddd;border-radius:10px;padding:8px;font-size:12px}
+.post{margin-bottom:13px;padding:17px}.post-head{display:flex;align-items:center;gap:10px}.post-avatar{width:38px;height:38px;border-radius:14px;background:#302744;display:grid;place-items:center;font-size:17px}.author{font-size:13px;font-weight:750}.meta{font-size:11px;color:var(--muted);margin-top:3px}.category-badge{margin-left:auto;border-radius:30px;background:#ff5ba719;color:#ff9bc9;padding:6px 9px;font-size:10px;white-space:nowrap}.post-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.65;color:#f1edf8;margin:15px 0 16px}.post-actions{display:flex;gap:8px;border-top:1px solid #ffffff10;padding-top:12px}.action{border:0;background:transparent;color:var(--muted);padding:7px 10px;border-radius:10px;font-size:12px}.action:hover,.action.selected{background:#ffffff10;color:#ff8fc2}.empty,.loading{text-align:center;padding:38px 15px;color:var(--muted);font-size:13px}
+.rightcard{margin-bottom:13px}.rightcard h3{font-size:14px;margin:0 0 10px}.rightcard p{color:var(--muted);font-size:12px;line-height:1.5;margin:0}.rule{border-top:1px solid #ffffff12;margin-top:13px;padding-top:12px}
+.bottomnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:15;background:#171329f5;backdrop-filter:blur(18px);border-top:1px solid #ffffff18;padding:9px 15px calc(9px + env(safe-area-inset-bottom));justify-content:space-around}.bottomnav button{border:0;background:transparent;color:#c8c1d9;font-size:10px;display:grid;gap:3px;justify-items:center}.bottomnav b{font-size:19px;font-weight:500}
+.overlay{display:none;position:fixed;inset:0;background:#0009;z-index:30;align-items:center;justify-content:center;padding:18px}.overlay.show{display:flex}.modal{width:min(100%,520px);max-height:85vh;overflow:auto;background:var(--panel);border:1px solid #ffffff20;border-radius:22px;padding:19px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;font-size:17px}.close{border:0;background:#ffffff12;color:white;border-radius:10px;padding:7px 11px}.comment{padding:12px 0;border-bottom:1px solid #ffffff12}.comment strong{font-size:12px}.comment p{font-size:13px;line-height:1.5;color:#e4deed;margin:5px 0}.comment small{color:var(--muted);font-size:10px}.toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#302744;color:white;border:1px solid #ffffff22;padding:12px 16px;border-radius:13px;font-size:12px;z-index:50;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+@media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr) 205px}.leftside{display:none}}
+@media(max-width:620px){.layout{display:block;padding:14px 12px}.rightside{display:none}.top{padding:11px 14px}.brand strong{font-size:18px}.topright .pill{padding:8px 10px}.welcome{padding:17px}.welcome h1{font-size:20px}.composer,.post{border-radius:18px;padding:14px}.bottomnav{display:flex}.feed-head{margin-top:17px}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="brand"><div class="mark">C</div><div><strong>CONFESS</strong><small>DIS LES CHOSES.</small></div></div>
+ <div class="topright"><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
+</header>
+<div class="layout">
+ <aside class="side leftside">
+  <div class="sidecard">
+   <div class="side-title">Menu</div>
+   <button class="navitem active" id="homeNav"><span>⌂</span> Fil d'actualité</button>
+   <button class="navitem" id="savedNav"><span>▣</span> Publications enregistrées</button>
+   <button class="navitem" id="profileNav"><span>◉</span> Mon profil</button>
+  </div>
+  <div class="sidecard" style="margin-top:13px"><div class="side-title">Explorer les thèmes</div><div class="category-list" id="categories"><div class="loading">Chargement…</div></div></div>
+ </aside>
+ <main class="center">
+  <section class="welcome"><h1>Bienvenue dans la conversation ✨</h1><p>Ici, chaque histoire mérite d'être entendue. Lis, réagis, partage… à ton rythme.</p></section>
+  <section class="composer" id="composer">
+   <div class="compose-top"><div class="avatar" id="composeAvatar">?</div><div><strong id="composeTitle">Une chose à raconter ?</strong><small id="composeSub">Connecte-toi pour publier ta confession.</small></div></div>
+   <textarea class="compose-input" id="postBody" maxlength="5000" placeholder="Qu'est-ce que tu as sur le cœur ?"></textarea>
+   <div class="compose-bottom"><div class="compose-controls">
+    <select class="field" id="postCategory" aria-label="Catégorie"><option value="confession">Confession</option></select>
+    <label class="anon-label"><input type="checkbox" id="anonymous"> Publier anonymement</label>
+   </div><button class="primary" id="publishBtn">Publier ↗</button></div>
+  </section>
+  <div class="feed-head"><h2 id="feedTitle">Le fil CONFESS</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
+  <div id="feed"><div class="loading">On prépare le fil…</div></div>
+ </main>
+ <aside class="side rightside">
+  <div class="rightcard"><h3>💬 Ici, on s'écoute.</h3><p>CONFESS est un espace de partage. Reste respectueux, même quand tu n'es pas d'accord.</p><div class="rule"><p>Tu peux choisir d'apparaître sous ton pseudo ou de publier anonymement, à chaque publication.</p></div></div>
+  <div class="rightcard"><h3>🛡️ Un espace plus sûr</h3><p>Ne partage jamais tes mots de passe, coordonnées bancaires ou informations privées dans une publication publique.</p></div>
+ </aside>
+</div>
+<nav class="bottomnav"><button id="mobileHome"><b>⌂</b>Accueil</button><button id="mobileExplore"><b>⌕</b>Explorer</button><button id="mobileWrite"><b>＋</b>Publier</button><button id="mobileProfile"><b>◉</b>Profil</button></nav>
+<div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentsList"></div><div class="rule"><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+const URL='https://hhntssweslmmqskhoaje.supabase.co';
+const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
+const db=window.supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+let session=null,profile=null,categories=[],currentCategory=null,savedOnly=false,activePost=null,postsCache=[];
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
+function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').textContent=name[0].toUpperCase();$('composeAvatar').textContent=name[0].toUpperCase();$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.'}
+async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser()}
+async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
+function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
+async function loadFeed(){
+ $('feed').innerHTML='<div class="loading">Chargement du fil…</div>';
+ let query=db.from('posts').select('id,body,is_anonymous,author_label,category_id,created_at,categories(label,slug)').eq('status','published').order('created_at',{ascending:false}).limit(40);
+ if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
+ const {data,error}=await query;if(error){$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';console.error(error);return}
+ let rows=data||[];
+ if(savedOnly){
+  if(!session){$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver tes publications enregistrées.</div>';return}
+  const {data:marks}=await db.from('post_bookmarks').select('post_id').eq('user_id',session.user.id);
+  const ids=new Set((marks||[]).map(x=>x.post_id));rows=rows.filter(p=>ids.has(p.id));
+ }
+ const ids=rows.map(p=>p.id);let reactions=[],comments=[],marks=[];
+ if(ids.length){
+  const r=await db.from('post_reactions').select('post_id,user_id,reaction').in('post_id',ids);reactions=r.data||[];
+  const c=await db.from('comments').select('post_id').in('post_id',ids);comments=c.data||[];
+  if(session){const m=await db.from('post_bookmarks').select('post_id').eq('user_id',session.user.id).in('post_id',ids);marks=m.data||[]}
+ }
+ const counts={};reactions.forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1});
+ const commentCounts={};comments.forEach(c=>{commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1});
+ const liked=new Set(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>r.post_id));
+ const bookmarked=new Set(marks.map(m=>m.post_id));
+ if($('sortSelect').value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
+ postsCache=rows;
+ if(!rows.length){$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";return}
+ $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
+  <div class="post-body">${esc(p.body)}</div><div class="post-actions">
+   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
+   <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
+   <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
+   <button class="action" data-report="${p.id}">⚑ Signaler</button>
+  </div></article>`}).join('');
+ $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
+ $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
+ $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
+ $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
+}
+async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
+async function toggleSave(id){if(!session)return toast('Connecte-toi pour enregistrer une publication.');const {data:existing}=await db.from('post_bookmarks').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});if(result.error){toast('Impossible de modifier tes enregistrements.');return}toast(existing?'Publication retirée des favoris.':'Publication enregistrée.');loadFeed()}
+async function openComments(id){activePost=id;$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';const {data,error}=await db.from('comments').select('id,body,author_label,created_at').eq('post_id',id).eq('status','published').order('created_at');if(error){$('commentsList').textContent='Impossible de charger les réponses.';return}$('commentsList').innerHTML=data?.length?data.map(c=>`<div class="comment"><strong>${esc(c.author_label)}</strong><p>${esc(c.body)}</p><small>${ago(c.created_at)}</small></div>`).join(''):'<div class="empty">Pas encore de réponse. Lance la discussion !</div>'}
+async function reportPost(id){if(!session)return toast('Connecte-toi pour signaler une publication.');const reason=prompt('Pourquoi souhaites-tu signaler cette publication ?');if(!reason)return;const {error}=await db.from('reports').insert({reporter_id:session.user.id,post_id:id,reason:reason.trim(),details:''});if(error){toast("Le signalement n'a pas pu être envoyé.");console.error(error)}else toast('Merci. Ton signalement a été transmis à la modération.')}
+$('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
+$('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:null});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;openComments(activePost);loadFeed()}
+$('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
+$('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))$('commentsOverlay').classList.remove('show')});
+$('authBtn').onclick=()=>location.href='auth.html';
+$('sortSelect').onchange=loadFeed;
+$('homeNav').onclick=()=>{savedOnly=false;currentCategory=null;updateCategoryUI();loadFeed()};
+$('savedNav').onclick=()=>{savedOnly=true;currentCategory=null;updateCategoryUI();loadFeed()};
+$('profileNav').onclick=()=>location.href='auth.html';
+$('mobileHome').onclick=()=>$('homeNav').click();
+$('mobileExplore').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});toast('Choisis un thème dans Explorer sur grand écran.')};
+$('mobileWrite').onclick=()=>{if(!session){toast('Connecte-toi pour publier.');return}$('postBody').focus();window.scrollTo({top:$('composer').offsetTop-65,behavior:'smooth'})};
+$('mobileProfile').onclick=()=>$('profileNav').click();
+db.auth.onAuthStateChange(async()=>{await loadSession();loadFeed()});
+(async()=>{await loadSession();await loadCategories();await loadFeed()})();
+})();
+</script>
+</body></html>

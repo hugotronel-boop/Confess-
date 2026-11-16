@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171329">
+  <title>CONFESS — Connexion</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 10%,#38204b 0,transparent 34%),radial-gradient(circle at 90% 80%,#3b2144 0,transparent 32%),var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:#fff;display:grid;place-items:center;padding:22px}
+    .shell{width:min(100%,430px)}.brand{display:flex;align-items:center;gap:12px;margin:0 0 25px 4px}.mark{width:45px;height:45px;border-radius:15px;background:linear-gradient(135deg,var(--pink),var(--orange));display:grid;place-items:center;font-size:23px;font-weight:900;box-shadow:0 8px 30px #ff5ba744}.brand strong{font-size:24px;letter-spacing:2px}.brand small{display:block;color:var(--muted);font-size:12px;letter-spacing:0}
+    .card{background:#1b1830eF;border:1px solid #ffffff16;border-radius:28px;padding:27px;box-shadow:0 24px 80px #0006;backdrop-filter:blur(16px)}
+    h1{font-size:27px;line-height:1.15;margin:0 0 9px}.intro{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 24px}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;background:#100e1b;border-radius:14px;padding:4px;margin-bottom:22px}.tabs button{border:0;background:transparent;color:var(--muted);padding:11px;border-radius:11px;font-weight:700}.tabs button.active{background:#38304f;color:#fff}
+    label{display:block;font-size:12px;color:#d9d4e8;margin:15px 0 7px}input{width:100%;border:1px solid var(--line);background:#100e1b;color:#fff;border-radius:13px;padding:14px;font:inherit;outline:none}input:focus{border-color:var(--pink);box-shadow:0 0 0 3px #ff5ba722}
+    .hint{font-size:11px;color:var(--muted);margin:6px 2px 0}.primary{width:100%;border:0;border-radius:14px;padding:15px;margin-top:22px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#201326;font-weight:850;font-size:15px}.primary:disabled{opacity:.55}
+    .link{border:0;background:none;color:#ff91c4;padding:14px 0 0;font-size:13px}.message{display:none;margin-top:16px;padding:12px 14px;border-radius:12px;background:#ffffff0c;color:#e9e4f4;font-size:13px;line-height:1.45}.message.show{display:block}.message.error{color:#ffb5bd;background:#ff526b18}.message.success{color:#baf5d1;background:#3bd18a18}
+    .profile{display:none}.profile.show{display:block}.auth.hide{display:none}.username-line{color:var(--muted);font-size:13px;margin-top:8px}.logout{background:transparent;border:1px solid var(--line);color:white;border-radius:12px;padding:11px 15px;margin-top:18px}
+    .foot{text-align:center;color:#827d99;font-size:11px;line-height:1.5;margin:17px 10px 0}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="brand"><div class="mark">C</div><div><strong>CONFESS</strong><small>Dis les choses. Écoute les autres.</small></div></div>
+    <section class="card auth" id="authCard">
+      <h1 id="heading">Bienvenue dans CONFESS.</h1>
+      <p class="intro" id="intro">Un espace pour parler librement, partager et échanger.</p>
+      <div class="tabs"><button class="active" id="loginTab" type="button">Connexion</button><button id="signupTab" type="button">Inscription</button></div>
+      <form id="authForm">
+        <label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email" placeholder="toi@exemple.fr" required>
+        <label for="password">Mot de passe</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="8 caractères minimum" required>
+        <button class="primary" id="submitBtn" type="submit">Me connecter</button>
+      </form>
+      <button class="link" id="forgotBtn" type="button">Mot de passe oublié ?</button>
+      <div class="message" id="authMessage" role="status"></div>
+    </section>
+    <section class="card profile" id="profileCard">
+      <h1>Ton espace commence ici ✨</h1>
+      <p class="intro">Choisis le pseudonyme que les autres membres verront sur ton profil.</p>
+      <form id="profileForm">
+        <label for="username">Ton pseudonyme</label><input id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
+        <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement.</p>
+        <button class="primary" type="submit">Enregistrer et continuer</button>
+      </form>
+      <div class="message" id="profileMessage" role="status"></div>
+      <button class="logout" id="logoutBtn" type="button">Me déconnecter</button>
+    </section>
+    <p class="foot">En continuant, tu acceptes de respecter les autres membres et les règles de la communauté CONFESS.</p>
+  </main>
+<script>
+(() => {
+  const SUPABASE_URL = 'https://hhntssweslmmqskhoaje.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const $ = id => document.getElementById(id);
+  let mode = 'login';
+
+  function message(id, text, kind='') {
+    const el = $(id); el.textContent = text; el.className = 'message show ' + kind;
+  }
+  function setMode(next) {
+    mode = next;
+    $('loginTab').classList.toggle('active', mode === 'login');
+    $('signupTab').classList.toggle('active', mode === 'signup');
+    $('heading').textContent = mode === 'login' ? 'Ravi de te revoir.' : 'Bienvenue dans CONFESS.';
+    $('intro').textContent = mode === 'login' ? 'Reconnecte-toi pour retrouver les discussions.' : 'Crée ton compte et trouve ta place dans la conversation.';
+    $('submitBtn').textContent = mode === 'login' ? 'Me connecter' : 'Créer mon compte';
+    $('forgotBtn').style.display = mode === 'login' ? 'inline-block' : 'none';
+    $('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    $('authMessage').className = 'message';
+  }
+  async function showSession() {
+    const {data:{session}} = await client.auth.getSession();
+    if (!session) { $('authCard').classList.remove('hide'); $('profileCard').classList.remove('show'); return; }
+    $('authCard').classList.add('hide'); $('profileCard').classList.add('show');
+    const {data:profile} = await client.from('profiles').select('username').eq('id', session.user.id).maybeSingle();
+    if (profile?.username) $('username').value = profile.username;
+  }
+  $('loginTab').addEventListener('click', () => setMode('login'));
+  $('signupTab').addEventListener('click', () => setMode('signup'));
+  $('authForm').addEventListener('submit', async e => {
+    e.preventDefault(); $('submitBtn').disabled = true;
+    const email = $('email').value.trim(); const password = $('password').value;
+    try {
+      if (mode === 'signup') {
+        const {data,error} = await client.auth.signUp({email,password});
+        if (error) throw error;
+        if (data.session) await showSession();
+        else message('authMessage',"Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter.",'success');
+      } else {
+        const {error} = await client.auth.signInWithPassword({email,password});
+        if (error) throw error;
+        await showSession();
+      }
+    } catch(err) { message('authMessage', err.message || "Une erreur est survenue.", 'error'); }
+    finally { $('submitBtn').disabled = false; }
+  });
+  $('forgotBtn').addEventListener('click', async () => {
+    const email = $('email').value.trim();
+    if (!email) return message('authMessage',"Entre d'abord ton adresse e-mail.",'error');
+    const {error} = await client.auth.resetPasswordForEmail(email, {redirectTo: location.origin + location.pathname});
+    message('authMessage', error ? error.message : "Si un compte correspond à cette adresse, un e-mail de réinitialisation va être envoyé.", error ? 'error' : 'success');
+  });
+  $('profileForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = $('username').value.trim();
+    if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return message('profileMessage',"Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.",'error');
+    const {data:{user}} = await client.auth.getUser();
+    if (!user) return message('profileMessage',"Ta session a expiré. Reconnecte-toi.",'error');
+    const {error} = await client.from('profiles').update({username}).eq('id',user.id);
+    if (error) {
+      message('profileMessage', error.code === '23505' ? "Ce pseudonyme est déjà utilisé, choisis-en un autre." : error.message, 'error');
+    } else { message('profileMessage',"Ton pseudonyme est enregistré ! On t’emmène sur CONFESS…",'success'); setTimeout(() => location.href = 'index.html', 650); }
+  });
+  $('logoutBtn').addEventListener('click', async () => { await client.auth.signOut(); await showSession(); });
+  client.auth.onAuthStateChange(() => { showSession(); });
+  showSession();
+})();
+</script>
+</body>
+</html>
