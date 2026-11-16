@@ -2,8 +2,10 @@
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#100e1b"><title>CONFESS — Confidentialité & sécurité</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 0%,#38204b 0,transparent 30%),var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,sans-serif;padding-bottom:40px}button,select{font:inherit;cursor:pointer}.top{position:sticky;top:0;z-index:5;background:#100e1bed;backdrop-filter:blur(18px);border-bottom:1px solid #ffffff12;padding:12px max(16px,calc((100vw - 850px)/2));display:flex;justify-content:space-between;align-items:center}.brand{display:flex;align-items:center;gap:10px}.mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--orange));display:grid;place-items:center;font-weight:950;font-size:21px;color:#201326}.brand strong{letter-spacing:2px;font-size:19px}.back{border:1px solid var(--line);background:var(--panel);color:#eee;border-radius:30px;padding:9px 13px;font-size:12px}main{width:min(760px,100%);margin:24px auto;padding:0 15px}.hero{background:linear-gradient(125deg,#42203f,#26203f 62%,#30203c);border:1px solid #ffffff14;border-radius:25px;padding:23px;margin-bottom:15px}.hero h1{font-size:23px;margin:0 0 7px}.hero p{font-size:13px;line-height:1.5;color:#ded4e8;margin:0}.card{background:var(--panel);border:1px solid #ffffff13;border-radius:21px;padding:19px;margin-bottom:14px}.card h2{font-size:16px;margin:0 0 6px}.desc{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 15px}.field{width:100%;background:#100e1b;border:1px solid var(--line);border-radius:12px;padding:12px;color:#fff;outline:none}.save{border:0;border-radius:12px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#241326;font-weight:850;padding:11px 16px;font-size:13px;margin-top:12px}.row{display:flex;gap:12px;align-items:center;justify-content:space-between}.entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #ffffff10}.entry:first-child{border-top:0}.entry strong{font-size:13px}.entry small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.remove{border:1px solid #754052;background:#321c30;color:#ffabc9;border-radius:10px;padding:8px 11px;font-size:11px;white-space:nowrap}.empty{color:var(--muted);font-size:12px;padding:14px 0}.status{font-size:11px;color:#ffb1d2}.report-status{font-size:11px;color:#ffb1d2;border:1px solid #ffffff18;border-radius:20px;padding:5px 8px}.hint{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#302744;border:1px solid #ffffff22;color:#fff;padding:12px 16px;border-radius:13px;font-size:12px;z-index:20;display:none;max-width:90%;text-align:center}.toast.show{display:block}@media(max-width:520px){main{margin:16px auto}.hero{padding:19px}.card{padding:16px}.row{align-items:flex-start;flex-direction:column}}
+
+.confess-bell{position:relative;border:1px solid var(--line,#39334f);background:var(--panel,#1b1830);color:#fff;border-radius:30px;padding:9px 12px;font-size:16px;cursor:pointer;margin-left:8px}.confess-bell-count{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:20px;background:#ff5ba7;color:#241326;font-size:10px;font-weight:900;display:grid;place-items:center;padding:0 4px}.confess-bell-count[hidden]{display:none}
 </style></head><body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='profile.html'">← Mon profil</button></header>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='profile.html'">← Mon profil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main><section class="hero"><h1>Confidentialité & sécurité 🔐</h1><p>Tu gardes la main sur tes échanges et les personnes avec qui tu souhaites interagir.</p></section>
 <section class="card"><h2>Messages privés</h2><p class="desc">Choisis qui peut démarrer une conversation avec toi.</p><select class="field" id="messageRule"><option value="everyone">Tout le monde</option><option value="followers">Uniquement les personnes que je suis</option><option value="nobody">Personne</option></select><button class="save" id="saveSettings">Enregistrer</button><p class="hint">Les personnes que tu bloques ne peuvent pas te contacter. Le réglage s’applique aux nouvelles conversations.</p></section>
 <section class="card"><h2>Comptes bloqués 🚫</h2><p class="desc">Les comptes bloqués ne peuvent plus interagir normalement avec toi.</p><div id="blockedList"><div class="empty">Chargement…</div></div></section>
@@ -28,4 +30,40 @@ $('saveSettings').onclick=async()=>{const value=$('messageRule').value;$('saveSe
 
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.html'});init();
 })();
-</script></body></html>
+</script><script>
+(()=> {
+ if(!window.supabase?.createClient)return;
+ const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
+ const badge=document.getElementById('confessBellCount');
+ let channel=null,userId=null;
+ async function countUnread(){
+  const {data:{session}}=await client.auth.getSession();
+  const id=session?.user?.id||null;
+  if(!id){badge.hidden=true;return}
+  const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
+  if(error){console.warn('CONFESS notifications:',error.message);return}
+  badge.textContent=(count||0)>99?'99+':String(count||0);
+  badge.hidden=!count;
+ }
+ async function connect(id){
+  if(id===userId&&channel)return;
+  if(channel){await client.removeChannel(channel);channel=null}
+  userId=id;
+  if(!id){badge.hidden=true;return}
+  channel=client.channel('confess-page-notifications-'+id)
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread)
+   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread)
+   .subscribe();
+  countUnread();
+ }
+ async function init(){const {data:{session}}=await client.auth.getSession();await connect(session?.user?.id||null)}
+ document.getElementById('confessBell').addEventListener('click',()=>location.href='notifications.html');
+ client.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_OUT'){connect(null);return}
+  if(session?.user?.id)setTimeout(()=>connect(session.user.id),0);
+ });
+ init();
+ window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
+})();
+</script>
+</body></html>
