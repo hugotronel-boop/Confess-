@@ -127,7 +127,7 @@ $('authBtn').onclick=()=>location.href='auth.html';
 $('sortSelect').onchange=loadFeed;
 $('homeNav').onclick=()=>{savedOnly=false;currentCategory=null;updateCategoryUI();loadFeed()};
 $('savedNav').onclick=()=>{savedOnly=true;currentCategory=null;updateCategoryUI();loadFeed()};
-$('profileNav').onclick=()=>location.href='auth.html';
+$('profileNav').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('mobileHome').onclick=()=>$('homeNav').click();
 $('mobileExplore').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});toast('Choisis un thème dans Explorer sur grand écran.')};
 $('mobileWrite').onclick=()=>{if(!session){toast('Connecte-toi pour publier.');return}$('postBody').focus();window.scrollTo({top:$('composer').offsetTop-65,behavior:'smooth'})};
