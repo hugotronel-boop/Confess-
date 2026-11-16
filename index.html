@@ -80,7 +80,7 @@ async function loadCategories(){const {data,error}=await db.from('categories').s
 function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
 async function loadFeed(){
  $('feed').innerHTML='<div class="loading">Chargement du fil…</div>';
- let query=db.from('posts').select('id,body,is_anonymous,author_label,category_id,created_at,categories(label,slug)').eq('status','published').order('created_at',{ascending:false}).limit(40);
+ let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at,categories(label,slug)').eq('status','published').order('created_at',{ascending:false}).limit(40);
  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
  const {data,error}=await query;if(error){$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';console.error(error);return}
  let rows=data||[];
@@ -103,7 +103,7 @@ async function loadFeed(){
  postsCache=rows;
  if(!rows.length){$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
   <div class="post-body">${esc(p.body)}</div><div class="post-actions">
    <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
@@ -111,6 +111,7 @@ async function loadFeed(){
    <button class="action" data-report="${p.id}">⚑ Signaler</button>
   </div></article>`}).join('');
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
+ $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
  $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
