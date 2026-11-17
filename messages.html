@@ -57,7 +57,7 @@ async function createGroup(){
 $('openGroup').onclick=openGroupModal;$('cancelGroup').onclick=()=>$('groupOverlay').hidden=true;
 $('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))$('groupOverlay').hidden=true});
 $('groupSearch').addEventListener('input',renderGroupDirectory);$('groupName').addEventListener('input',updateGroupSelection);$('createGroup').onclick=createGroup;
-async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
+async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('openGroup').hidden=true;$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
 await loadThreads();const target=new URLSearchParams(location.search).get('conversation');if(target)await openConversation(target)}
 async function loadThreads(){const {data:members,error}=await db.from('conversation_members').select('conversation_id').eq('user_id',me.id);if(error){$('inboxList').innerHTML='<div class="empty">Impossible de charger les conversations.</div>';console.error(error);return}
 const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<div class="empty">Pas encore de conversation.<br>Rends-toi sur le profil d\'un membre pour lui écrire.</div>';return}
