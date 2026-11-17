@@ -32,7 +32,18 @@
 <button class="save" id="changePassword">Mettre à jour mon mot de passe</button><p class="hint" id="passwordStatus" aria-live="polite">Choisis un mot de passe unique que tu n’utilises pas ailleurs.</p>
 <div style="height:1px;background:#ffffff12;margin:18px 0"></div>
 <strong style="font-size:13px">Sessions sur les autres appareils</strong><p class="hint">Cette action déconnecte les autres navigateurs et appareils. Ton appareil actuel restera connecté.</p><button class="remove" id="signOutOthers">Déconnecter mes autres appareils</button><p class="hint" id="sessionsStatus" aria-live="polite"></p>
-</section><section class="card" id="dataExport"><h2>📦 Télécharger mes données</h2><p class="desc">Récupère une copie de tes informations CONFESS : profil, publications, commentaires, réactions, abonnements, conversations accessibles et paramètres.</p><button class="save" id="exportData">Télécharger mes données (.json)</button><p class="hint" id="exportStatus" aria-live="polite">Le fichier est généré sur ton appareil. Il peut contenir des échanges privés : conserve-le dans un endroit sûr.</p></section><section class="card"><h2>Bon réflexe sécurité 🛡️</h2><p class="desc">Utilise un mot de passe unique et ne le partage jamais. Déconnecte-toi des appareils que tu ne reconnais pas.</p></section>
+</section><section class="card" id="mfaSecurity"><h2>🛡️ Double authentification</h2><p class="desc">Ajoute un code temporaire depuis une application d’authentification (Google Authenticator, 2FAS, Microsoft Authenticator…).</p>
+<div id="mfaCurrent" class="hint">Vérification de la protection…</div>
+<button class="save" id="mfaStart">Configurer une application</button>
+<div id="mfaSetup" style="display:none;margin-top:14px">
+<p class="hint">Scanne ce QR code avec ton application. Si tu ne peux pas le scanner, utilise la clé secrète affichée dessous.</p>
+<img id="mfaQr" alt="QR code de configuration" style="display:block;max-width:220px;width:100%;background:white;padding:10px;border-radius:12px;margin:12px auto">
+<p class="hint" id="mfaSecret" style="overflow-wrap:anywhere"></p>
+<label class="hint" for="mfaCode">Code à 6 chiffres de ton application</label><input class="field" id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+<button class="save" id="mfaVerify">Activer la double authentification</button>
+</div>
+<div id="mfaManage" style="display:none;margin-top:12px"><p class="hint" id="mfaFactorLabel"></p><button class="remove" id="mfaRemove">Désactiver la double authentification</button></div>
+<p class="hint" id="mfaStatus" aria-live="polite">L'activation ajoute un second facteur à ton compte. La vérification au moment de la connexion sera nécessaire avant de considérer la protection comme complète.</p></section><section class="card" id="dataExport"><h2>📦 Télécharger mes données</h2><p class="desc">Récupère une copie de tes informations CONFESS : profil, publications, commentaires, réactions, abonnements, conversations accessibles et paramètres.</p><button class="save" id="exportData">Télécharger mes données (.json)</button><p class="hint" id="exportStatus" aria-live="polite">Le fichier est généré sur ton appareil. Il peut contenir des échanges privés : conserve-le dans un endroit sûr.</p></section><section class="card"><h2>Bon réflexe sécurité 🛡️</h2><p class="desc">Utilise un mot de passe unique et ne le partage jamais. Déconnecte-toi des appareils que tu ne reconnais pas.</p></section>
 </main><div class="toast" id="toast"></div>
 <script>
 (()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let user=null;
@@ -44,7 +55,7 @@ async function loadSettings(){const {data,error}=await db.from('user_settings').
 async function loadPeople(table,idColumn,targetId,container,kind){const {data,error}=await db.from(table).select(targetId+',created_at').eq(idColumn,user.id).order('created_at',{ascending:false});if(error)throw error;const rows=data||[];if(!rows.length){$(container).innerHTML='<div class="empty">Aucun compte '+(kind==='block'?'bloqué':'masqué')+'.</div>';return}const map=await names(rows.map(x=>x[targetId]));$(container).innerHTML=rows.map(x=>'<div class="entry"><div><strong>@'+esc(map[x[targetId]]||'Membre CONFESS')+'</strong><small>Ajouté le '+new Date(x.created_at).toLocaleDateString('fr-FR')+'</small></div><button class="remove" data-user="'+x[targetId]+'">'+(kind==='block'?'Débloquer':'Réafficher')+'</button></div>').join('');$(container).querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>removePerson(table,idColumn,targetId,b.dataset.user,kind))}
 async function removePerson(table,idColumn,targetId,target,kind){const {error}=await db.from(table).delete().eq(idColumn,user.id).eq(targetId,target);if(error){toast('Impossible de modifier cette liste.');console.error(error);return}toast(kind==='block'?'Compte débloqué.':'Compte réaffiché.');await loadPeople(table,idColumn,targetId,kind==='block'?'blockedList':'mutedList',kind)}
 async function loadReports(){const {data,error}=await db.from('reports').select('id,reason,status,created_at').eq('reporter_id',user.id).order('created_at',{ascending:false}).limit(30);if(error)throw error;const rows=data||[];const labels={spam:'Spam',harassment:'Harcèlement',hate:'Haine',violence:'Violence',sexual:'Contenu sexuel',self_harm:'Automutilation',privacy:'Atteinte à la vie privée',other:'Autre'};const states={pending:'En attente',reviewing:'En cours',resolved:'Traité',dismissed:'Classé'};$('reportsList').innerHTML=rows.length?rows.map(r=>'<div class="entry"><div><strong>'+esc(labels[r.reason]||'Signalement')+'</strong><small>'+new Date(r.created_at).toLocaleDateString('fr-FR')+'</small></div><span class="report-status">'+esc(states[r.status]||r.status)+'</span></div>').join(''):'<div class="empty">Tu n’as pas encore envoyé de signalement.</div>'}
-async function init(){const {data:{session}}=await db.auth.getSession();user=session?.user;if(!user){location.href='auth.html';return}try{await registerPushWorker();await loadPushStatus();const access=await db.rpc('can_access_confess_moderation');if(access.data===true)$('moderationAccess').style.display='block';const adminAccess=await db.rpc('list_confess_moderators');if(!adminAccess.error)$('adminAccess').style.display='block';await Promise.all([loadNotificationPreferences(),loadSettings(),loadPeople('user_blocks','blocker_id','blocked_id','blockedList','block'),loadPeople('user_mutes','user_id','muted_user_id','mutedList','mute'),loadReports()])}catch(e){console.error(e);toast('Une partie des paramètres n’a pas pu être chargée.')}}
+async function init(){const {data:{session}}=await db.auth.getSession();user=session?.user;if(!user){location.href='auth.html';return}try{await registerPushWorker();await loadPushStatus();const access=await db.rpc('can_access_confess_moderation');if(access.data===true)$('moderationAccess').style.display='block';const adminAccess=await db.rpc('list_confess_moderators');if(!adminAccess.error)$('adminAccess').style.display='block';await Promise.all([refreshMfa(),loadNotificationPreferences(),loadSettings(),loadPeople('user_blocks','blocker_id','blocked_id','blockedList','block'),loadPeople('user_mutes','user_id','muted_user_id','mutedList','mute'),loadReports()])}catch(e){console.error(e);toast('Une partie des paramètres n’a pas pu être chargée.')}}
 
 const PUSH_PUBLIC_KEY='BN3cgi2S_bvSN-uj65aSJu--McMaicxINJVRXxedGxGhFlexm5pgZlhGrpbHrKn6IGyPYf2gJacmq25F8jWiNB4';
 let pushRegistration=null;
@@ -61,6 +72,44 @@ catch(e){console.error(e);status.textContent=e.message||'Impossible d’activer 
 $('pushToggle').onclick=togglePush;
 $('saveNotificationPrefs').onclick=async()=>{const btn=$('saveNotificationPrefs');btn.disabled=true;$('notificationPrefsStatus').textContent='Enregistrement…';const payload={user_id:user.id,follows:$('prefFollows').checked,messages:$('prefMessages').checked,reactions:$('prefReactions').checked,comments:$('prefComments').checked,moderation:$('prefModeration').checked,system:$('prefSystem').checked,updated_at:new Date().toISOString()};const {error}=await db.from('notification_preferences').upsert(payload,{onConflict:'user_id'});btn.disabled=false;if(error){console.error(error);$('notificationPrefsStatus').textContent='Impossible d’enregistrer les préférences.';toast('Enregistrement impossible.');return}$('notificationPrefsStatus').textContent='Préférences enregistrées ✅';toast('Tes préférences de notifications sont enregistrées.')}
 
+
+let pendingMfaFactor=null,pendingMfaChallenge=null,verifiedMfaFactors=[];
+async function refreshMfa(){
+ const {data,error}=await db.auth.mfa.listFactors();if(error)throw error;
+ verifiedMfaFactors=(data.totp||[]).filter(x=>x.status==='verified');
+ if(verifiedMfaFactors.length){$('mfaCurrent').textContent='Double authentification activée ✅';$('mfaStart').style.display='none';$('mfaManage').style.display='block';$('mfaFactorLabel').textContent=verifiedMfaFactors.length+' application(s) d’authentification associée(s).';}
+ else{$('mfaCurrent').textContent='Double authentification non configurée.';$('mfaStart').style.display='block';$('mfaManage').style.display='none';}
+}
+$('mfaStart').onclick=async()=>{
+ const btn=$('mfaStart');btn.disabled=true;$('mfaStatus').textContent='Création de la configuration…';
+ try{const {data,error}=await db.auth.mfa.enroll({factorType:'totp',friendlyName:'CONFESS - '+(user.email||'Mon compte')});if(error)throw error;
+ pendingMfaFactor=data.id;$('mfaQr').src=data.totp.qr_code;$('mfaSecret').textContent='Clé secrète : '+data.totp.secret;
+ const challenge=await db.auth.mfa.challenge({factorId:pendingMfaFactor});if(challenge.error)throw challenge.error;pendingMfaChallenge=challenge.data.id;
+ $('mfaSetup').style.display='block';$('mfaStatus').textContent='Scanne le QR code puis saisis le code temporaire.';
+ }catch(e){console.error(e);$('mfaStatus').textContent=e.message||'Impossible de configurer la double authentification.';toast('Configuration impossible.');}
+ finally{btn.disabled=false}
+};
+$('mfaVerify').onclick=async()=>{
+ const code=$('mfaCode').value.replace(/\D/g,'');if(code.length!==6){toast('Saisis le code à 6 chiffres.');return}
+ const btn=$('mfaVerify');btn.disabled=true;
+ try{const {error}=await db.auth.mfa.verify({factorId:pendingMfaFactor,challengeId:pendingMfaChallenge,code});if(error)throw error;
+ await db.auth.refreshSession();$('mfaSetup').style.display='none';$('mfaCode').value='';pendingMfaFactor=null;pendingMfaChallenge=null;await refreshMfa();$('mfaStatus').textContent='Double authentification activée. Conserve l’accès à ton application d’authentification.';toast('Double authentification activée !');
+ }catch(e){console.error(e);$('mfaStatus').textContent=e.message||'Code invalide ou expiré.';toast('Vérification impossible.');}
+ finally{btn.disabled=false}
+};
+$('mfaRemove').onclick=async()=>{
+ if(!verifiedMfaFactors.length)return;
+ if(!confirm('Désactiver la double authentification ?'))return;
+ const btn=$('mfaRemove');btn.disabled=true;
+ try{
+  const factor=verifiedMfaFactors[0];const ch=await db.auth.mfa.challenge({factorId:factor.id});if(ch.error)throw ch.error;
+  const code=prompt('Saisis le code actuel de ton application pour confirmer la désactivation :');if(!code)return;
+  const v=await db.auth.mfa.verify({factorId:factor.id,challengeId:ch.data.id,code:code.replace(/\D/g,'')});if(v.error)throw v.error;
+  const u=await db.auth.mfa.unenroll({factorId:factor.id});if(u.error)throw u.error;
+  await db.auth.refreshSession();await refreshMfa();$('mfaStatus').textContent='Double authentification désactivée.';toast('Protection désactivée.');
+ }catch(e){console.error(e);$('mfaStatus').textContent=e.message||'Impossible de désactiver la protection.';toast('Désactivation impossible.');}
+ finally{btn.disabled=false}
+};
 $('currentEmail').textContent=user.email||'Adresse non disponible';
 $('emailVerified').textContent=user.email_confirmed_at?'E-mail confirmé':'E-mail à confirmer';
 $('changeEmail').onclick=async()=>{const btn=$('changeEmail'),value=$('newEmail').value.trim();if(!value||!value.includes('@')){toast('Saisis une adresse e-mail valide.');return}if(value.toLowerCase()===(user.email||'').toLowerCase()){toast('C’est déjà ton adresse actuelle.');return}btn.disabled=true;$('emailStatus').textContent='Envoi de la demande…';const {error}=await db.auth.updateUser({email:value});btn.disabled=false;if(error){console.error(error);$('emailStatus').textContent=error.message||'Impossible de modifier l’adresse.';toast('Changement d’e-mail impossible.');return}$('emailStatus').textContent='Demande envoyée. Vérifie ta boîte mail pour confirmer le changement.';$('newEmail').value='';toast('Vérification envoyée ✉️')};
