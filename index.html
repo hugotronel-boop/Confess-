@@ -50,6 +50,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
   <section class="composer" id="composer">
    <div class="compose-top"><div class="avatar" id="composeAvatar">?</div><div><strong id="composeTitle">Une chose à raconter ?</strong><small id="composeSub">Connecte-toi pour publier ta confession.</small></div></div>
    <textarea class="compose-input" id="postBody" maxlength="5000" placeholder="Qu'est-ce que tu as sur le cœur ?"></textarea>
+   <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button type="button" class="action" id="togglePoll" style="border:1px solid var(--line);border-radius:12px;padding:8px 11px">📊 Ajouter un sondage</button><small style="color:var(--muted)">Optionnel · 2 à 6 choix</small></div>
+   <div id="pollComposer" hidden style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong style="display:block;margin-bottom:8px">Les choix du sondage</strong><div id="pollOptionInputs" style="display:grid;gap:7px"><input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2"></div><button type="button" class="action" id="addPollOption" style="margin-top:8px">＋ Ajouter un choix</button><button type="button" class="action" id="removePoll" style="margin-top:8px">Retirer le sondage</button></div>
    <div class="compose-bottom"><div class="compose-controls">
     <select class="field" id="postCategory" aria-label="Catégorie"><option value="confession">Confession</option></select>
     <label class="anon-label"><input type="checkbox" id="anonymous"> Publier anonymement</label>
@@ -79,7 +81,7 @@ function updateDraftStatus(message){const el=$('draftStatus');if(el)el.textConte
 function restoreDraft(){
  const key=draftKey();if(!key)return;
  try{const raw=localStorage.getItem(key);if(!raw)return;const draft=JSON.parse(raw);if(!draft||typeof draft.body!=='string')return;
-  $('postBody').value=draft.body;$('postCategory').value=draft.category||$('postCategory').value;$('anonymous').checked=!!draft.anonymous;
+  $('postBody').value=draft.body;$('postCategory').value=draft.category||$('postCategory').value;$('anonymous').checked=!!draft.anonymous;if(draft.pollOptions?.length>=2){$('pollComposer').hidden=false;$('pollOptionInputs').innerHTML=draft.pollOptions.map((v,i)=>'<input class="field poll-option-input" maxlength="160" placeholder="Choix '+(i+1)+'" value="'+esc(v)+'">').join('');}
   updateDraftStatus('Brouillon retrouvé sur cet appareil ✨');
  }catch(error){console.warn('Brouillon CONFESS illisible:',error)}
 }
@@ -91,7 +93,7 @@ function saveDraft(){
  if(!body.trim()){updateDraftStatus('Brouillon automatique activé');return}
  updateDraftStatus('Enregistrement du brouillon…');
  draftTimer=setTimeout(()=>{
-  try{localStorage.setItem(key,JSON.stringify({body,category:$('postCategory').value,anonymous:$('anonymous').checked,updated_at:new Date().toISOString()}));updateDraftStatus('Brouillon enregistré sur cet appareil ✓')}
+  try{localStorage.setItem(key,JSON.stringify({body,category:$('postCategory').value,anonymous:$('anonymous').checked,pollOptions:$('pollComposer').hidden?[]:Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value),updated_at:new Date().toISOString()}));updateDraftStatus('Brouillon enregistré sur cet appareil ✓')}
   catch(error){updateDraftStatus('Stockage indisponible sur cet appareil')}
  },350);
 }
@@ -156,7 +158,7 @@ async function loadFeed(){
  if(!rows.length){$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
   <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
-  <div class="post-body">${esc(p.body)}</div><div class="post-actions">
+  <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
    <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
    <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
@@ -164,6 +166,17 @@ async function loadFeed(){
    <button class="action" data-share="${p.id}">↗️ Partager</button>
    ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button><button class="action" data-delete="'+p.id+'">🗑️ Supprimer</button>':''}
   </div></article>`}).join('');
+ const pollQuery=await db.from('polls').select('post_id').in('post_id',ids);
+ const pollIds=(pollQuery.data||[]).map(x=>x.post_id);
+ for(const pollId of pollIds){
+  const result=await db.rpc('get_confess_poll_results',{p_post_id:pollId});
+  if(result.error||!result.data?.length)continue;
+  const options=result.data,total=Number(options[0].total_votes||0),mine=options.some(x=>x.my_vote);
+  const closed=options[0].closes_at&&new Date(options[0].closes_at)<=new Date();
+  const slot=document.querySelector('[data-poll-slot="'+pollId+'"]');if(!slot)continue;
+  slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage · '+total+' vote(s)</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':'Ton vote est enregistré')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
+ }
+ $('feed').querySelectorAll('[data-option]').forEach(b=>b.onclick=async()=>{if(!session)return toast('Connecte-toi pour voter.');const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});if(vote.error){toast('Vote impossible : '+vote.error.message);return}toast('Ton vote est enregistré ✓');loadFeed()});
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
@@ -238,8 +251,8 @@ async function editPost(id){
  if(!data){toast('Publication introuvable ou tu ne peux pas la modifier.');return}
  toast('Publication modifiée ✨');await loadFeed();
 }
-$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
-$('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
+$('togglePoll').onclick=()=>{$('pollComposer').hidden=!$('pollComposer').hidden;if(!$('pollComposer').hidden)saveDraft()};$('addPollOption').onclick=()=>{const inputs=document.querySelectorAll('.poll-option-input');if(inputs.length>=6)return toast('Maximum 6 choix.');const input=document.createElement('input');input.className='field poll-option-input';input.maxLength=160;input.placeholder='Choix '+(inputs.length+1);$('pollOptionInputs').appendChild(input);input.addEventListener('input',saveDraft)};$('removePoll').onclick=()=>{$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';saveDraft()};$('pollOptionInputs').addEventListener('input',saveDraft);$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
+$('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {data:postId,error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});if(!error&&!$('pollComposer').hidden){const options=Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value.trim()).filter(Boolean);if(options.length<2||options.length>6){$('publishBtn').disabled=false;toast('Un sondage doit avoir entre 2 et 6 choix.');return}const poll=await db.rpc('create_confess_poll',{p_post_id:postId,p_options:options});if(poll.error){$('publishBtn').disabled=false;toast('Publication créée, mais sondage impossible : '+poll.error.message);return}}$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
