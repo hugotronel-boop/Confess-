@@ -69,6 +69,14 @@ main{position:relative;z-index:1}
 .publish-intro h1{font-size:clamp(25px,5vw,34px);margin:0 0 7px}
 .publish-intro p{color:var(--muted);font-size:13px;line-height:1.6;margin:0}
 @media(max-width:650px){.layout{padding:12px 12px 100px}.bottomnav{display:flex}#composer{border-radius:22px}.topright .msgbtn,.topright .bell{display:none}}
+
+/* Navigation principale persistante sur toutes les pages CONFESS */
+.confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
+.confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
+.confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
+.confess-global-nav a[aria-current="page"]{color:#ff9fc7!important;background:rgba(255,108,171,.12)}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+@media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a b{font-size:18px}}
 </style>
 </head>
 <body>
@@ -113,7 +121,14 @@ main{position:relative;z-index:1}
   <div class="rightcard"><h3>🛡️ Un espace plus sûr</h3><p>Ne partage jamais tes mots de passe, coordonnées bancaires ou informations privées dans une publication publique.</p></div>
  </aside>
 </div>
-<nav class="bottomnav"><button id="mobileHome"><b>⌂</b>Accueil</button><button id="mobileExplore"><b>⌕</b>Explorer</button><button id="mobileWrite"><b>＋</b>Publier</button><button id="mobileMessages"><b>💬</b>Messages</button><button id="mobileNotifications"><b>🔔</b>Actus</button><button id="mobileProfile"><b>◉</b>Profil</button></nav>
+<nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
+<a href="./index.html" data-nav="home"><b>⌂</b><span>Accueil</span></a>
+<a href="./explore.html" data-nav="explore"><b>⌕</b><span>Explorer</span></a>
+<a href="./publish.html" data-nav="publish" aria-current="page"><b>＋</b><span>Publier</span></a>
+<a href="./messages.html" data-nav="messages"><b>💬</b><span>Messages</span></a>
+<a href="./notifications.html" data-nav="notifications"><b>🔔</b><span>Actus</span></a>
+<a href="./profile.html" data-nav="profile"><b>◉</b><span>Profil</span></a>
+</nav>
 <div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentSort" style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="action selected" data-comment-sort="recent" style="border:1px solid var(--line);border-radius:10px">🕒 Plus récents</button><button type="button" class="action" data-comment-sort="popular" style="border:1px solid var(--line);border-radius:10px">❤️ Plus aimés</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
 <div class="toast" id="toast"></div>
 <script>
