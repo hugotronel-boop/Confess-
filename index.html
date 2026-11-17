@@ -82,7 +82,7 @@ const $=id=>document.getElementById(id);
 let session=null,profile=null,categories=[],currentCategory=null,currentSearch='',currentVisibility='all',currentFeed='all',savedOnly=false,activePost=null,postsCache=[],feedOffset=0,feedHasMore=true;
 function draftKey(){return session?.user?.id?'confess_draft_'+session.user.id:null}
 function updateDraftStatus(message){const el=$('draftStatus');if(el)el.textContent=message}
-let draftTimer=null,draftCloudLoaded=false,draftUserEdited=false,draftLoadedForUser=null;
+let draftTimer=null,draftCloudLoaded=false,draftUserEdited=false,draftLoadedForUser=null,draftWriteQueue=Promise.resolve();
 function applyDraft(draft){
  if(!draft||typeof draft.body!=='string')return;
  $('postBody').value=draft.body;
@@ -105,12 +105,21 @@ function draftPayload(draft){
 }
 async function writeDraftToCloud(draft){
  if(!session||!draftCloudLoaded)return null;
- const {error}=await db.from('post_drafts').upsert(draftPayload(draft),{onConflict:'user_id'});
- return error||null;
+ const payload=draftPayload(draft);
+ const task=draftWriteQueue.then(async()=>{
+  if(!session||session.user.id!==payload.user_id||!draftCloudLoaded)return null;
+  const {error}=await db.from('post_drafts').upsert(payload,{onConflict:'user_id'});
+  return error||null;
+ });
+ draftWriteQueue=task.then(()=>undefined,()=>undefined);
+ return task;
 }
 async function deleteCloudDraft(){
  if(!session)return;
- const {error}=await db.from('post_drafts').delete().eq('user_id',session.user.id);
+ const userId=session.user.id;
+ await draftWriteQueue;
+ if(!session||session.user.id!==userId)return;
+ const {error}=await db.from('post_drafts').delete().eq('user_id',userId);
  if(error)console.warn('Suppression du brouillon cloud impossible:',error);
 }
 async function restoreDraft(){
@@ -382,6 +391,7 @@ $('publishBtn').onclick=async()=>{
  if(!$('pollComposer').hidden){const poll=await db.rpc('create_confess_poll',{p_post_id:postId,p_options:options});if(poll.error){$('publishBtn').disabled=false;toast('Publication créée, mais sondage impossible : '+poll.error.message);return}}
  $('publishBtn').disabled=false;$('postBody').value='';$('anonymous').checked=false;$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';
  
+ clearTimeout(draftTimer);draftUserEdited=true;
  const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}
  await deleteCloudDraft();draftUserEdited=false;updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();
  toast('Ta publication est en ligne ✨');loadFeed()
