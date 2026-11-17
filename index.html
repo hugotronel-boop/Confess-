@@ -147,7 +147,9 @@ body:before,body:after{display:none!important}
 \n
 
 /* FEED : retirer les flèches de rotation du cube */
-.stash-hero-3d .stash-3d-controls{display:none!important}
+.stash-hero-3d .stash-3d-controls{display:flex!important;pointer-events:auto!important}
+/* Masquer le choix de tri Plus récents / Populaires sur le Feed */
+#sortSelect{display:none!important}
 /* CORRECTION FEED : navigation réellement collée au bas de l'écran */
 html,body{min-height:100%;margin:0}
 body{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
