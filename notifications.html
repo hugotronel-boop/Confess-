@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#100e1b"><title>CONFESS — Notifications</title>
+<meta name="theme-color" content="#100e1b"><title>STASH — Notifications</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
@@ -16,7 +16,7 @@ main{width:min(720px,100%);margin:25px auto;padding:0 15px}.heading{display:flex
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#302744;border:1px solid #ffffff22;color:#fff;padding:12px 16px;border-radius:13px;font-size:12px;z-index:20;display:none;max-width:90%;text-align:center}.toast.show{display:block}
 @media(max-width:520px){main{margin:18px auto}.heading h1{font-size:21px}.item{padding:13px}}
 
-/* CONFESS — nouvelle direction visuelle glass / noir */
+/* STASH — nouvelle direction visuelle glass / noir */
 :root{color-scheme:dark;--bg:#050506;--panel:rgba(255,255,255,.055);--panel2:rgba(255,255,255,.085);--muted:#a7a7ad;--pink:#ff6cab;--orange:#ffad72;--line:rgba(255,255,255,.16);--white:#fff}
 html{background:#050506}
 body{background:radial-gradient(ellipse at 50% -18%,rgba(255,108,171,.13),transparent 42%),radial-gradient(ellipse at 100% 35%,rgba(255,173,114,.08),transparent 34%),#050506!important;color:#fff;font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif!important;position:relative;isolation:isolate}
@@ -42,7 +42,7 @@ main{position:relative;z-index:1}
 @media(max-width:640px){body:before{right:-85px;top:115px;opacity:.35}body:after{right:-25px;top:165px;opacity:.22}}
 
 
-/* Navigation principale persistante sur toutes les pages CONFESS */
+/* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
 .confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
@@ -52,7 +52,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </style>
 </head>
 <body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button></header>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button></header>
 <main>
  <div class="heading"><div><h1>Notifications 🔔</h1><p>Tout ce qui se passe autour de ton compte et de tes publications.</p></div><button class="markall" id="markAll">Tout lire</button></div>
  <div class="list" id="list"><div class="loading">On récupère tes notifications…</div></div>
@@ -93,7 +93,7 @@ case 'profile_reply':return {icon:'↩️',title:who+' a répondu à un message 
 case 'sanction_issued':return {icon:'⚖️',title:'Une décision de modération te concerne',sub:'Consulte le motif et les détails dans tes sanctions'};
 case 'appeal_received':return {icon:'📨',title:who+' a déposé un recours',sub:'Une contestation attend ton examen'};
 case 'appeal_decision':return {icon:'⚖️',title:'La modération a répondu à ton recours',sub:'Consulte la décision et la réponse de l’équipe'};
-default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur CONFESS'};
+default:return {icon:'🔔',title:'Nouvelle notification',sub:'Une activité sur STASH'};
 }}
 async function load(){if(loading)return;loading=true;const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;if(!currentUser){startNotificationRealtime();loading=false;$('list').innerHTML='<div class="empty">Connecte-toi pour consulter tes notifications.<br><br><button class="markall" onclick="location.href=\'auth.html\'">Se connecter</button></div>';$('markAll').hidden=true;return}
 startNotificationRealtime();
