@@ -45,6 +45,41 @@ main{position:relative;z-index:1}
 @media(max-width:640px){body:before{right:-85px;top:115px;opacity:.35}body:after{right:-25px;top:165px;opacity:.22}}
 
 
+
+/* Messagerie STASH — interface inspirée de Threads */
+.messages-top{height:66px;padding:8px max(18px,calc((100vw - 760px)/2))!important;background:rgba(5,5,6,.94)!important}
+.messages-top h1{margin:0;font-size:25px;font-weight:850;letter-spacing:-.7px;color:#fff}
+.messages-top .confess-bell{margin-left:auto}
+main{width:min(760px,100%)!important;margin:0 auto!important;padding:0 0 18px!important}
+.shell{height:calc(100dvh - 150px)!important;min-height:480px!important;grid-template-columns:1fr!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+.inbox{border:0!important;background:transparent!important}
+.inbox-head{padding:14px 16px!important;border-bottom:1px solid rgba(255,255,255,.12)!important;gap:10px}
+.inbox-search{flex:1;min-width:0;height:40px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:rgba(255,255,255,.07);padding:0 13px;color:#fff;font-size:13px;outline:none}
+.inbox-search::placeholder{color:#92929a}
+.inbox-search:focus{border-color:rgba(255,108,171,.65)}
+.inbox-actions{flex:none}
+.inbox-actions .action,.inbox-actions .group-create{width:38px;height:38px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:0}
+.inbox-actions .action:after{content:"＋";font-size:22px;line-height:1}
+.inbox-actions .group-create{font-size:0}
+.inbox-actions .group-create:after{content:"👥";font-size:16px}
+.inbox-list{padding:4px 0 20px!important}
+.thread{border-radius:0!important;padding:13px 17px!important;border-bottom:1px solid rgba(255,255,255,.075)!important;gap:12px}
+.thread:hover,.thread.active{background:rgba(255,255,255,.055)!important}
+.thread .avatar,.chat-head .avatar{width:49px!important;height:49px!important;border-radius:50%!important}
+.thread-top strong{font-size:14px!important;font-weight:750}
+.thread-top small{font-size:11px!important}
+.preview{font-size:12px!important;margin-top:5px!important}
+.chat{background:#050506!important}
+.chat-head{background:rgba(5,5,6,.96)!important}
+@media(max-width:700px){
+ main{margin:0 auto!important;padding:0 0 12px!important}
+ .messages-top{height:64px;padding:8px 17px!important}
+ .shell{height:calc(100dvh - 142px)!important;min-height:400px!important}
+ .inbox-head{padding:12px 14px!important}
+ .thread{padding:13px 15px!important}
+ .thread .avatar{width:48px!important;height:48px!important}
+}
+
 /* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
@@ -59,10 +94,10 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 .confess-global-nav a.nav-publish-center span{font-size:9px!important;color:#fff!important}
 </style></head>
 <body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
-<main><div class="heading"><h1>Messagerie privée 💬</h1><p>Des conversations entre membres, en toute discrétion.</p></div>
+<header class="top messages-top"><h1>MESSAGES</h1><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<main>
 <section class="shell" id="shell">
- <aside class="inbox"><div class="inbox-head"><strong>Messages</strong><div class="inbox-actions"><button class="action" onclick="location.href='index.html'">+ Privé</button><button class="group-create" id="openGroup">+ Groupe</button></div></div><div class="inbox-list" id="inboxList"><div class="loading">Chargement des conversations…</div></div></aside>
+ <aside class="inbox"><div class="inbox-head"><input class="inbox-search" id="inboxSearch" type="search" maxlength="60" placeholder="Rechercher"><div class="inbox-actions"><button class="action" onclick="location.href='index.html'">+ Privé</button><button class="group-create" id="openGroup">+ Groupe</button></div></div><div class="inbox-list" id="inboxList"><div class="loading">Chargement des conversations…</div></div></aside>
  <section class="chat"><div class="chat-head" id="chatHead"><button class="mobile-back" id="backInbox">←</button><div class="placeholder">Choisis une conversation pour commencer.</div></div><div class="chat-scroll" id="chatScroll"><div class="placeholder">Tes échanges privés apparaîtront ici ✨</div></div><div class="composer"><textarea id="messageBody" maxlength="5000" placeholder="Écris ton message…" disabled></textarea><button class="send" id="sendBtn" disabled>Envoyer ↗</button></div></section>
 </section></main><div class="toast" id="toast"></div><div class="group-overlay" id="groupOverlay" hidden><section class="group-dialog" role="dialog" aria-modal="true"><h2>Créer une discussion de groupe 👥</h2><p>Choisis un nom et invite entre 2 et 19 personnes.</p><input class="group-field" id="groupName" maxlength="60" placeholder="Nom du groupe"><input class="group-field" id="groupSearch" maxlength="50" placeholder="Rechercher un membre…"><div class="group-members" id="groupMembers"></div><div id="groupSelectionCount">0 membre sélectionné</div><div class="group-footer"><button class="group-cancel" id="cancelGroup">Annuler</button><button class="group-submit" id="createGroup" disabled>Créer le groupe</button></div></section></div>
 <script>
@@ -113,6 +148,7 @@ const titles={};(conversationRows||[]).forEach(c=>titles[c.id]=c.title);
 threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==me.id);const msgs=(allMessages||[]).filter(m=>m.conversation_id===id);const last=msgs[0];const isGroup=people.length>1;const unread=msgs.filter(m=>m.sender_id!==me.id&&(isGroup?!readSet.has(m.id):!m.read_at)).length;const names=people.map(x=>profiles[x.user_id]?.username||'Membre');const peer=isGroup?{username:titles[id]||names.join(', '),group:true,memberCount:people.length+1}:{...(profiles[people[0]?.user_id]||{username:'Membre'}),group:false};return {id,peerId:people[0]?.user_id,peer,isGroup,memberCount:people.length+1,last,unread}}).sort((a,b)=>new Date(b.last?.created_at||0)-new Date(a.last?.created_at||0));
 $('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
 $('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
+applyThreadSearch();
 }
 async function openConversation(id){
  if(!threads.some(t=>t.id===id)){
@@ -151,6 +187,14 @@ async function loadMessages(){
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
+
+function applyThreadSearch(){
+ const q=($('inboxSearch')?.value||'').trim().toLowerCase();
+ $('inboxList').querySelectorAll('[data-thread]').forEach(row=>{
+  row.hidden=!!q&&!row.textContent.toLowerCase().includes(q);
+ });
+}
+$('inboxSearch').addEventListener('input',applyThreadSearch);
 
 function renderTyping(){
  const status=$('typingStatus');if(!status||!realtime)return;
