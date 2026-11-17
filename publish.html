@@ -458,7 +458,7 @@ $('sortSelect').onchange=()=>loadFeed();
 $('feedSearchBtn').onclick=()=>{currentSearch=$('feedSearch').value.trim().slice(0,100);updateCategoryUI();loadFeed()};
 $('feedSearch').addEventListener('keydown',event=>{if(event.key==='Enter')$('feedSearchBtn').click()});
 document.querySelectorAll('[data-visibility]').forEach(b=>b.onclick=()=>{currentVisibility=b.dataset.visibility;updateCategoryUI();loadFeed()});
-$('homeNav').onclick=()=>{savedOnly=false;currentFeed='all';currentCategory=null;updateCategoryUI();loadFeed()};
+$('homeNav').onclick=()=>location.href='index.html';
 $('savedNav').onclick=()=>{savedOnly=true;currentFeed='all';currentCategory=null;updateCategoryUI();loadFeed()};
 document.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{
  if(b.dataset.feed==='following'&&!session){toast('Connecte-toi pour voir tes abonnements.');location.href='auth.html';return}
@@ -466,7 +466,7 @@ document.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{
 });
 $('profileNav').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('publishNav').onclick=()=>location.href=session?'publish.html':'auth.html';
-$('mobileHome').onclick=()=>$('homeNav').click();
+$('mobileHome').onclick=()=>location.href='index.html';
 $('mobileExplore').onclick=()=>location.href='explore.html';
 $('exploreNav').onclick=()=>$('mobileExplore').click();
 $('mobileWrite').onclick=()=>location.href=session?'publish.html':'auth.html';
