@@ -130,7 +130,7 @@ async function loadFeed(reset=true){
  if(reset){feedOffset=0;feedHasMore=true;postsCache=[];$('feed').innerHTML='<div class="loading">Chargement du fil…</div>'}else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
- if(currentSearch)query=query.ilike('body','%'+currentSearch.replace(/[\\%_]/g,'\\if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}')+'%');
+ if(currentSearch)query=query.ilike('body','%'+currentSearch+'%');
  const {data,error}=await query;if(error){if(reset)$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';else{const more=$('loadMorePosts');if(more){more.disabled=false;more.textContent='Réessayer'}}console.error(error);return}
  const pageRows=data||[];feedOffset+=pageRows.length;feedHasMore=pageRows.length===40;
  let rows=reset?pageRows:[...postsCache,...pageRows];
