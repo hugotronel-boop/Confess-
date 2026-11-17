@@ -216,11 +216,15 @@ async function loadFeed(reset=true){
   followedIds=[...new Set((follows||[]).map(x=>x.followed_id).filter(id=>id&&id!==session.user.id))];
   if(!followedIds.length){feedHasMore=false;$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore CONFESS pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
  }
+ const linkedPostId=reset?new URLSearchParams(location.search).get('post'):null;
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
- if(followedIds)query=query.in('author_profile_id',followedIds);
- if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
- if(currentSearch)query=query.ilike('body','%'+currentSearch+'%');
- if(currentVisibility==='anonymous')query=query.eq('is_anonymous',true);else if(currentVisibility==='pseudo')query=query.eq('is_anonymous',false);
+ if(linkedPostId){query=query.eq('id',linkedPostId);followedIds=null;savedOnly=false}
+ else {
+  if(followedIds)query=query.in('author_profile_id',followedIds);
+  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
+  if(currentSearch)query=query.ilike('body','%'+currentSearch+'%');
+  if(currentVisibility==='anonymous')query=query.eq('is_anonymous',true);else if(currentVisibility==='pseudo')query=query.eq('is_anonymous',false);
+ }
  const {data,error}=await query;if(error){if(reset)$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';else{const more=$('loadMorePosts');if(more){more.disabled=false;more.textContent='Réessayer'}}console.error(error);return}
  const pageRows=data||[];feedOffset+=pageRows.length;feedHasMore=pageRows.length===40;
  let rows=reset?pageRows:[...postsCache,...pageRows];
@@ -280,7 +284,7 @@ async function loadFeed(reset=true){
  $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
  $('feed').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
  renderLoadMoreButton()
- const target=new URLSearchParams(location.search).get('post');if(target){const el=document.querySelector('[data-post=\"'+CSS.escape(target)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';setTimeout(()=>el.style.outline='',2400)}}
+ if(linkedPostId){const el=document.querySelector('[data-post=\"'+CSS.escape(linkedPostId)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';el.style.transition='outline .25s';setTimeout(()=>el.style.outline='',2600);history.replaceState({},'',location.pathname+location.hash)}else if(reset){$('feed').innerHTML='<div class=\"empty\">Cette publication est introuvable ou n’est plus disponible.</div>';history.replaceState({},'',location.pathname+location.hash)}}
 }
 async function sharePost(id){
  const post=postsCache.find(p=>p.id===id);if(!post)return;
