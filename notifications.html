@@ -73,7 +73,8 @@ loading=false;
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
 else if(n.kind==='message'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
-else if(['sanction_issued','appeal_received','appeal_decision'].includes(n.kind))location.href='appeals.html'+(n.appeal_id?'?appeal='+encodeURIComponent(n.appeal_id):'');\nelse if(['profile_comment','profile_reply'].includes(n.kind)&&n.profile_id)location.href='member.html?id='+encodeURIComponent(n.profile_id)+'&tab=wall';
+else if(['sanction_issued','appeal_received','appeal_decision'].includes(n.kind))location.href='appeals.html'+(n.appeal_id?'?appeal='+encodeURIComponent(n.appeal_id):'');
+else if(['profile_comment','profile_reply'].includes(n.kind)&&n.profile_id)location.href='member.html?id='+encodeURIComponent(n.profile_id)+'&tab=wall';
 else if(n.post_id)location.href='index.html?post='+encodeURIComponent(n.post_id);
 else location.href='index.html';
 }
