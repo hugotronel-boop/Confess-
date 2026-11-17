@@ -257,7 +257,7 @@ $('removePoll').onclick=()=>{$('pollComposer').hidden=true;$('pollOptionInputs')
 $('pollOptionInputs').addEventListener('input',saveDraft);$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
 $('publishBtn').onclick=async()=>{
  if(!session){toast('Connecte-toi avant de publier.');return}
- 
+ const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');
  if(body.length>5000)return toast('Maximum 5 000 caractères.');
  const options=$('pollComposer').hidden?[]:Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value.trim()).filter(Boolean);
  if(!$('pollComposer').hidden&&(options.length<2||options.length>6))return toast('Un sondage doit avoir entre 2 et 6 choix.');
