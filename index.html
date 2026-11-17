@@ -317,6 +317,57 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-feed-background-and-fixed-head">
+/* Cube STASH : décor de fond, il ne réserve plus un grand bloc dans le fil */
+.stash-hero-3d{
+  position:static!important;
+  width:100%!important;height:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;
+  overflow:visible!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  z-index:0!important;pointer-events:none!important;
+}
+.stash-hero-3d .stash-3d-scene{
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100dvh!important;
+  opacity:.28!important;mix-blend-mode:screen!important;
+  z-index:0!important;pointer-events:none!important;
+}
+.stash-hero-3d .stash-3d-controls{
+  position:fixed!important;top:74px!important;right:16px!important;
+  z-index:60!important;display:flex!important;gap:8px!important;
+  pointer-events:auto!important;
+}
+.stash-hero-3d .stash-3d-loader{
+  position:fixed!important;left:50%!important;top:45%!important;
+  z-index:1!important;pointer-events:none!important;
+}
+/* Le bandeau STASH reste collé en haut pendant le scroll */
+header.top.stash-feed-top{
+  position:sticky!important;top:0!important;
+  z-index:70!important;min-height:62px!important;
+  background:rgba(5,5,6,.92)!important;
+  backdrop-filter:blur(22px)!important;
+}
+/* Le titre Feed et son trait restent juste sous le bandeau */
+.feed-head{
+  position:sticky!important;top:62px!important;
+  z-index:65!important;margin:0!important;
+  min-height:62px!important;
+  background:rgba(5,5,6,.94)!important;
+  backdrop-filter:blur(20px)!important;
+  border-bottom:1px solid rgba(255,255,255,.16)!important;
+}
+.layout,.layout>*{position:relative;z-index:2}
+#feed{position:relative;z-index:2;min-height:80px}
+#feed .post{position:relative;z-index:2;color:#fff!important}
+@media(max-width:640px){
+ .stash-hero-3d .stash-3d-scene{opacity:.22!important}
+ .stash-hero-3d .stash-3d-controls{top:72px!important;right:12px!important}
+}
+</style>
+
 </head>
 <body>
 
@@ -560,7 +611,7 @@ async function loadFeed(reset=true){
  const commentCounts={};comments.forEach(c=>{commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1});
  const liked=new Set(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>r.post_id));
  const bookmarked=new Set(marks.map(m=>m.post_id));
- if($('sortSelect').value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
+ if($('sortSelect')?.value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
@@ -721,7 +772,7 @@ $('messagesBtn').onclick=()=>location.href='messages.html';
 $('messagesNav').onclick=()=>$('messagesBtn').click();
 $('mobileMessages').onclick=()=>$('messagesBtn').click();
 $('mobileNotifications').onclick=()=>$('notificationsBtn').click();
-$('sortSelect').onchange=()=>loadFeed();
+if($('sortSelect'))$('sortSelect').onchange=()=>loadFeed();
 $('feedSearchBtn').onclick=()=>{currentSearch=$('feedSearch').value.trim().slice(0,100);updateCategoryUI();loadFeed()};
 $('feedSearch').addEventListener('keydown',event=>{if(event.key==='Enter')$('feedSearchBtn').click()});
 document.querySelectorAll('[data-visibility]').forEach(b=>b.onclick=()=>{currentVisibility=b.dataset.visibility;updateCategoryUI();loadFeed()});
