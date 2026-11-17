@@ -16,8 +16,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .navitem{width:100%;border:0;background:transparent;color:#ddd8eb;text-align:left;padding:11px 12px;border-radius:12px;display:flex;gap:11px;align-items:center;font-size:14px}.navitem.active,.navitem:hover{background:#ffffff10;color:white}.navitem span:first-child{font-size:18px;width:22px}
 .category-list{display:grid;gap:4px}.cat{width:100%;display:flex;align-items:center;gap:9px;text-align:left;border:0;background:transparent;color:#d7d1e7;padding:9px 10px;border-radius:11px;font-size:13px}.cat.active,.cat:hover{background:#ff5ba71c;color:#ff9bc9}
 .center{min-width:0}.welcome{margin-bottom:15px;background:linear-gradient(120deg,#42203f,#26203f 60%,#30203c);padding:20px}.welcome h1{font-size:22px;margin:0 0 6px}.welcome p{color:#d7cce0;font-size:13px;margin:0;line-height:1.5}
-.composer{margin-bottom:15px}.compose-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.compose-top strong{font-size:14px}.compose-top small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.compose-input{width:100%;min-height:86px;resize:vertical;background:#100e1b;border:1px solid var(--line);border-radius:14px;padding:13px;color:white;outline:none}.compose-input:focus,.field:focus{border-color:var(--pink)}
-.image-preview{display:none;position:relative;margin-top:10px;width:min(100%,360px)}.image-preview.show{display:block}.image-preview img{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:14px;border:1px solid var(--line)}.image-preview button{position:absolute;top:8px;right:8px;border:0;border-radius:20px;background:#160f20e8;color:#fff;padding:7px 10px}.post-media{margin:12px 0 15px}.post-media img{display:block;width:100%;max-height:560px;object-fit:contain;background:#100e1b;border:1px solid #ffffff12;border-radius:15px}#clearDraft{border:1px solid var(--line);background:#ffffff08}#clearDraft:disabled{opacity:.35;cursor:default}
+.composer{margin-bottom:15px}.compose-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.compose-top strong{font-size:14px}.compose-top small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.compose-input{width:100%;min-height:86px;resize:vertical;background:#100e1b;border:1px solid var(--line);border-radius:14px;padding:13px;color:white;outline:none}.compose-input:focus,.field:focus{border-color:var(--pink)}#clearDraft{border:1px solid var(--line);background:#ffffff08}#clearDraft:disabled{opacity:.35;cursor:default}
 .compose-bottom{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-top:11px;flex-wrap:wrap}.compose-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{background:#100e1b;border:1px solid var(--line);color:#eee;border-radius:11px;padding:9px 10px;font-size:12px;outline:none;max-width:100%}.anon-label{display:flex;align-items:center;gap:7px;color:#d9d4e8;font-size:12px}.anon-label input{accent-color:var(--pink)}
 .primary{border:0;border-radius:12px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#241326;font-weight:850;padding:11px 17px;font-size:13px}.primary:disabled{opacity:.5}
 .feed-head{display:flex;justify-content:space-between;align-items:center;margin:20px 3px 12px}.feed-head h2{font-size:17px;margin:0}.feed-head select{background:var(--panel);border:1px solid var(--line);color:#ddd;border-radius:10px;padding:8px;font-size:12px}
@@ -51,8 +50,6 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
   <section class="composer" id="composer">
    <div class="compose-top"><div class="avatar" id="composeAvatar">?</div><div><strong id="composeTitle">Une chose à raconter ?</strong><small id="composeSub">Connecte-toi pour publier ta confession.</small></div></div>
    <textarea class="compose-input" id="postBody" maxlength="5000" placeholder="Qu'est-ce que tu as sur le cœur ?"></textarea>
-   <div style="display:flex;gap:8px;align-items:center;margin-top:9px;flex-wrap:wrap"><button type="button" class="action" id="choosePostImage" style="border:1px solid var(--line);border-radius:12px;padding:8px 11px">🖼️ Ajouter une photo</button><small style="color:var(--muted)">JPG, PNG, WebP ou GIF · 5 Mo max</small><input type="file" id="postImageInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden></div>
-   <div class="image-preview" id="imagePreview"><img id="imagePreviewImg" alt="Aperçu de la photo à publier"><button type="button" id="removePostImage">✕ Retirer</button></div>
    <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button type="button" class="action" id="togglePoll" style="border:1px solid var(--line);border-radius:12px;padding:8px 11px">📊 Ajouter un sondage</button><small style="color:var(--muted)">Optionnel · 2 à 6 choix</small></div>
    <div id="pollComposer" hidden style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong style="display:block;margin-bottom:8px">Les choix du sondage</strong><div id="pollOptionInputs" style="display:grid;gap:7px"><input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2"></div><button type="button" class="action" id="addPollOption" style="margin-top:8px">＋ Ajouter un choix</button><button type="button" class="action" id="removePoll" style="margin-top:8px">Retirer le sondage</button></div>
    <div class="compose-bottom"><div class="compose-controls">
@@ -78,7 +75,7 @@ const URL='https://hhntssweslmmqskhoaje.supabase.co';
 const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
 const db=window.supabase.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
-let session=null,profile=null,categories=[],currentCategory=null,savedOnly=false,activePost=null,postsCache=[],selectedPostImage=null,postImagePreviewUrl=null;
+let session=null,profile=null,categories=[],currentCategory=null,savedOnly=false,activePost=null,postsCache=[];
 function draftKey(){return session?.user?.id?'confess_draft_'+session.user.id:null}
 function updateDraftStatus(message){const el=$('draftStatus');if(el)el.textContent=message}
 function restoreDraft(){
@@ -127,10 +124,9 @@ function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUp
 async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();if(session)restoreDraft();loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
-function postImageMarkup(path){if(!path)return '';const url=db.storage.from('confess-posts').getPublicUrl(path).data.publicUrl;return '<div class="post-media"><img src="'+esc(url)+'" alt="Photo publiée sur CONFESS" loading="lazy"></div>'}
 async function loadFeed(){
  $('feed').innerHTML='<div class="loading">Chargement du fil…</div>';
- let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at,media_path,categories(label,slug)').eq('status','published').order('created_at',{ascending:false}).limit(40);
+ let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).limit(40);
  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
  const {data,error}=await query;if(error){$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';console.error(error);return}
  let rows=data||[];
@@ -162,7 +158,7 @@ async function loadFeed(){
  if(!rows.length){$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
   <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
-  <div class="post-body">${esc(p.body)}</div>${postImageMarkup(p.media_path)}<div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
+  <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
    <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
    <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
@@ -256,39 +252,24 @@ async function editPost(id){
  toast('Publication modifiée ✨');await loadFeed();
 }
 $('togglePoll').onclick=()=>{$('pollComposer').hidden=!$('pollComposer').hidden;if(!$('pollComposer').hidden)saveDraft()};
-function clearSelectedPostImage(){selectedPostImage=null;if(postImagePreviewUrl){URL.revokeObjectURL(postImagePreviewUrl);postImagePreviewUrl=null}$('postImageInput').value='';$('imagePreview').classList.remove('show');$('imagePreviewImg').removeAttribute('src')}
-$('choosePostImage').onclick=()=>{if(!session)return toast('Connecte-toi pour ajouter une photo.');$('postImageInput').click()};
-$('postImageInput').addEventListener('change',()=>{const file=$('postImageInput').files?.[0];if(!file)return;if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){clearSelectedPostImage();return toast('Format non accepté. Choisis JPG, PNG, WebP ou GIF.')};if(file.size>5*1024*1024){clearSelectedPostImage();return toast('La photo doit faire 5 Mo maximum.')};if(postImagePreviewUrl)URL.revokeObjectURL(postImagePreviewUrl);selectedPostImage=file;postImagePreviewUrl=URL.createObjectURL(file);$('imagePreviewImg').src=postImagePreviewUrl;$('imagePreview').classList.add('show')});
-$('removePostImage').onclick=clearSelectedPostImage;
 $('addPollOption').onclick=()=>{const inputs=document.querySelectorAll('.poll-option-input');if(inputs.length>=6)return toast('Maximum 6 choix.');const input=document.createElement('input');input.className='field poll-option-input';input.maxLength=160;input.placeholder='Choix '+(inputs.length+1);$('pollOptionInputs').appendChild(input);input.addEventListener('input',saveDraft)};
 $('removePoll').onclick=()=>{$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';saveDraft()};
 $('pollOptionInputs').addEventListener('input',saveDraft);$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
 $('publishBtn').onclick=async()=>{
  if(!session){toast('Connecte-toi avant de publier.');return}
- const body=$('postBody').value.trim();if(!body&&!selectedPostImage)return toast('Ajoute un texte ou une photo avant de publier.');
+ 
  if(body.length>5000)return toast('Maximum 5 000 caractères.');
  const options=$('pollComposer').hidden?[]:Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value.trim()).filter(Boolean);
  if(!$('pollComposer').hidden&&(options.length<2||options.length>6))return toast('Un sondage doit avoir entre 2 et 6 choix.');
  $('publishBtn').disabled=true;
- const {data:postId,error}=await db.rpc('create_confess_post',{p_body:body||'📷',p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});
+ const {data:postId,error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});
  if(error){$('publishBtn').disabled=false;toast('Publication impossible : '+error.message);return}
  if(!$('pollComposer').hidden){const poll=await db.rpc('create_confess_poll',{p_post_id:postId,p_options:options});if(poll.error){$('publishBtn').disabled=false;toast('Publication créée, mais sondage impossible : '+poll.error.message);return}}
- let imageFailed=false;
- if(selectedPostImage){
-  const extension=selectedPostImage.type==='image/jpeg'?'jpg':selectedPostImage.type==='image/png'?'png':selectedPostImage.type==='image/webp'?'webp':'gif';
-  const path=session.user.id+'/'+postId+'/'+Date.now()+'.'+extension;
-  const upload=await db.storage.from('confess-posts').upload(path,selectedPostImage,{contentType:selectedPostImage.type,upsert:false});
-  if(upload.error){console.error(upload.error);imageFailed=true}
-  else{
-   const saved=await db.from('posts').update({media_path:path}).eq('id',postId).eq('author_profile_id',session.user.id);
-   if(saved.error){console.error(saved.error);await db.storage.from('confess-posts').remove([path]);imageFailed=true}
-  }
- }
  $('publishBtn').disabled=false;$('postBody').value='';$('anonymous').checked=false;$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';
- clearSelectedPostImage();
+ 
  const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}
  updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();
- toast(imageFailed?'Publication créée, mais la photo n’a pas pu être ajoutée.':'Ta publication est en ligne ✨');loadFeed()
+ toast('Ta publication est en ligne ✨');loadFeed()
 }
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
