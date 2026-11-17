@@ -59,7 +59,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
    <div class="compose-bottom" style="margin-top:9px"><small id="draftStatus" style="color:var(--muted);font-size:11px">Brouillon automatique activé</small><button type="button" class="action" id="clearDraft" style="padding:6px 8px">Effacer le brouillon</button></div>
   </section>
   <div class="feed-head"><h2 id="feedTitle">Le fil CONFESS</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
-  <div style="display:flex;gap:8px;margin:0 0 14px"><input id="feedSearch" class="field" type="search" maxlength="100" placeholder="🔎 Rechercher dans les publications…" style="flex:1;min-width:0"><button id="feedSearchBtn" class="action" style="padding:10px 14px;border:1px solid var(--line);border-radius:12px">Rechercher</button></div>
+  <div style="display:flex;gap:8px;margin:0 0 10px"><input id="feedSearch" class="field" type="search" maxlength="100" placeholder="🔎 Rechercher dans les publications…" style="flex:1;min-width:0"><button id="feedSearchBtn" class="action" style="padding:10px 14px;border:1px solid var(--line);border-radius:12px">Rechercher</button></div>
+  <div id="visibilityFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px"><button type="button" class="action selected" data-visibility="all">Toutes</button><button type="button" class="action" data-visibility="anonymous">🎭 Anonymes</button><button type="button" class="action" data-visibility="pseudo">👤 Sous pseudo</button></div>
   <div id="feed"><div class="loading">On prépare le fil…</div></div>
  </main>
  <aside class="side rightside">
@@ -76,7 +77,7 @@ const URL='https://hhntssweslmmqskhoaje.supabase.co';
 const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
 const db=window.supabase.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
-let session=null,profile=null,categories=[],currentCategory=null,currentSearch='',savedOnly=false,activePost=null,postsCache=[],feedOffset=0,feedHasMore=true;
+let session=null,profile=null,categories=[],currentCategory=null,currentSearch='',currentVisibility='all',savedOnly=false,activePost=null,postsCache=[],feedOffset=0,feedHasMore=true;
 function draftKey(){return session?.user?.id?'confess_draft_'+session.user.id:null}
 function updateDraftStatus(message){const el=$('draftStatus');if(el)el.textContent=message}
 function restoreDraft(){
@@ -124,13 +125,14 @@ function startNotificationRealtime(){
 function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').textContent=name[0].toUpperCase();$('composeAvatar').textContent=name[0].toUpperCase();$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.'}
 async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();if(session)restoreDraft();loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
-function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):currentSearch?'Résultats de recherche':'Le fil CONFESS'}
+function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):currentSearch?'Résultats de recherche':'Le fil CONFESS';document.querySelectorAll('[data-visibility]').forEach(b=>b.classList.toggle('selected',b.dataset.visibility===currentVisibility))}
 function renderLoadMoreButton(){const old=$('loadMorePosts');if(old)old.remove();if(!feedHasMore)return;const more=document.createElement('button');more.id='loadMorePosts';more.className='action';more.textContent='Charger plus de publications';more.style.cssText='display:block;width:100%;padding:14px;margin:14px 0 24px;border:1px solid var(--line);border-radius:14px;font-weight:750';more.onclick=()=>loadFeed(false);$('feed').after(more)}
 async function loadFeed(reset=true){
  if(reset){feedOffset=0;feedHasMore=true;postsCache=[];$('feed').innerHTML='<div class="loading">Chargement du fil…</div>'}else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(currentCategory){const cat=categories.find(c=>c.slug===currentCategory);if(cat)query=query.eq('category_id',cat.id)}
  if(currentSearch)query=query.ilike('body','%'+currentSearch+'%');
+ if(currentVisibility==='anonymous')query=query.eq('is_anonymous',true);else if(currentVisibility==='pseudo')query=query.eq('is_anonymous',false);
  const {data,error}=await query;if(error){if(reset)$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';else{const more=$('loadMorePosts');if(more){more.disabled=false;more.textContent='Réessayer'}}console.error(error);return}
  const pageRows=data||[];feedOffset+=pageRows.length;feedHasMore=pageRows.length===40;
  let rows=reset?pageRows:[...postsCache,...pageRows];
@@ -289,6 +291,7 @@ $('mobileNotifications').onclick=()=>$('notificationsBtn').click();
 $('sortSelect').onchange=()=>loadFeed();
 $('feedSearchBtn').onclick=()=>{currentSearch=$('feedSearch').value.trim().slice(0,100);updateCategoryUI();loadFeed()};
 $('feedSearch').addEventListener('keydown',event=>{if(event.key==='Enter')$('feedSearchBtn').click()});
+document.querySelectorAll('[data-visibility]').forEach(b=>b.onclick=()=>{currentVisibility=b.dataset.visibility;updateCategoryUI();loadFeed()});
 $('homeNav').onclick=()=>{savedOnly=false;currentCategory=null;updateCategoryUI();loadFeed()};
 $('savedNav').onclick=()=>{savedOnly=true;currentCategory=null;updateCategoryUI();loadFeed()};
 $('profileNav').onclick=()=>location.href=session?'profile.html':'auth.html';
