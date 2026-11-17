@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#100e1b"><title>CONFESS — Gestion des modérateurs</title>
+<meta name="theme-color" content="#100e1b"><title>STASH — Gestion des modérateurs</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
@@ -13,7 +13,7 @@ main{width:min(760px,100%);margin:24px auto;padding:0 15px}.hero{background:line
 
 .confess-bell{position:relative;border:1px solid var(--line,#39334f);background:var(--panel,#1b1830);color:#fff;border-radius:30px;padding:9px 12px;font-size:16px;cursor:pointer;margin-left:8px}.confess-bell-count{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:20px;background:#ff5ba7;color:#241326;font-size:10px;font-weight:900;display:grid;place-items:center;padding:0 4px}.confess-bell-count[hidden]{display:none}
 
-/* Navigation principale persistante sur toutes les pages CONFESS */
+/* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
 .confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
@@ -21,7 +21,7 @@ main{width:min(760px,100%);margin:24px auto;padding:0 15px}.hero{background:line
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a b{font-size:18px}}
 </style></head><body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Gestion de l’équipe 🛡️</h1><p>Ajoute des membres de confiance à l’équipe de modération ou retire leur accès. Seuls les administrateurs peuvent utiliser cet espace.</p></section>
 <section class="card"><h2>Ajouter un modérateur</h2><p class="desc">Recherche un membre par son pseudonyme. Vérifie bien son compte avant de lui donner accès.</p><div class="searchrow"><input class="field" id="search" maxlength="20" placeholder="Ex. : pseudo_confess" autocomplete="off"><button class="primary" id="searchBtn">Rechercher</button></div><div id="results"><div class="empty">Entre un pseudonyme pour rechercher un membre.</div></div><p class="hint">Un modérateur peut traiter les signalements, mais ne peut pas nommer d’autres modérateurs ni gérer les administrateurs.</p></section>
@@ -32,9 +32,9 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3200)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function loadModerators(){const {data,error}=await db.rpc('list_confess_moderators');if(error)throw error;const rows=data||[];moderatorIds=new Set(rows.map(x=>x.user_id));$('moderators').innerHTML=rows.length?rows.map(m=>'<div class="entry"><div><strong>@'+esc(m.username||'membre')+'</strong><small>Accès accordé le '+new Date(m.granted_at).toLocaleDateString('fr-FR')+'</small></div><button class="secondary danger" data-remove="'+m.user_id+'">Retirer</button></div>').join(''):'<div class="empty">Aucun modérateur pour le moment.</div>';document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>changeRole(b.dataset.remove,'revoke'))}
-async function searchMembers(){const term=$('search').value.trim().replace(/^@/,'');if(term.length<2){$('results').innerHTML='<div class="empty">Saisis au moins 2 caractères.</div>';return}$('searchBtn').disabled=true;$('results').innerHTML='<div class="empty">Recherche…</div>';const {data,error}=await db.from('profiles').select('id,username').ilike('username','%'+term+'%').order('username').limit(12);$('searchBtn').disabled=false;if(error){$('results').innerHTML='<div class="empty">Recherche impossible.</div>';console.error(error);return}const rows=(data||[]).filter(p=>p.id!==user.id);if(!rows.length){$('results').innerHTML='<div class="empty">Aucun membre trouvé.</div>';return}$('results').innerHTML=rows.map(p=>'<div class="entry"><div><strong>@'+esc(p.username||'membre')+'</strong><small>'+ (moderatorIds.has(p.id)?'Déjà modérateur':'Membre CONFESS')+'</small></div>'+(moderatorIds.has(p.id)?'<span class="pill">Modérateur</span>':'<button class="secondary" data-add="'+p.id+'">Nommer</button>')+'</div>').join('');document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>changeRole(b.dataset.add,'grant'))}
+async function searchMembers(){const term=$('search').value.trim().replace(/^@/,'');if(term.length<2){$('results').innerHTML='<div class="empty">Saisis au moins 2 caractères.</div>';return}$('searchBtn').disabled=true;$('results').innerHTML='<div class="empty">Recherche…</div>';const {data,error}=await db.from('profiles').select('id,username').ilike('username','%'+term+'%').order('username').limit(12);$('searchBtn').disabled=false;if(error){$('results').innerHTML='<div class="empty">Recherche impossible.</div>';console.error(error);return}const rows=(data||[]).filter(p=>p.id!==user.id);if(!rows.length){$('results').innerHTML='<div class="empty">Aucun membre trouvé.</div>';return}$('results').innerHTML=rows.map(p=>'<div class="entry"><div><strong>@'+esc(p.username||'membre')+'</strong><small>'+ (moderatorIds.has(p.id)?'Déjà modérateur':'Membre STASH')+'</small></div>'+(moderatorIds.has(p.id)?'<span class="pill">Modérateur</span>':'<button class="secondary" data-add="'+p.id+'">Nommer</button>')+'</div>').join('');document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>changeRole(b.dataset.add,'grant'))}
 async function changeRole(id,action){const label=action==='grant'?'nommer ce membre modérateur':'retirer son accès de modérateur';if(!confirm('Confirmer : '+label+' ?'))return;const {error}=await db.rpc('manage_confess_moderator',{p_target_user_id:id,p_action:action});if(error){toast(error.message||'Action impossible.');console.error(error);return}toast(action==='grant'?'Modérateur ajouté !':'Accès modérateur retiré.');await loadModerators();if($('search').value.trim())await searchMembers()}
-async function init(){const {data:{session}}=await db.auth.getSession();user=session?.user;if(!user){location.href='auth.html';return}try{await loadModerators()}catch(e){console.error(e);document.querySelector('main').innerHTML='<section class="hero"><h1>Accès refusé 🔒</h1><p>Cette page est réservée aux administrateurs CONFESS.</p></section><button class="back" onclick="location.href=\'settings.html\'">Retour aux paramètres</button>'}}
+async function init(){const {data:{session}}=await db.auth.getSession();user=session?.user;if(!user){location.href='auth.html';return}try{await loadModerators()}catch(e){console.error(e);document.querySelector('main').innerHTML='<section class="hero"><h1>Accès refusé 🔒</h1><p>Cette page est réservée aux administrateurs STASH.</p></section><button class="back" onclick="location.href=\'settings.html\'">Retour aux paramètres</button>'}}
 $('searchBtn').onclick=searchMembers;$('search').addEventListener('keydown',e=>{if(e.key==='Enter')searchMembers()});db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.html'});init();
 })();
 </script><script>
@@ -48,7 +48,7 @@ $('searchBtn').onclick=searchMembers;$('search').addEventListener('keydown',e=>{
   const id=session?.user?.id||null;
   if(!id){badge.hidden=true;return}
   const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
-  if(error){console.warn('CONFESS notifications:',error.message);return}
+  if(error){console.warn('STASH notifications:',error.message);return}
   badge.textContent=(count||0)>99?'99+':String(count||0);
   badge.hidden=!count;
  }
