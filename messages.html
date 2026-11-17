@@ -29,7 +29,7 @@ main{width:min(1100px,100%);margin:23px auto;padding:0 15px}.heading{margin:0 3p
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set();
+let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[];
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
@@ -75,15 +75,95 @@ threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id==
 $('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
 $('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
 }
-async function openConversation(id){if(!threads.some(t=>t.id===id)){const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();if(!membership){toast('Cette conversation est introuvable.');return}await loadThreads()}
-const t=threads.find(x=>x.id===id);if(!t)return;activeId=id;activePeer=t.peer;$('shell').classList.add('chat-open');$('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div><strong>'+esc(t.peer.username)+'</strong><small>'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';$('backInbox').onclick=()=>$('shell').classList.remove('chat-open');$('messageBody').disabled=false;$('sendBtn').disabled=false;await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id)}
-async function loadMessages(){if(!activeId||loadingMessages)return;loadingMessages=true;const {data,error}=await db.from('messages').select('id,conversation_id,sender_id,body,created_at,read_at').eq('conversation_id',activeId).order('created_at',{ascending:false}).limit(200);loadingMessages=false;if(error){toast('Impossible de charger les messages.');console.error(error);return}
-const rows=(data||[]).reverse();let senders={};if(activePeer&&activePeer.group&&rows.length){const ids=[...new Set(rows.map(m=>m.sender_id).filter(id=>id!==me.id))];if(ids.length){const {data:people}=await db.from('profiles').select('id,username').in('id',ids);(people||[]).forEach(p=>senders[p.id]=p.username)}}$('chatScroll').innerHTML=rows.length?rows.map(m=>'<div class="bubble '+(m.sender_id===me.id?'mine':'')+'">'+(activePeer&&activePeer.group&&m.sender_id!==me.id?'<strong style="display:block;font-size:10px;color:#ffb6d7;margin-bottom:4px">'+esc(senders[m.sender_id]||'Membre')+'</strong>':'')+esc(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+(m.sender_id===me.id&&m.read_at?' · Lu':'')+'</time></div>').join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';$('chatScroll').scrollTop=$('chatScroll').scrollHeight}
-function subscribe(id){if(realtime){db.removeChannel(realtime);realtime=null}realtime=db.channel('dm-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'conversation_id=eq.'+id},async payload=>{if(payload.new.sender_id!==me.id){await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id})}else await loadMessages();await loadThreads()}).subscribe()}
-async function send(){if(!activeId)return;const body=$('messageBody').value.trim();if(!body)return;const btn=$('sendBtn');btn.disabled=true;const {error}=await db.rpc('send_direct_message',{p_conversation_id:activeId,p_body:body});btn.disabled=false;if(error){toast(error.message||'Envoi impossible.');return}$('messageBody').value='';await loadMessages();await loadThreads()}
-$('sendBtn').onclick=send;$('messageBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+async function openConversation(id){
+ if(!threads.some(t=>t.id===id)){
+  const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
+  if(!membership){toast('Cette conversation est introuvable.');return}
+  await loadThreads();
+ }
+ const t=threads.find(x=>x.id===id);if(!t)return;
+ activeId=id;activePeer=t.peer;$('shell').classList.add('chat-open');
+ $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
+ $('backInbox').onclick=()=>$('shell').classList.remove('chat-open');
+ $('messageBody').disabled=false;$('sendBtn').disabled=false;
+ await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id);
+}
+
+async function loadMessages(){
+ if(!activeId||loadingMessages)return;
+ loadingMessages=true;
+ const {data,error}=await db.from('messages').select('id,conversation_id,sender_id,body,created_at,read_at').eq('conversation_id',activeId).order('created_at',{ascending:false}).limit(200);
+ loadingMessages=false;
+ if(error){toast('Impossible de charger les messages.');console.error(error);return}
+ const rows=(data||[]).reverse();activeMessageIds=rows.map(m=>m.id);
+ let senders={},readCounts={};
+ if(activePeer&&activePeer.group&&rows.length){
+  const ids=[...new Set(rows.map(m=>m.sender_id).filter(id=>id&&id!==me.id))];
+  if(ids.length){const {data:people}=await db.from('profiles').select('id,username').in('id',ids);(people||[]).forEach(p=>senders[p.id]=p.username)}
+  const {data:reads,error:readError}=await db.from('message_reads').select('message_id,user_id').in('message_id',activeMessageIds);
+  if(!readError)(reads||[]).forEach(r=>{readCounts[r.message_id]=(readCounts[r.message_id]||0)+1});
+ }
+ const totalReaders=Math.max(1,(activePeer?.memberCount||2)-1);
+ $('chatScroll').innerHTML=rows.length?rows.map(m=>{
+  const mine=m.sender_id===me.id;
+  const receipt=mine?(activePeer?.group?(readCounts[m.id]?' · Lu par '+readCounts[m.id]+'/'+totalReaders:''):(m.read_at?' · Lu':'')):'';
+  const sender=activePeer&&activePeer.group&&!mine?'<strong style="display:block;font-size:10px;color:#ffb6d7;margin-bottom:4px">'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong>':'';
+  return '<div class="bubble '+(mine?'mine':'')+'">'+sender+esc(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+receipt+'</time></div>';
+ }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
+ $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
+}
+
+function renderTyping(){
+ const status=$('typingStatus');if(!status||!realtime)return;
+ const people=Object.values(realtime.presenceState()||{}).flat().filter(p=>p.user_id!==me.id&&p.typing);
+ status.textContent=people.length?(activePeer?.group?'Un membre est en train d’écrire…':'Est en train d’écrire…'):(activePeer?.group?'Groupe · '+(threads.find(t=>t.id===activeId)?.memberCount||'')+' membres':'Conversation privée');
+}
+async function setTyping(value){
+ if(!realtime||isTyping===value)return;
+ isTyping=value;
+ try{await realtime.track({user_id:me.id,typing:value})}catch(err){console.warn('Typing presence:',err)}
+}
+function subscribe(id){
+ if(realtime){db.removeChannel(realtime);realtime=null}
+ clearTimeout(typingTimer);isTyping=false;
+ realtime=db.channel('confess-dm:'+id,{config:{private:true,presence:{key:me.id}}})
+  .on('presence',{event:'sync'},renderTyping)
+  .on('presence',{event:'join'},renderTyping)
+  .on('presence',{event:'leave'},renderTyping)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'conversation_id=eq.'+id},async payload=>{
+   await loadMessages();
+   if(payload.new.sender_id!==me.id)await db.rpc('mark_conversation_read',{p_conversation_id:id});
+   await loadThreads();
+  })
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'messages',filter:'conversation_id=eq.'+id},async()=>{await loadMessages();await loadThreads()})
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'message_reads'},async payload=>{
+   if(activeMessageIds.includes(payload.new.message_id))await loadMessages();
+  })
+  .subscribe(async status=>{
+   if(status==='SUBSCRIBED'){try{await realtime.track({user_id:me.id,typing:false})}catch(err){console.warn(err)}}
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('CONFESS Realtime:',status);
+  });
+ renderTyping();
+}
+
+async function send(){
+ if(!activeId)return;const body=$('messageBody').value.trim();if(!body)return;
+ clearTimeout(typingTimer);await setTyping(false);
+ const btn=$('sendBtn');btn.disabled=true;
+ const {error}=await db.rpc('send_direct_message',{p_conversation_id:activeId,p_body:body});
+ btn.disabled=false;
+ if(error){toast(error.message||'Envoi impossible.');return}
+ $('messageBody').value='';await loadMessages();await loadThreads();
+}
+$('sendBtn').onclick=send;
+$('messageBody').addEventListener('input',()=>{
+ clearTimeout(typingTimer);
+ if(!$('messageBody').value.trim()){setTyping(false);return}
+ setTyping(true);typingTimer=setTimeout(()=>setTyping(false),1600);
+});
+$('messageBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&activeId){loadMessages();db.rpc('mark_conversation_read',{p_conversation_id:activeId})}});
-window.addEventListener('beforeunload',()=>{if(realtime)db.removeChannel(realtime)});
+window.addEventListener('beforeunload',()=>{clearTimeout(typingTimer);if(realtime){realtime.untrack();db.removeChannel(realtime)}});
 init();
 })();
 </script><script>
