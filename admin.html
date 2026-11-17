@@ -41,6 +41,10 @@ main{position:relative;z-index:1}
 :is(.back,.action,.close){background:rgba(255,255,255,.055)!important;color:#f7f4f5!important}
 .empty,.loading{background:transparent!important;box-shadow:none!important;border:0!important}
 </style>
+<style id="stash-no-input-zoom">
+/* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
+input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}
+</style>
 </head><body>
 <header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
