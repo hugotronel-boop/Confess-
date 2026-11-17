@@ -73,6 +73,9 @@
   async function showSession() {
     const {data:{session}} = await client.auth.getSession();
     if (!session) { $('authCard').classList.remove('hide'); $('profileCard').classList.remove('show'); return; }
+    const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(aalError)throw aalError;
+    if(aal?.nextLevel==='aal2'&&aal.currentLevel!=='aal2'){location.replace('mfa.html?next='+encodeURIComponent('index.html'));return}
     $('authCard').classList.add('hide'); $('profileCard').classList.add('show');
     const {data:profile} = await client.from('profiles').select('username').eq('id', session.user.id).maybeSingle();
     if (profile?.username) $('username').value = profile.username;
