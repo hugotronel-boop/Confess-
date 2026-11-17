@@ -137,11 +137,11 @@ async function loadFeed(reset=true){
  if(reset){feedOffset=0;feedHasMore=true;postsCache=[];$('feed').innerHTML='<div class="loading">Chargement du fil…</div>'}else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
  let followedIds=null;
  if(currentFeed==='following'){
-  if(!session){$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver les confessions des personnes que tu suis.<br><br><button class="action" type="button" onclick="location.href=\'auth.html\'">Se connecter</button></div>';renderLoadMoreButton();return}
+  if(!session){feedHasMore=false;$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver les confessions des personnes que tu suis.<br><br><button class="action" type="button" onclick="location.href=\'auth.html\'">Se connecter</button></div>';renderLoadMoreButton();return}
   const {data:follows,error:followError}=await db.from('user_follows').select('followed_id').eq('follower_id',session.user.id).order('created_at',{ascending:false});
-  if(followError){$('feed').innerHTML='<div class="empty">Impossible de charger tes abonnements pour le moment.</div>';console.error(followError);return}
+  if(followError){feedHasMore=false;$('feed').innerHTML='<div class="empty">Impossible de charger tes abonnements pour le moment.</div>';console.error(followError);return}
   followedIds=[...new Set((follows||[]).map(x=>x.followed_id).filter(id=>id&&id!==session.user.id))];
-  if(!followedIds.length){$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore CONFESS pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
+  if(!followedIds.length){feedHasMore=false;$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore CONFESS pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
  }
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(followedIds)query=query.in('author_profile_id',followedIds);
