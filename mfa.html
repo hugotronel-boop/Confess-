@@ -27,7 +27,33 @@ main{position:relative;z-index:1}
 :is(.toast){backdrop-filter:blur(18px)}
 @media(max-width:640px){body:before{right:-85px;top:115px;opacity:.35}body:after{right:-25px;top:165px;opacity:.22}}
 
-</style></head><body><main class="card"><h1>Encore une petite vérification 🔐</h1><p class="muted">Saisis le code à 6 chiffres affiché dans ton application d’authentification pour accéder à STASH.</p><div id="factorText" class="muted">Préparation de la vérification…</div><form id="form"><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-label="Code à 6 chiffres" required><button class="primary" id="verify" type="submit">Vérifier et continuer</button></form><button class="secondary" id="logout" type="button">Ce n’est pas mon compte — me déconnecter</button><div class="status" id="status" role="status"></div></main>
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style id="stash-unified-visual">
+:root{color-scheme:dark;--bg:#050506;--panel:rgba(255,255,255,.055);--panel2:rgba(255,255,255,.085);--muted:#a7a7ad;--pink:#ff6cab;--orange:#ffad72;--line:rgba(255,255,255,.16);--white:#fff}
+html,body{background:#050506!important;color:#fff!important;font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif!important;max-width:100%;overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% -18%,rgba(255,108,171,.10),transparent 42%),radial-gradient(ellipse at 100% 35%,rgba(255,173,114,.055),transparent 34%),#050506!important}
+body:before,body:after{display:none!important}
+button,input,textarea,select{font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif}
+.top{background:rgba(5,5,6,.86)!important;border-bottom:1px solid rgba(255,255,255,.13)!important;backdrop-filter:blur(22px)!important}
+.brand strong,.logo{font-family:'Poppins',sans-serif!important;letter-spacing:.12em!important}
+.mark{background:linear-gradient(135deg,var(--pink),var(--orange))!important;box-shadow:0 0 24px rgba(255,108,171,.2)}
+main{position:relative;z-index:1}
+:is(.hero,.welcome,.composer,.post,.sidecard,.rightcard,.sidebox,.rightside,.leftside,.panel,.card,.shell,.inbox,.chat,.modal,.item,.member,.search,.follow-dialog,.follow-dialog-head,.follow-list,.group-dialog,.wall-form,.wall-comment,.about-panel,.report-card,.appeal-card,.sanction-card,.admin-card,.queue-card){background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025))!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 16px 55px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.045)}
+:is(.hero,.welcome){background:linear-gradient(125deg,rgba(255,108,171,.13),rgba(255,173,114,.055) 55%,rgba(255,255,255,.035))!important}
+:is(.composer,.post,.card,.modal,.shell,.item,.member,.follow-dialog,.group-dialog){backdrop-filter:blur(18px)}
+:is(input,textarea,select,.field,.group-field,.compose-input){background:rgba(0,0,0,.42)!important;border-color:rgba(255,255,255,.18)!important;color:#fff!important}
+:is(input,textarea,select,.field,.group-field,.compose-input):focus{border-color:rgba(255,108,171,.75)!important;box-shadow:0 0 0 3px rgba(255,108,171,.09)}
+:is(button,.back,.action,.tab,.open,.msgbtn,.bell,.confess-bell,.markall,.follow,.follow-person-action,.close,.remove,.logout){font-family:'Poppins',sans-serif!important;border-color:rgba(255,255,255,.19)!important}
+:is(.primary,.save,.send,.message-btn,.wall-submit,.group-submit,.follow:not(.on)){background:linear-gradient(105deg,var(--pink),var(--orange))!important;color:#170e13!important;border:0!important;box-shadow:0 7px 24px rgba(255,108,171,.16)}
+:is(.back,.action,.tab,.open,.msgbtn,.bell,.confess-bell,.markall,.follow,.follow-person-action,.close,.secondary,.group-cancel,.remove,.logout){background:rgba(255,255,255,.055)!important;color:#f7f4f5!important}
+:is(.tab.active,.follow.on,.follow-person-action.on,.follow-switch button.active){background:rgba(255,108,171,.16)!important;border-color:rgba(255,108,171,.62)!important;color:#ffd4e6!important}
+.confess-global-nav{background:rgba(5,5,6,.92)!important;border-color:rgba(255,255,255,.14)!important;backdrop-filter:blur(22px)!important}
+:is(.bubble.mine){background:linear-gradient(120deg,#d9579a,#b47b9f)!important;color:#fff!important}
+:is(.bubble:not(.mine),.toast){background:rgba(255,255,255,.075)!important;border-color:rgba(255,255,255,.15)!important}
+.empty,.loading{background:transparent!important;box-shadow:none!important;border:0!important}
+@media(max-width:640px){body:before,body:after{display:none!important}}
+</style>
+</head><body><main class="card"><h1>Encore une petite vérification 🔐</h1><p class="muted">Saisis le code à 6 chiffres affiché dans ton application d’authentification pour accéder à STASH.</p><div id="factorText" class="muted">Préparation de la vérification…</div><form id="form"><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-label="Code à 6 chiffres" required><button class="primary" id="verify" type="submit">Vérifier et continuer</button></form><button class="secondary" id="logout" type="button">Ce n’est pas mon compte — me déconnecter</button><div class="status" id="status" role="status"></div></main>
 <script>
 (()=>{const db=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');const $=id=>document.getElementById(id);const params=new URLSearchParams(location.search);const raw=params.get('next')||'index.html';const next=/^(index|member|messages|explore|notifications|settings|appeals)\.html(?:[?#].*)?$/.test(raw)?raw:'index.html';let factorId=null,challengeId=null;
 async function start(){const {data:{session},error}=await db.auth.getSession();if(error||!session){location.replace('auth.html');return}const {data:aal,error:ae}=await db.auth.mfa.getAuthenticatorAssuranceLevel();if(ae)throw ae;if(aal.currentLevel==='aal2'){location.replace(next);return}const {data,error:fe}=await db.auth.mfa.listFactors();if(fe)throw fe;const factor=(data.totp||[]).find(x=>x.status==='verified');if(!factor)throw new Error('Aucun facteur TOTP vérifié. Reconnecte-toi ou contacte le support.');factorId=factor.id;$('factorText').textContent='Application associée : '+(factor.friendly_name||'Authentificateur');const ch=await db.auth.mfa.challenge({factorId});if(ch.error)throw ch.error;challengeId=ch.data.id;$('status').textContent='Ouvre ton application et saisis le code actuel.'}
