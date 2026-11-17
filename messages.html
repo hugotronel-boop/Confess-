@@ -229,6 +229,49 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-messages-black-white">
+/* Messagerie : noir profond, filets blancs, aucun décor 3D */
+html,body{background:#000!important}
+body{background:#000!important}
+body::before,body::after{display:none!important;content:none!important}
+.messages-top{background:#000!important;border-bottom:1px solid rgba(255,255,255,.22)!important}
+.shell{
+  background:#000!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-radius:18px!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.035),inset 0 0 28px rgba(255,255,255,.018)!important;
+  overflow:hidden!important
+}
+.inbox,.chat{background:#000!important}
+.inbox{border-right:1px solid rgba(255,255,255,.28)!important}
+.inbox-head,.chat-head,.composer{background:#000!important;border-color:rgba(255,255,255,.22)!important}
+.thread{border-bottom:1px solid rgba(255,255,255,.14)!important}
+.thread:hover,.thread.active{background:rgba(255,255,255,.08)!important}
+.inbox-search,.composer textarea,.group-field{
+  background:#050505!important;border:1px solid rgba(255,255,255,.38)!important;color:#fff!important
+}
+.inbox-search:focus,.composer textarea:focus,.group-field:focus{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.10)!important}
+.back,.action,.confess-bell,.group-cancel,.mobile-back{
+  background:#000!important;border:1px solid rgba(255,255,255,.55)!important;color:#fff!important
+}
+.group-create,.group-submit,.send{
+  background:#fff!important;color:#000!important;border:1px solid #fff!important;box-shadow:none!important
+}
+.bubble,.bubble:not(.mine){
+  background:#080808!important;border:1px solid rgba(255,255,255,.32)!important;color:#fff!important
+}
+.bubble.mine{
+  background:#171717!important;border:1px solid rgba(255,255,255,.62)!important;color:#fff!important
+}
+.avatar{border:1px solid rgba(255,255,255,.38)!important}
+.toast,.group-dialog{background:#050505!important;border:1px solid rgba(255,255,255,.42)!important}
+@media(max-width:700px){
+ .shell{border-left:0!important;border-right:0!important;border-radius:0!important}
+ .inbox{border-right:0!important}
+}
+</style>
+
 </head>
 <body>
 <header class="top messages-top"><h1>MESSAGES</h1><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
