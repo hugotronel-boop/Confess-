@@ -69,7 +69,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
  </aside>
 </div>
 <nav class="bottomnav"><button id="mobileHome"><b>⌂</b>Accueil</button><button id="mobileExplore"><b>⌕</b>Explorer</button><button id="mobileWrite"><b>＋</b>Publier</button><button id="mobileMessages"><b>💬</b>Messages</button><button id="mobileNotifications"><b>🔔</b>Actus</button><button id="mobileProfile"><b>◉</b>Profil</button></nav>
-<div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
+<div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentSort" style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="action selected" data-comment-sort="recent" style="border:1px solid var(--line);border-radius:10px">🕒 Plus récents</button><button type="button" class="action" data-comment-sort="popular" style="border:1px solid var(--line);border-radius:10px">❤️ Plus aimés</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
 <div class="toast" id="toast"></div>
 <script>
 (() => {
@@ -203,7 +203,8 @@ async function sharePost(id){
 }
 async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
 async function toggleSave(id){if(!session)return toast('Connecte-toi pour enregistrer une publication.');const {data:existing}=await db.from('post_bookmarks').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});if(result.error){toast('Impossible de modifier tes enregistrements.');return}toast(existing?'Publication retirée des favoris.':'Publication enregistrée.');loadFeed()}
-let activeReply=null;
+let activeReply=null,activeCommentSort='recent';
+function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
  activePost=id;activeReply=null;$('replyingBar').classList.remove('show');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
  const {data,error}=await db.from('comments').select('id,body,author_label,created_at,parent_comment_id').eq('post_id',id).eq('status','published').order('created_at');
@@ -216,8 +217,11 @@ async function openComments(id){
  const counts={},liked=new Set();
  (reactions||[]).forEach(r=>{counts[r.comment_id]=(counts[r.comment_id]||0)+1;if(session&&r.user_id===session.user.id)liked.add(r.comment_id)});
  const byId=new Map(rows.map(x=>[x.id,x]));
- const roots=rows.filter(x=>!x.parent_comment_id||!byId.has(x.parent_comment_id));
- const children=rows.filter(x=>x.parent_comment_id&&byId.has(x.parent_comment_id));
+ const score=x=>counts[x.id]||0;
+ const sortRows=list=>list.sort((a,b)=>activeCommentSort==='popular'?(score(b)-score(a)||new Date(b.created_at)-new Date(a.created_at)):(new Date(b.created_at)-new Date(a.created_at)));
+ const roots=sortRows(rows.filter(x=>!x.parent_comment_id||!byId.has(x.parent_comment_id)));
+ const children=sortRows(rows.filter(x=>x.parent_comment_id&&byId.has(x.parent_comment_id)));
+ updateCommentSortUI();
  const renderComment=x=>'<div class="comment" id="comment-'+x.id+'"><strong>'+esc(x.author_label)+'</strong><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button></div></div>';
  $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child).replace('class="comment"','class="comment reply"')).join('')).join('');
  $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris ta réponse…';$('commentBody').focus()});
@@ -280,6 +284,7 @@ $('publishBtn').onclick=async()=>{
 }
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
+document.querySelectorAll('[data-comment-sort]').forEach(b=>b.onclick=()=>{activeCommentSort=b.dataset.commentSort;updateCommentSortUI();openComments(activePost)});
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
 $('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))$('commentsOverlay').classList.remove('show')});
 $('authBtn').onclick=()=>location.href=session?'profile.html':'auth.html';
