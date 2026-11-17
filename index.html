@@ -134,6 +134,7 @@ async function loadFeed(){
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
    <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
    <button class="action" data-report="${p.id}">⚑ Signaler</button>
+   <button class="action" data-share="${p.id}">↗️ Partager</button>
    ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button><button class="action" data-delete="'+p.id+'">🗑️ Supprimer</button>':''}
   </div></article>`}).join('');
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
@@ -141,9 +142,17 @@ async function loadFeed(){
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
  $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
+ $('feed').querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
  $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
  $('feed').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
  const target=new URLSearchParams(location.search).get('post');if(target){const el=document.querySelector('[data-post=\"'+CSS.escape(target)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';setTimeout(()=>el.style.outline='',2400)}}
+}
+async function sharePost(id){
+ const post=postsCache.find(p=>p.id===id);if(!post)return;
+ const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',id);
+ const shareData={title:'Une publication sur CONFESS',text:post.body.slice(0,180),url:url.toString()};
+ if(navigator.share){try{await navigator.share(shareData);return}catch(error){if(error&&error.name==='AbortError')return}}
+ try{await navigator.clipboard.writeText(url.toString());toast('Lien de la publication copié 🔗')}catch(error){prompt('Copie le lien de cette publication :',url.toString())}
 }
 async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
 async function toggleSave(id){if(!session)return toast('Connecte-toi pour enregistrer une publication.');const {data:existing}=await db.from('post_bookmarks').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});if(result.error){toast('Impossible de modifier tes enregistrements.');return}toast(existing?'Publication retirée des favoris.':'Publication enregistrée.');loadFeed()}
