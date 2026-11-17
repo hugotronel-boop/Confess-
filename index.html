@@ -109,9 +109,29 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 #publishBtn{display:none!important}
 .publish-top-action{border:0!important;border-radius:999px!important;padding:10px 17px!important;background:linear-gradient(105deg,#ff6cab,#ffad72)!important;color:#170e13!important;font-weight:850!important;box-shadow:0 7px 24px rgba(255,108,171,.2)!important}
 @media(max-width:650px){.publish-intro{margin:14px 0 8px}.publish-category-scroller{margin-top:10px}}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+html,body{background:#050506!important;color:#fff!important;font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif!important;max-width:100%;overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% -18%,rgba(255,108,171,.10),transparent 42%),radial-gradient(ellipse at 100% 35%,rgba(255,173,114,.055),transparent 34%),#050506!important}
+body:before,body:after{display:none!important}
+.layout{position:relative;z-index:1}
+.top{z-index:10}
+.stash-3d-scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;opacity:.34;mix-blend-mode:screen;touch-action:none;cursor:grab;pointer-events:auto}
+.stash-3d-scene.dragging{cursor:grabbing}
+.stash-3d-controls{position:fixed;z-index:11;top:105px;right:max(18px,calc((100vw - 1080px)/2));display:flex;gap:10px;pointer-events:auto}
+.stash-3d-controls .arrow{width:34px;height:34px;border:1.5px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(0,0,0,.35);color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px)}
+.stash-3d-controls .arrow:hover{background:#fff;color:#000}
+.stash-3d-loader{position:fixed;z-index:12;left:50%;top:44%;transform:translate(-50%,-50%);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#ddd;opacity:.55;pointer-events:none;transition:opacity .6s}
+.stash-3d-loader.done{opacity:0}
+.top,.confess-global-nav{background:rgba(5,5,6,.86)!important;backdrop-filter:blur(22px)!important;border-color:rgba(255,255,255,.13)!important}
+@media(max-width:640px){.stash-3d-scene{opacity:.22}.stash-3d-controls{top:82px;right:14px}.stash-3d-controls .arrow{width:30px;height:30px}.stash-3d-loader{top:36%}}
+
 </style>
 </head>
 <body>
+<canvas id="scene" class="stash-3d-scene" aria-label="Cube de verre 3D rotatif. Faites glisser pour le faire tourner."></canvas>
+<div class="stash-3d-controls" aria-label="Contrôles du cube"><button class="arrow" id="prev" type="button" aria-label="Tourner à gauche">‹</button><button class="arrow" id="next" type="button" aria-label="Tourner à droite">›</button></div>
+<div class="stash-3d-loader" id="loader">Préparation de STASH</div>
 <header class="top stash-feed-top">
  <div class="feed-logo-placeholder" aria-label="Emplacement du logo STASH"><span>LOGO</span></div>
  <div class="feed-wordmark">STASH</div>
@@ -528,4 +548,110 @@ db.auth.onAuthStateChange((event,nextSession)=>{
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const MODEL_URL='https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260929_212926_92423081-b0e4-4f5a-b650-14af6c05c058.glb';
+const canvas=document.getElementById('scene'),loaderEl=document.getElementById('loader');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setClearColor(0x000000,1);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,.1,100);camera.position.set(0,0,10);camera.lookAt(0,0,0);
+const bgScene=new THREE.Scene(),bgCamera=new THREE.Camera();
+const headlineCanvas=document.createElement('canvas'),ctx=headlineCanvas.getContext('2d');
+const headlineTexture=new THREE.CanvasTexture(headlineCanvas);headlineTexture.colorSpace=THREE.SRGBColorSpace;headlineTexture.minFilter=THREE.LinearFilter;headlineTexture.magFilter=THREE.LinearFilter;headlineTexture.generateMipmaps=false;
+const bgMaterial=new THREE.ShaderMaterial({uniforms:{uTex:{value:headlineTexture}},vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',fragmentShader:'uniform sampler2D uTex; varying vec2 vUv; void main(){gl_FragColor=texture2D(uTex,vUv);\n#include <colorspace_fragment>\n}',depthTest:false,depthWrite:false});
+const bgQuad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),bgMaterial);bgQuad.frustumCulled=false;bgScene.add(bgQuad);
+const pivot=new THREE.Group(),spinner=new THREE.Group();scene.add(pivot);pivot.add(spinner);
+const resolution=new THREE.Vector2(1,1);
+const makeGlass=(back)=>new THREE.ShaderMaterial({
+ side:back?THREE.BackSide:THREE.FrontSide,
+ uniforms:{uTexture:{value:null},uResolution:{value:resolution.clone()},uBackside:{value:back?1:0},uIorR:{value:1.15},uIorY:{value:1.16},uIorG:{value:1.18},uIorC:{value:1.22},uIorB:{value:1.22},uIorP:{value:1.22},uRefractPower:{value:back?.22:.30},uChromatic:{value:.5},uSaturation:{value:1.08},uShininess:{value:90},uDiffuseness:{value:.02},uFresnelPower:{value:5},uLight:{value:new THREE.Vector3(-1,1,1)}},
+ vertexShader:`varying vec3 vNormal;varying vec3 vEye;void main(){vec4 worldPos=modelMatrix*vec4(position,1.0);vec4 mvPos=viewMatrix*worldPos;gl_Position=projectionMatrix*mvPos;vNormal=normalize(normalMatrix*normal);vEye=normalize(mvPos.xyz);}`,
+ fragmentShader:`uniform sampler2D uTexture;uniform vec2 uResolution;uniform float uBackside,uIorR,uIorY,uIorG,uIorC,uIorB,uIorP,uRefractPower,uChromatic,uSaturation,uShininess,uDiffuseness,uFresnelPower;uniform vec3 uLight;varying vec3 vNormal;varying vec3 vEye;
+ vec3 sampleBand(vec2 uv,vec3 n,vec3 eye,float ior,float k,float slide){vec3 rr=refract(eye,n,1.0/ior);return texture2D(uTexture,uv+rr.xy*(uRefractPower+slide*k)*uChromatic).rgb;}
+ float specular(vec3 n,vec3 eye,vec3 light,float shine,float diff){vec3 l=normalize(-light);vec3 h=normalize(l-eye);return pow(max(dot(n,h),0.0),shine)+max(0.0,dot(n,l))*diff;}
+ void main(){vec2 uv=gl_FragCoord.xy/uResolution;vec3 n=normalize(vNormal);if(uBackside>.5)n=-n;vec3 eye=normalize(vEye);vec3 color=vec3(0.0);const float LOOP=16.0;
+ for(int i=0;i<16;i++){float slide=float(i)/LOOP*.045;vec3 R=sampleBand(uv,n,eye,uIorR,1.0,slide);vec3 Y=sampleBand(uv,n,eye,uIorY,1.0,slide);vec3 G=sampleBand(uv,n,eye,uIorG,2.0,slide);vec3 C=sampleBand(uv,n,eye,uIorC,2.5,slide);vec3 B=sampleBand(uv,n,eye,uIorB,3.0,slide);vec3 P=sampleBand(uv,n,eye,uIorP,1.0,slide);
+ float r=R.r*.5;float y=(Y.r*2.0+Y.g*2.0-Y.b)/6.0;float g=G.g*.5;float c=(C.g*2.0+C.b*2.0-C.r)/6.0;float b=B.b*.5;float p=(P.b*2.0+P.r*2.0-P.g)/6.0;
+ color+=vec3(r+(2.0*p+2.0*y-c)/3.0,g+(2.0*y+2.0*c-p)/3.0,b+(2.0*c+2.0*p-y)/3.0);}
+ color/=LOOP;float luma=dot(color,vec3(.2125,.7154,.0721));color=mix(vec3(luma),color,uSaturation);
+ float spec=specular(n,eye,uLight,uShininess,uDiffuseness)+.6*specular(n,eye,vec3(1.0,1.0,-1.0),uShininess*.6,uDiffuseness*.5);color+=vec3(spec*(uBackside>.5?.35:1.0));
+ float fresnel=pow(1.0+dot(eye,n),uFresnelPower);color=mix(color,vec3(1.0),fresnel*(uBackside>.5?.25:.55));color+=vec3(.004,.005,.007);gl_FragColor=vec4(color,1.0);\n#include <colorspace_fragment>\n}`
+});
+const backMat=makeGlass(true),frontMat=makeGlass(false);
+let cube=null,backTarget=null,frontTarget=null,screenW=1,screenH=1,dpr=1;
+function makeFallback(){return new RoundedBoxGeometry(1,1,1,8,.12)}
+function installGeometry(geometry){
+ geometry.computeBoundingBox();const box=geometry.boundingBox;const center=new THREE.Vector3();box.getCenter(center);geometry.translate(-center.x,-center.y,-center.z);
+ const size=new THREE.Vector3();geometry.computeBoundingBox();geometry.boundingBox.getSize(size);const max=Math.max(size.x,size.y,size.z)||1;geometry.scale(1/max,1/max,1/max);geometry.computeVertexNormals();
+ cube=new THREE.Mesh(geometry,frontMat);spinner.add(cube);loaderEl.classList.add('done');layout();
+}
+function loadModel(){
+ new GLTFLoader().load(MODEL_URL,gltf=>{
+  try{
+   gltf.scene.updateMatrixWorld(true);const parts=[];
+   gltf.scene.traverse(obj=>{if(!obj.isMesh||!obj.geometry)return;let g=obj.geometry.clone();['uv','color','tangent'].forEach(a=>{if(g.getAttribute(a))g.deleteAttribute(a)});g=mergeVertices(g,1e-4);g.applyMatrix4(obj.matrixWorld);g.computeVertexNormals();parts.push(g)});
+   if(!parts.length)throw new Error('No mesh');const merged=mergeGeometries(parts,false);if(!merged)throw new Error('Merge failed');installGeometry(merged);
+  }catch(e){console.warn('STASH cube model fallback:',e);installGeometry(makeFallback())}
+ },undefined,error=>{console.warn('STASH cube model fallback:',error);installGeometry(makeFallback())});
+}
+function resizeTargets(){
+ const w=Math.max(1,Math.floor(screenW*dpr)),h=Math.max(1,Math.floor(screenH*dpr));
+ for(const t of [backTarget,frontTarget])if(t)t.setSize(w,h);
+ resolution.set(w,h);backMat.uniforms.uResolution.value.set(w,h);frontMat.uniforms.uResolution.value.set(w,h);
+}
+function drawHeadline(){
+ const W=screenW,H=screenH,mobile=W<768||W/H<1;dpr=Math.min(window.devicePixelRatio||1,2);
+ headlineCanvas.width=Math.max(1,Math.round(W*dpr));headlineCanvas.height=Math.max(1,Math.round(H*dpr));
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+ let fs=Math.min(H*.21,W*(mobile?.21:.118));ctx.font='800 '+fs+'px Poppins';let widest=Math.max(...['Explore','New','Ideas'].map(s=>ctx.measureText(s).width));
+ const maxWidth=W*(mobile?.9:.5);if(widest>maxWidth)fs*=maxWidth/widest;
+ ctx.font='800 '+fs+'px Poppins';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillStyle='#e9e9e9';
+ const cx=W*(mobile?.5:.505),cy=H*(mobile?.30:.29),gap=fs*1.07,cap=fs*.7;
+ ['Explore','New','Ideas'].forEach((line,i)=>ctx.fillText(line,cx,cy+cap/2+(i-1)*gap));
+ headlineTexture.needsUpdate=true;
+}
+function layout(){
+ const W=window.innerWidth,H=window.innerHeight,mobile=W<768||W/H<1;screenW=W;screenH=H;dpr=Math.min(window.devicePixelRatio||1,2);
+ renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
+ const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*10,visW=visH*camera.aspect;
+ const sx=mobile?.5:.57,sy=mobile?.33:.29; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
+ const px=Math.min(H*.29,W*(mobile?.34:.22));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
+ drawHeadline();resizeTargets();
+}
+backTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});frontTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});
+backMat.uniforms.uTexture.value=backTarget.texture;frontMat.uniforms.uTexture.value=frontTarget.texture;
+layout();loadModel();document.fonts?.ready?.then(()=>{layout()});document.fonts?.addEventListener?.('loadingdone',layout);
+window.addEventListener('resize',layout,{passive:true});
+let dragging=false,lastX=0,lastY=0,lastTime=0,vx=0,vy=0,lastRelease=performance.now(),spinRemaining=0;
+const axisY=new THREE.Vector3(0,1,0),axisX=new THREE.Vector3(1,0,0),q=new THREE.Quaternion();
+canvas.addEventListener('pointerdown',e=>{dragging=true;canvas.classList.add('dragging');canvas.setPointerCapture(e.pointerId);lastX=e.clientX;lastY=e.clientY;lastTime=performance.now();vx=vy=0;spinRemaining=0});
+canvas.addEventListener('pointermove',e=>{if(!dragging)return;const now=performance.now(),dt=Math.max(1,now-lastTime);const dx=e.clientX-lastX,dy=e.clientY-lastY;const rx=dx*.008,ry=dy*.008; q.setFromAxisAngle(axisY,rx);spinner.quaternion.premultiply(q);q.setFromAxisAngle(axisX,ry);spinner.quaternion.premultiply(q);vx=rx*(16.67/dt);vy=ry*(16.67/dt);lastX=e.clientX;lastY=e.clientY;lastTime=now});
+function release(){if(!dragging)return;dragging=false;canvas.classList.remove('dragging');lastRelease=performance.now()}
+canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);
+function rotateBy(angle){spinRemaining+=angle;vx=vy=0;lastRelease=performance.now()}
+document.getElementById('prev').addEventListener('click',()=>rotateBy(-Math.PI/2));document.getElementById('next').addEventListener('click',()=>rotateBy(Math.PI/2));
+document.querySelectorAll('.dot').forEach((dot,i)=>dot.addEventListener('click',()=>{document.querySelectorAll('.dot').forEach(d=>d.classList.remove('active'));dot.classList.add('active');rotateBy((i-1)*Math.PI/2)}));
+let lastFrame=performance.now();
+function animate(now){
+ requestAnimationFrame(animate);const dt=Math.min(.05,(now-lastFrame)/1000||.0167);lastFrame=now;
+ if(!dragging){
+  if(Math.abs(spinRemaining)>.0005){const step=spinRemaining*Math.min(1,.09*dt*60);q.setFromAxisAngle(axisY,step);spinner.quaternion.premultiply(q);spinRemaining-=step}
+  else if(Math.abs(vx)+Math.abs(vy)>.0001){q.setFromAxisAngle(axisY,vx*dt*60);spinner.quaternion.premultiply(q);q.setFromAxisAngle(axisX,vy*dt*60);spinner.quaternion.premultiply(q);const damp=Math.pow(.94,dt*60);vx*=damp;vy*=damp}
+  else {const blend=THREE.MathUtils.clamp((now-lastRelease-600)/1000,0,1);q.setFromAxisAngle(axisY,.0035*dt*60*blend);spinner.quaternion.premultiply(q);q.setFromAxisAngle(axisX,.0012*dt*60*blend);spinner.quaternion.premultiply(q)}
+ }
+ renderer.setRenderTarget(backTarget);renderer.clear(true,true,true);renderer.render(bgScene,bgCamera);
+ renderer.setRenderTarget(frontTarget);renderer.clear(true,true,true);renderer.render(bgScene,bgCamera);
+ if(cube){cube.material=backMat;renderer.render(scene,camera)}
+ renderer.setRenderTarget(null);renderer.clear(true,true,true);renderer.render(bgScene,bgCamera);
+ if(cube){renderer.clearDepth();cube.material=frontMat;renderer.render(scene,camera)}
+}
+requestAnimationFrame(animate);
+Promise.race([Promise.all([document.fonts.load('800 100px Poppins'),document.fonts.ready]),new Promise(resolve=>setTimeout(resolve,2500))]).then(()=>{layout();loaderEl.classList.add('done')});
+</script>
 </body></html>
