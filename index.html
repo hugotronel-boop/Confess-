@@ -124,6 +124,7 @@ function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUp
 async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();if(session)restoreDraft();loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
+function renderLoadMoreButton(){const old=$('loadMorePosts');if(old)old.remove();if(!feedHasMore)return;const more=document.createElement('button');more.id='loadMorePosts';more.className='action';more.textContent='Charger plus de publications';more.style.cssText='display:block;width:100%;padding:14px;margin:14px 0 24px;border:1px solid var(--line);border-radius:14px;font-weight:750';more.onclick=()=>loadFeed(false);$('feed').after(more)}
 async function loadFeed(reset=true){
  if(reset){feedOffset=0;feedHasMore=true;postsCache=[];$('feed').innerHTML='<div class="loading">Chargement du fil…</div>'}else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
@@ -156,7 +157,7 @@ async function loadFeed(reset=true){
  const bookmarked=new Set(marks.map(m=>m.post_id));
  if($('sortSelect').value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
  postsCache=rows;
- if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";return}
+ if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
   <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
@@ -186,7 +187,7 @@ async function loadFeed(reset=true){
  $('feed').querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
  $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
  $('feed').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
- const oldMore=$('loadMorePosts');if(oldMore)oldMore.remove();if(feedHasMore){const more=document.createElement('button');more.id='loadMorePosts';more.className='action';more.textContent='Charger plus de publications';more.style.cssText='display:block;width:100%;padding:14px;margin:14px 0 24px;border:1px solid var(--line);border-radius:14px;font-weight:750';more.onclick=()=>loadFeed(false);$('feed').after(more)}
+ renderLoadMoreButton()
  const target=new URLSearchParams(location.search).get('post');if(target){const el=document.querySelector('[data-post=\"'+CSS.escape(target)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';setTimeout(()=>el.style.outline='',2400)}}
 }
 async function sharePost(id){
