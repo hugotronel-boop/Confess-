@@ -12,6 +12,11 @@
 .confess-global-nav a[aria-current="page"]{color:#ff9fc7!important;background:rgba(255,108,171,.12)}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a b{font-size:18px}}
+
+/* STASH — bouton Publier central dans la navigation */
+.confess-global-nav a.nav-publish-center{flex:0 0 64px!important;min-width:64px!important;min-height:54px!important;margin-top:-18px!important;border-radius:18px!important;background:linear-gradient(135deg,#ff6cab,#ffad72)!important;color:#170e13!important;box-shadow:0 7px 24px rgba(255,108,171,.28)!important;font-weight:800!important}
+.confess-global-nav a.nav-publish-center b{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:rgba(255,255,255,.22);font-size:29px!important;line-height:1!important}
+.confess-global-nav a.nav-publish-center span{font-size:9px!important;color:#fff!important}
 </style></head><body>
 <header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Retour</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main><section class="hero"><h1>Centre de modération 🛡️</h1><p>Examine les signalements, protège la communauté et garde une trace des décisions prises. Chaque action est vérifiée par la base de données.</p></section>
@@ -103,9 +108,9 @@ db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.ht
 })();
 </script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
-<a href="./index.html" data-nav="home"><b>⌂</b><span>Accueil</span></a>
-<a href="./publish.html" data-nav="publish"><b>＋</b><span>Publier</span></a>
+<a href="./index.html" data-nav="home"><b>⌂</b><span>Feed</span></a>
 <a href="./messages.html" data-nav="messages"><b>💬</b><span>Messages</span></a>
+<a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><b>＋</b><span>Publier</span></a>
 <a href="./notifications.html" data-nav="notifications"><b>🔔</b><span>Actus</span></a>
 <a href="./profile.html" data-nav="profile"><b>◉</b><span>Profil</span></a>
 </nav>
