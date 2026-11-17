@@ -53,6 +53,12 @@ main{position:relative;z-index:1}
 :is(.toast){backdrop-filter:blur(18px)}
 @media(max-width:640px){body:before{right:-85px;top:115px;opacity:.35}body:after{right:-25px;top:165px;opacity:.22}}
 
+
+/* En-tête de publication identique au Feed, avec l'action Publier à droite */
+.stash-feed-top.publish-page-top{grid-template-columns:44px 1fr auto!important;padding:8px max(14px,calc((100vw - 680px)/2))!important}
+.publish-page-top .publish-top-action{white-space:nowrap}
+@media(max-width:620px){.stash-feed-top.publish-page-top{padding:8px 14px!important}}
+
 /* Espace dédié à la rédaction */
 .layout{display:block;width:min(760px,100%);padding:26px 16px 100px}
 .leftside,.rightside,.welcome,.feed-head,#feedSearch,#feedSearchBtn,#feedTabs,#visibilityFilters,#feed,#loadMorePosts{display:none!important}
@@ -94,11 +100,13 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </style>
 </head>
 <body>
-<header class="top">
- <div class="brand"><div class="mark">C</div><div><strong>STASH</strong><small>DIS LES CHOSES.</small></div></div>
- <div class="topright"><button class="msgbtn" id="messagesBtn" aria-label="Messages">💬</button><button class="bell" id="notificationsBtn" aria-label="Notifications">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div><button type="button" class="pill publish-top-action" id="publishTopAction">Publier</button>
+<header class="top stash-feed-top publish-page-top">
+ <div class="feed-logo-placeholder" aria-label="Emplacement du logo STASH"><span>LOGO</span></div>
+ <div class="feed-wordmark">STASH</div>
+ <button type="button" class="pill publish-top-action" id="publishTopAction">Publier</button>
+ <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
 </header>
-<div class="layout"><section class="publish-intro"><h1>À toi la parole ✨</h1><p>Prends ton temps. Écris ta confession, choisis ton thème et décide si tu souhaites publier anonymement ou sous ton pseudo.</p></section>
+<div class="layout">
  <aside class="side leftside">
   <div class="sidecard">
    <div class="side-title">Menu</div>
@@ -116,7 +124,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
   <section class="composer" id="composer">
    <div class="compose-top"><div class="avatar" id="composeAvatar">?</div><div><strong id="composeTitle">Une chose à raconter ?</strong><small id="composeSub">Connecte-toi pour publier ta confession.</small></div></div>
    <textarea class="compose-input" id="postBody" maxlength="5000" placeholder="Qu'est-ce que tu as sur le cœur ?"></textarea>
-   <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button type="button" class="action" id="togglePoll" aria-label="Ajouter un sondage" title="Ajouter un sondage" style="width:42px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 11px"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><small style="color:var(--muted)">Optionnel · 2 à 6 choix</small></div>
+   <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button type="button" class="action" id="togglePoll" aria-label="Ajouter un sondage" title="Ajouter un sondage" style="width:42px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 11px"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div>
    <div id="pollComposer" hidden style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong style="display:block;margin-bottom:8px">Les choix du sondage</strong><div id="pollOptionInputs" style="display:grid;gap:7px"><input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2"></div><button type="button" class="action" id="addPollOption" style="margin-top:8px">＋ Ajouter un choix</button><button type="button" class="action" id="removePoll" style="margin-top:8px">Retirer le sondage</button></div>
    <div class="compose-bottom"><div class="compose-controls">
     <select class="field" id="postCategory" aria-label="Catégorie" style="display:none"><option value="confession">STASHion</option></select><div id="categoryScroller" class="publish-category-scroller" role="group" aria-label="Choisir une catégorie"></div>
