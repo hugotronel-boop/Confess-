@@ -12,6 +12,9 @@ main{width:min(760px,100%);margin:26px auto;padding:0 15px}.hero{background:line
 @media(max-width:520px){main{margin:16px auto}.hero{padding:19px}.card{padding:16px}.avatar{width:78px;height:78px;border-radius:24px}.profile-head{gap:13px}}
 
 .confess-bell{position:relative;border:1px solid var(--line,#39334f);background:var(--panel,#1b1830);color:#fff;border-radius:30px;padding:9px 12px;font-size:16px;cursor:pointer;margin-left:8px}.confess-bell-count{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:20px;background:#ff5ba7;color:#241326;font-size:10px;font-weight:900;display:grid;place-items:center;padding:0 4px}.confess-bell-count[hidden]{display:none}
+
+.stat-action{font:inherit;color:inherit;cursor:pointer;transition:transform .15s,border-color .15s}.stat-action:active{transform:scale(.97)}.stat-action:hover{border-color:#ff5ba7}
+.follow-modal[hidden]{display:none}.follow-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:18px}.follow-shade{position:absolute;inset:0;background:#080611d9;backdrop-filter:blur(8px)}.follow-dialog{position:relative;width:min(480px,100%);max-height:min(720px,88dvh);display:flex;flex-direction:column;background:#1b1830;border:1px solid #ffffff24;border-radius:22px;box-shadow:0 24px 80px #0009;overflow:hidden}.follow-dialog-head{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 12px}.follow-dialog-head h2{font-size:18px;margin:0 0 4px}.follow-dialog-head p{font-size:11px;color:#aaa5c0;margin:0}.follow-close{border:1px solid #39334f;background:#100e1b;color:#fff;border-radius:12px;width:36px;height:36px;font-size:18px}.follow-switch{display:flex;gap:8px;padding:0 18px 13px}.follow-switch button{flex:1;border:1px solid #39334f;background:#100e1b;color:#aaa5c0;border-radius:11px;padding:10px;font-size:12px;font-weight:800}.follow-switch button.active{background:#ff5ba71c;border-color:#ff5ba7;color:#fff}.follow-list{overflow:auto;padding:0 14px 14px;min-height:130px}.follow-person{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid #ffffff12}.follow-person-main{display:flex;align-items:center;gap:11px;min-width:0;flex:1;color:#fff;text-decoration:none}.follow-avatar{width:43px;height:43px;border-radius:15px;flex:none;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#ff5ba7,#8f6bff);font-weight:900}.follow-avatar img{width:100%;height:100%;object-fit:cover}.follow-person-name{min-width:0}.follow-person-name strong{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.follow-person-name small{display:block;font-size:10px;color:#aaa5c0;margin-top:3px}.follow-person-action{border:1px solid #39334f;background:#100e1b;color:#fff;border-radius:20px;padding:8px 11px;font-size:10px;font-weight:800;white-space:nowrap}.follow-person-action.on{border-color:#ff5ba7;background:#ff5ba71c;color:#ffacd1}.follow-person-action:disabled{opacity:.55}.follow-empty{padding:28px 10px;text-align:center;color:#aaa5c0;font-size:12px}
 </style>
 </head>
 <body>
@@ -26,10 +29,10 @@ main{width:min(760px,100%);margin:26px auto;padding:0 15px}.hero{background:line
   <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
   <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer les modifications</button><button class="secondary" id="publicProfileBtn" type="button">👀 Voir mon profil public</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
  </form>
- <div class="stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><div class="stat"><strong id="myFollowersStat">—</strong><span>Abonnés</span></div><div class="stat"><strong id="myFollowingStat">—</strong><span>Abonnements</span></div></div>
+ <div class="stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="myFollowersStat">—</strong><span>Abonnés · Voir</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="myFollowingStat">—</strong><span>Abonnements · Voir</span></button></div>
 </section>
 <div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">📝 Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">👤 À propos</button></div><div id="postsTab"><div class="section-head"><h2>Mes publications</h2><span class="count" id="postCount">—</span></div><div id="myPosts"><div class="loading">Chargement de ton espace…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent">Chargement de ta présentation…</div></div>
-</main><div class="toast" id="toast"></div>
+</main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>
 (() => {
 const URL='https://hhntssweslmmqskhoaje.supabase.co';
@@ -52,7 +55,52 @@ async function loadPosts(){
  const rows=data||[];const [{count:postTotal},{count:followers},{count:following}]=await Promise.all([db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published'),db.from('user_follows').select('follower_id',{count:'exact',head:true}).eq('followed_id',user.id),db.from('user_follows').select('followed_id',{count:'exact',head:true}).eq('follower_id',user.id)]);$('postCount').textContent=(postTotal??0)+' publication'+((postTotal??0)>1?'s':'');$('myPostsStat').textContent=postTotal??0;$('myFollowersStat').textContent=followers??0;$('myFollowingStat').textContent=following??0;$('aboutContent').textContent=(profile.bio||'Tu n’as pas encore ajouté de présentation.')+'\n\nMembre depuis le '+new Date(profile.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
  $('myPosts').innerHTML=rows.length?rows.map(p=>'<article class="post">'+(p.is_pinned?'<div class="pinned-tag">📌 PUBLICATION ÉPINGLÉE</div>':'')+'<div class="post-meta">'+new Date(p.created_at).toLocaleString('fr-FR',{dateStyle:'medium',timeStyle:'short'})+' · '+esc(p.categories?.label||'Discussion')+'</div><div class="post-body">'+esc(p.body)+'</div><div class="post-actions"><button class="pin-btn" data-pin="'+p.id+'" data-pinned="'+!!p.is_pinned+'">'+(p.is_pinned?'📌 Désépingler':'📌 Épingler')+'</button></div></article>').join('') :'<div class="empty">Tu n’as pas encore de publication publique.<br>Ton prochain post t’attend sur le fil 👀</div>';document.querySelectorAll('[data-pin]').forEach(btn=>btn.addEventListener('click',()=>togglePin(btn)));
 }
-document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));function switchTab(tab){const posts=tab==='posts';$('postsTab').hidden=!posts;$('aboutTab').hidden=posts;document.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}async function togglePin(btn){const pin=btn.dataset.pinned!=='true';if(pin){const {count,error}=await db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').eq('is_pinned',true);if(error)return toast('Impossible de vérifier les publications épinglées.');if((count||0)>=3)return toast('Tu peux épingler 3 publications maximum.')}btn.disabled=true;const {error}=await db.from('posts').update({is_pinned:pin}).eq('id',btn.dataset.pin).eq('author_profile_id',user.id);btn.disabled=false;if(error){toast('Impossible de modifier cette épingle.');console.error(error);return}toast(pin?'Publication épinglée en haut du profil !':'Publication désépinglée.');await loadPosts()}\n$('profileForm').addEventListener('submit',async e=>{
+
+let activeFollowType='followers';
+async function openFollowModal(type){$('followModal').hidden=false;document.body.style.overflow='hidden';await loadFollowList(type)}
+function closeFollowModal(){$('followModal').hidden=true;document.body.style.overflow=''}
+async function loadFollowList(type){
+ activeFollowType=type;
+ document.querySelectorAll('[data-follow-type]').forEach(b=>b.classList.toggle('active',b.dataset.followType===type));
+ $('followModalTitle').textContent=type==='followers'?'Abonnés':'Abonnements';
+ $('followModalSubtitle').textContent=type==='followers'?'Les personnes qui suivent ton profil':'Les profils que tu suis';
+ $('followList').innerHTML='<div class="loading">Chargement de la liste…</div>';
+ const {data:links,error}=await db.from('user_follows').select('follower_id,followed_id,created_at').eq(type==='followers'?'followed_id':'follower_id',user.id).order('created_at',{ascending:false}).limit(100);
+ if(error){$('followList').innerHTML='<div class="follow-empty">Impossible de charger cette liste.</div>';console.error(error);return}
+ const ids=(links||[]).map(x=>type==='followers'?x.follower_id:x.followed_id);
+ if(!ids.length){$('followList').innerHTML='<div class="follow-empty">'+(type==='followers'?'Personne ne suit encore ton profil.':'Tu ne suis encore aucun membre.')+'</div>';return}
+ const {data:people,error:peopleError}=await db.from('profiles').select('id,username,avatar_path,created_at').in('id',ids);
+ if(peopleError){$('followList').innerHTML='<div class="follow-empty">Impossible de charger les profils.</div>';console.error(peopleError);return}
+ const byId=new Map((people||[]).map(p=>[p.id,p]));
+ const {data:mine}=await db.from('user_follows').select('followed_id').eq('follower_id',user.id).in('followed_id',ids);
+ const followingIds=new Set((mine||[]).map(x=>x.followed_id));
+ $('followList').innerHTML=ids.map(id=>{
+  const p=byId.get(id);if(!p)return '';
+  const name=p.username||'Membre CONFESS';
+  const avatar=p.avatar_path?'<img alt="" src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'">':esc(name.slice(0,1).toUpperCase());
+  const since=p.created_at?'Membre depuis '+new Date(p.created_at).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'Membre CONFESS';
+  const isFollowing=followingIds.has(id);
+  return '<article class="follow-person"><a class="follow-person-main" href="member.html?id='+encodeURIComponent(id)+'"><span class="follow-avatar">'+avatar+'</span><span class="follow-person-name"><strong>@'+esc(name)+'</strong><small>'+esc(since)+'</small></span></a>'+(id===user.id?'<span class="follow-person-action">Toi</span>':'<button class="follow-person-action '+(isFollowing?'on':'')+'" type="button" data-list-follow="'+id+'" data-following="'+isFollowing+'">'+(isFollowing?'✓ Abonné':'＋ S’abonner')+'</button>')+'</article>';
+ }).join('')||'<div class="follow-empty">Aucun profil disponible.</div>';
+ document.querySelectorAll('[data-list-follow]').forEach(b=>b.onclick=()=>toggleListFollow(b.dataset.listFollow,b));
+}
+async function toggleListFollow(targetId,btn){
+ const wasFollowing=btn.dataset.following==='true';btn.disabled=true;
+ const result=wasFollowing?await db.from('user_follows').delete().eq('follower_id',user.id).eq('followed_id',targetId):await db.from('user_follows').insert({follower_id:user.id,followed_id:targetId});
+ btn.disabled=false;
+ if(result.error){toast('Impossible de modifier cet abonnement.');console.error(result.error);return}
+ const nowFollowing=!wasFollowing;btn.dataset.following=String(nowFollowing);btn.textContent=nowFollowing?'✓ Abonné':'＋ S’abonner';btn.classList.toggle('on',nowFollowing);
+ const {count}=await db.from('user_follows').select('followed_id',{count:'exact',head:true}).eq('follower_id',user.id);
+ $('myFollowingStat').textContent=count??0;
+ if(activeFollowType==='following'&&!nowFollowing)await loadFollowList('following');
+}
+document.querySelectorAll('[data-follow-list]').forEach(b=>b.addEventListener('click',()=>openFollowModal(b.dataset.followList)));
+document.querySelectorAll('[data-follow-close]').forEach(b=>b.addEventListener('click',closeFollowModal));
+document.querySelectorAll('[data-follow-type]').forEach(b=>b.addEventListener('click',()=>loadFollowList(b.dataset.followType)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('followModal').hidden)closeFollowModal()});
+
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));function switchTab(tab){const posts=tab==='posts';$('postsTab').hidden=!posts;$('aboutTab').hidden=posts;document.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}async function togglePin(btn){const pin=btn.dataset.pinned!=='true';if(pin){const {count,error}=await db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').eq('is_pinned',true);if(error)return toast('Impossible de vérifier les publications épinglées.');if((count||0)>=3)return toast('Tu peux épingler 3 publications maximum.')}btn.disabled=true;const {error}=await db.from('posts').update({is_pinned:pin}).eq('id',btn.dataset.pin).eq('author_profile_id',user.id);btn.disabled=false;if(error){toast('Impossible de modifier cette épingle.');console.error(error);return}toast(pin?'Publication épinglée en haut du profil !':'Publication désépinglée.');await loadPosts()}
+$('profileForm').addEventListener('submit',async e=>{
  e.preventDefault();const username=$('username').value.trim(),bio=$('bio').value.trim();
  if(!/^[A-Za-z0-9_]{3,20}$/.test(username))return toast('Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.');
  $('saveBtn').disabled=true;
@@ -73,7 +121,8 @@ $('avatarFile').addEventListener('change',async()=>{
  if(saveError){toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return}
  profile.avatar_path=data.path;showAvatar(data.path);toast('Photo de profil mise à jour !');
 });
-$('publicProfileBtn').onclick=()=>location.href='member.html?id='+encodeURIComponent(user.id);\n$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
+$('publicProfileBtn').onclick=()=>location.href='member.html?id='+encodeURIComponent(user.id);
+$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')location.href='auth.html'});
 load();
 })();
