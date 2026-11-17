@@ -615,7 +615,7 @@ $('publishBtn').onclick=async()=>{
  clearTimeout(draftTimer);draftUserEdited=true;
  const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}
  await deleteCloudDraft();draftUserEdited=false;updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();
- location.href='index.html?published=1'
+ location.href='index.html?newpost='+encodeURIComponent(postId)+'&published=1'
 }
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
