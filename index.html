@@ -796,7 +796,14 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  if(nextSession){session=nextSession;setUser()}
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
-(async()=>{await loadCategories();await loadSession();await loadFeed()})();
+(async()=>{
+ await loadCategories();
+ // Affiche le fil sans attendre la restauration du brouillon cloud ou du profil.
+ const firstFeedLoad=loadFeed();
+ try{await loadSession()}catch(error){console.error('Session STASH indisponible au démarrage:',error)}
+ await firstFeedLoad;
+ await loadFeed();
+})();
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
