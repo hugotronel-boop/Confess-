@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#100e1b"><title>CONFESS — Explorer</title>
+<meta name="theme-color" content="#100e1b"><title>STASH — Explorer</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
@@ -13,7 +13,7 @@ main{width:min(800px,100%);margin:24px auto;padding:0 15px}.hero{background:line
 
 .confess-bell{position:relative;border:1px solid var(--line,#39334f);background:var(--panel,#1b1830);color:#fff;border-radius:30px;padding:9px 12px;font-size:16px;cursor:pointer;margin-left:8px}.confess-bell-count{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:20px;background:#ff5ba7;color:#241326;font-size:10px;font-weight:900;display:grid;place-items:center;padding:0 4px}.confess-bell-count[hidden]{display:none}
 
-/* CONFESS — nouvelle direction visuelle glass / noir */
+/* STASH — nouvelle direction visuelle glass / noir */
 :root{color-scheme:dark;--bg:#050506;--panel:rgba(255,255,255,.055);--panel2:rgba(255,255,255,.085);--muted:#a7a7ad;--pink:#ff6cab;--orange:#ffad72;--line:rgba(255,255,255,.16);--white:#fff}
 html{background:#050506}
 body{background:radial-gradient(ellipse at 50% -18%,rgba(255,108,171,.13),transparent 42%),radial-gradient(ellipse at 100% 35%,rgba(255,173,114,.08),transparent 34%),#050506!important;color:#fff;font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif!important;position:relative;isolation:isolate}
@@ -39,7 +39,7 @@ main{position:relative;z-index:1}
 @media(max-width:640px){body:before{right:-85px;top:115px;opacity:.35}body:after{right:-25px;top:165px;opacity:.22}}
 
 
-/* Navigation principale persistante sur toutes les pages CONFESS */
+/* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
 .confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
@@ -49,13 +49,13 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </style>
 </head>
 <body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
-<section class="hero"><h1>Explore CONFESS 🔎</h1><p>Retrouve des discussions, des sujets et des membres de la communauté.</p></section>
+<section class="hero"><h1>Explore STASH 🔎</h1><p>Retrouve des discussions, des sujets et des membres de la communauté.</p></section>
 <section class="section"><h2>🔥 Tendances de la semaine</h2><span class="muted">7 derniers jours</span></section><div id="trending"><div class="loading">On repère les discussions qui montent…</div></div>
 <form class="search" id="searchForm"><input id="searchInput" type="search" maxlength="80" placeholder="Un sujet, un mot-clé, un pseudo…" autocomplete="off"><button class="primary" type="submit">Rechercher</button></form>
 <div class="tabs"><button class="tab active" data-mode="all">Tout</button><button class="tab" data-mode="posts">Publications</button><button class="tab" data-mode="members">Membres</button></div>
-<div id="results"><div class="empty">Lance une recherche pour découvrir CONFESS 👀</div></div>
+<div id="results"><div class="empty">Lance une recherche pour découvrir STASH 👀</div></div>
 </main><div class="toast" id="toast"></div>
 <script>
 (()=> {
@@ -64,7 +64,7 @@ let mode='all',lastQuery='';
 async function loadTrends(){
  const since=new Date(Date.now()-7*86400000).toISOString();
  const {data:posts,error}=await db.from('posts').select('id,body,is_anonymous,author_label,created_at,categories(label)').eq('status','published').gte('created_at',since).order('created_at',{ascending:false}).limit(100);
- if(error){console.error('Tendances CONFESS:',error);$('trending').innerHTML='<div class="empty">Les tendances sont momentanément indisponibles.</div>';return}
+ if(error){console.error('Tendances STASH:',error);$('trending').innerHTML='<div class="empty">Les tendances sont momentanément indisponibles.</div>';return}
  if(!posts?.length){$('trending').innerHTML='<div class="empty">Pas encore assez de discussions cette semaine. À toi de lancer la tendance ! ✨</div>';return}
  const ids=posts.map(p=>p.id);
  const [likesResult,commentsResult]=await Promise.all([db.from('post_reactions').select('post_id').in('post_id',ids),db.from('comments').select('post_id').in('post_id',ids).eq('status','published')]);
@@ -94,7 +94,7 @@ async function search(raw){
   if(error)console.error(error);else posts=data||[];
  }
  let html='';
- if(mode!=='posts')html+='<div class="section"><h2>Membres</h2><span class="muted">'+members.length+' résultat(s)</span></div>'+(members.length?members.map(m=>{let avatar=m.avatar_path?'<img alt="" src="'+esc(db.storage.from('confess-avatars').getPublicUrl(m.avatar_path).data.publicUrl)+'">':esc((m.username||'?')[0].toUpperCase());return '<article class="member"><div class="avatar">'+avatar+'</div><div class="member-info"><strong>@'+esc(m.username)+'</strong><p>'+esc(m.bio||'Membre de CONFESS')+'</p></div><button class="open" data-member="'+esc(m.id)+'">Voir</button></article>'}).join(''):'<div class="empty">Aucun membre trouvé.</div>');
+ if(mode!=='posts')html+='<div class="section"><h2>Membres</h2><span class="muted">'+members.length+' résultat(s)</span></div>'+(members.length?members.map(m=>{let avatar=m.avatar_path?'<img alt="" src="'+esc(db.storage.from('confess-avatars').getPublicUrl(m.avatar_path).data.publicUrl)+'">':esc((m.username||'?')[0].toUpperCase());return '<article class="member"><div class="avatar">'+avatar+'</div><div class="member-info"><strong>@'+esc(m.username)+'</strong><p>'+esc(m.bio||'Membre de STASH')+'</p></div><button class="open" data-member="'+esc(m.id)+'">Voir</button></article>'}).join(''):'<div class="empty">Aucun membre trouvé.</div>');
  if(mode!=='members')html+='<div class="section"><h2>Publications</h2><span class="muted">'+posts.length+' résultat(s)</span></div>'+(posts.length?posts.map(p=>'<article class="post"><div class="post-meta">'+(p.is_anonymous?'🎭 '+esc(p.author_label):'💬 '+esc(p.author_label))+' · '+ago(p.created_at)+' · '+esc(p.categories?.label||'Discussion')+'</div><div class="post-body">'+esc(p.body)+'</div></article>').join(''):'<div class="empty">Aucune publication trouvée.</div>');
  $('results').innerHTML=html;
  $('results').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
@@ -112,7 +112,7 @@ async function search(raw){
   const id=session?.user?.id||null;
   if(!id){badge.hidden=true;return}
   const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
-  if(error){console.warn('CONFESS notifications:',error.message);return}
+  if(error){console.warn('STASH notifications:',error.message);return}
   badge.textContent=(count||0)>99?'99+':String(count||0);
   badge.hidden=!count;
  }
