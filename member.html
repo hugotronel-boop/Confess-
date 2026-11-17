@@ -332,22 +332,5 @@ document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click
 <a href="./profile.html" data-nav="profile"><b>◉</b><span>Profil</span></a>
 </nav>
 
-<script id="stash-liquid-bubbles-nav">
-(()=>{
- const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashBubblesReady)return;nav.dataset.stashBubblesReady='1';
- const links=[...nav.querySelectorAll('a[href]')];if(!links.length)return;
- const current=()=>links.find(a=>a.getAttribute('aria-current')==='page')||links.find(a=>{try{return new URL(a.href,location.href).pathname===location.pathname}catch(_){return false}})||links[0];
- let selected=current(),last=null,startX=0,startY=0,dragging=false,moved=false,suppressClick=false;
- function activate(a){if(!a)return;selected=a;links.forEach(l=>{const on=l===a;l.classList.toggle('stash-bubble-active',on);l.classList.toggle('stash-nav-hover',on)});}
- activate(selected);
- function linkAt(x,y){const el=document.elementFromPoint(x,y);const a=el?.closest?.('.confess-global-nav a[href]');return a&&nav.contains(a)?a:null}
- nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;activate(a);try{nav.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});
- nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.12)moved=true;const a=linkAt(e.clientX,e.clientY);if(a&&a!==last){last=a;activate(a)}if(moved&&e.cancelable)e.preventDefault()},{passive:false});
- function end(e){if(!dragging)return;dragging=false;if(moved&&last){e.preventDefault();suppressClick=true;activate(last);location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else activate(current())}
- nav.addEventListener('pointerup',end);
- nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;activate(current())});
- nav.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopPropagation()}},true);
- window.addEventListener('resize',()=>activate(selected),{passive:true});
-})();
-</script>
+<script id="stash-liquid-bubbles-nav">(()=>{const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashBubblesReady)return;nav.dataset.stashBubblesReady='1';const links=[...nav.querySelectorAll('a[href]')];if(!links.length)return;const current=()=>links.find(a=>a.getAttribute('aria-current')==='page')||links.find(a=>{try{return new URL(a.href,location.href).pathname===location.pathname}catch(_){return false}})||links[0];let selected=current(),last=null,startX=0,startY=0,dragging=false,moved=false,suppressClick=false;function activate(a){if(!a)return;selected=a;links.forEach(l=>{const on=l===a;l.classList.toggle('stash-bubble-active',on);l.classList.toggle('stash-nav-hover',on)})}activate(selected);function linkAt(x,y){const el=document.elementFromPoint(x,y);const a=el?.closest?.('.confess-global-nav a[href]');return a&&nav.contains(a)?a:null}nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;activate(a);try{nav.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.12)moved=true;const a=linkAt(e.clientX,e.clientY);if(a&&a!==last){last=a;activate(a)}if(moved&&e.cancelable)e.preventDefault()},{passive:false});function end(e){if(!dragging)return;dragging=false;if(moved&&last){e.preventDefault();suppressClick=true;activate(last);location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else activate(current())}nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;activate(current())});nav.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopPropagation()}},true);window.addEventListener('resize',()=>activate(selected),{passive:true})})();</script>
 </body></html>
