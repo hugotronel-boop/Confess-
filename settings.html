@@ -43,7 +43,7 @@
 <button class="save" id="mfaVerify">Activer la double authentification</button>
 </div>
 <div id="mfaManage" style="display:none;margin-top:12px"><p class="hint" id="mfaFactorLabel"></p><button class="remove" id="mfaRemove">Désactiver la double authentification</button></div>
-<p class="hint" id="mfaStatus" aria-live="polite">L'activation ajoute un second facteur à ton compte. La vérification au moment de la connexion sera nécessaire avant de considérer la protection comme complète.</p></section><section class="card" id="dataExport"><h2>📦 Télécharger mes données</h2><p class="desc">Récupère une copie de tes informations CONFESS : profil, publications, commentaires, réactions, abonnements, conversations accessibles et paramètres.</p><button class="save" id="exportData">Télécharger mes données (.json)</button><p class="hint" id="exportStatus" aria-live="polite">Le fichier est généré sur ton appareil. Il peut contenir des échanges privés : conserve-le dans un endroit sûr.</p></section><section class="card"><h2>Bon réflexe sécurité 🛡️</h2><p class="desc">Utilise un mot de passe unique et ne le partage jamais. Déconnecte-toi des appareils que tu ne reconnais pas.</p></section>
+<p class="hint" id="mfaStatus" aria-live="polite">L'activation ajoute un second facteur à ton compte. La vérification au moment de la connexion sera nécessaire avant de considérer la protection comme complète.</p></section><section class="card" id="accountDeletion" style="border:1px solid #8f3e5d"><h2>⚠️ Supprimer mon compte</h2><p class="desc">Suppression définitive de ton compte et de tes données personnelles. Tes publications et commentaires publics seront conservés sous le nom « Compte supprimé » pour ne pas casser les discussions. Tes messages resteront dans les conversations, sans ton identité. Ton profil, tes abonnements, tes réactions, tes paramètres et tes images seront supprimés.</p><label class="hint" for="deletePassword">Mot de passe actuel</label><input class="field" id="deletePassword" type="password" autocomplete="current-password" placeholder="Ton mot de passe"><label class="hint" for="deleteConfirm">Pour confirmer, écris SUPPRIMER</label><input class="field" id="deleteConfirm" autocomplete="off" placeholder="SUPPRIMER"><button class="remove" id="deleteAccount" style="margin-top:10px">Supprimer définitivement mon compte</button><p class="hint" id="deleteStatus" aria-live="polite">Une reconnexion récente sera demandée. Si la double authentification est activée, ton code sera également demandé.</p></section><section class="card" id="dataExport"><h2>📦 Télécharger mes données</h2><p class="desc">Récupère une copie de tes informations CONFESS : profil, publications, commentaires, réactions, abonnements, conversations accessibles et paramètres.</p><button class="save" id="exportData">Télécharger mes données (.json)</button><p class="hint" id="exportStatus" aria-live="polite">Le fichier est généré sur ton appareil. Il peut contenir des échanges privés : conserve-le dans un endroit sûr.</p></section><section class="card"><h2>Bon réflexe sécurité 🛡️</h2><p class="desc">Utilise un mot de passe unique et ne le partage jamais. Déconnecte-toi des appareils que tu ne reconnais pas.</p></section>
 </main><div class="toast" id="toast"></div>
 <script>
 (()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let user=null;
@@ -161,6 +161,42 @@ async function exportMyData(){
  finally{btn.disabled=false}
 }
 $('exportData').onclick=exportMyData;
+$('deleteAccount').onclick=async()=>{
+ const btn=$('deleteAccount'),password=$('deletePassword').value,confirmation=$('deleteConfirm').value.trim();
+ if(confirmation!=='SUPPRIMER'){toast('Écris SUPPRIMER pour confirmer.');return}
+ if(!password){toast('Saisis ton mot de passe actuel.');return}
+ if(!confirm('Dernière confirmation : cette suppression est définitive et ne pourra pas être annulée. Continuer ?'))return;
+ btn.disabled=true;$('deleteStatus').textContent='Vérification de ton identité…';
+ try{
+  const login=await db.auth.signInWithPassword({email:user.email,password});
+  if(login.error)throw new Error('Mot de passe incorrect ou reconnexion impossible.');
+  const freshUser=login.data.user,freshSession=login.data.session;
+  if(!freshUser||!freshSession)throw new Error('Impossible de confirmer ta session.');
+  const factors=await db.auth.mfa.listFactors();
+  if(factors.error)throw factors.error;
+  const verified=(factors.data.totp||[]).filter(f=>f.status==='verified');
+  if(verified.length){
+   const code=prompt('Entre le code à 6 chiffres de ton application d’authentification pour confirmer la suppression :');
+   if(!code)throw new Error('Vérification à deux facteurs annulée.');
+   const factor=verified[0],challenge=await db.auth.mfa.challenge({factorId:factor.id});
+   if(challenge.error)throw challenge.error;
+   const check=await db.auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code:code.replace(/\\D/g,'')});
+   if(check.error)throw new Error('Code de double authentification incorrect.');
+   await db.auth.refreshSession();
+  }
+  const {data:{session:finalSession}}=await db.auth.getSession();
+  if(!finalSession?.access_token)throw new Error('Session de confirmation introuvable.');
+  $('deleteStatus').textContent='Suppression sécurisée en cours…';
+  const response=await fetch(URL+'/functions/v1/confess-delete-account',{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+finalSession.access_token},body:JSON.stringify({})});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.success)throw new Error(result.error||'La suppression a échoué.');
+  $('deleteStatus').textContent='Compte supprimé. Redirection…';
+  await db.auth.signOut({scope:'local'});
+  location.href='auth.html?account_deleted=1';
+ }catch(e){console.error(e);$('deleteStatus').textContent=e.message||'Impossible de supprimer le compte.';toast(e.message||'Suppression impossible.');}
+ finally{btn.disabled=false}
+};
+
 $('saveSettings').onclick=async()=>{const value=$('messageRule').value;$('saveSettings').disabled=true;const {error}=await db.from('user_settings').upsert({user_id:user.id,allow_messages_from:value,updated_at:new Date().toISOString()},{onConflict:'user_id'});$('saveSettings').disabled=false;if(error){toast('Enregistrement impossible.');console.error(error);return}toast('Préférences enregistrées ✨')};
 
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.html'});init();
