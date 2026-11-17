@@ -127,6 +127,7 @@ body:before,body:after{display:none!important}
 @media(max-width:640px){.stash-3d-scene{opacity:.22}.stash-3d-controls{top:82px;right:14px}.stash-3d-controls .arrow{width:30px;height:30px}.stash-3d-loader{top:36%}}
 
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
 <canvas id="scene" class="stash-3d-scene" aria-label="Cube de verre 3D rotatif. Faites glisser pour le faire tourner."></canvas>
@@ -548,7 +549,6 @@ db.auth.onAuthStateChange((event,nextSession)=>{
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
