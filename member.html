@@ -153,6 +153,34 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 .confess-global-nav a.nav-publish-center{z-index:2!important}
 .confess-global-nav a.stash-nav-hover{color:#fff!important;transform:scale(1.045)!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav .stash-nav-indicator{transition:none!important}}
+
+/* STASH — bulles de verre indépendantes, effet détachement / rattachement */
+.confess-global-nav .stash-nav-indicator{display:none!important}
+.confess-global-nav{touch-action:pan-y!important}
+.confess-global-nav a:not(.nav-publish-center){isolation:isolate!important;overflow:visible!important;border-color:transparent!important;background:transparent!important;box-shadow:none!important}
+.confess-global-nav a:not(.nav-publish-center)::before{
+ content:"";position:absolute;z-index:-1;left:50%;top:50%;width:47px;height:47px;
+ transform:translate(-50%,-50%) scale(.72);border-radius:50%;
+ opacity:.34;border:1px solid rgba(255,255,255,.12);
+ background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.16),rgba(255,255,255,.035) 52%,rgba(255,108,171,.035));
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.12),0 3px 12px rgba(0,0,0,.12);
+ -webkit-backdrop-filter:blur(13px) saturate(155%);backdrop-filter:blur(13px) saturate(155%);
+ transition:transform .34s cubic-bezier(.2,.9,.25,1.25),opacity .22s ease,background .25s ease,border-color .25s ease,box-shadow .28s ease;
+ pointer-events:none;
+}
+.confess-global-nav a:not(.nav-publish-center).stash-bubble-active::before{
+ transform:translate(-50%,-50%) scale(1.08);opacity:1;border-color:rgba(255,255,255,.36);
+ background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.34),rgba(255,255,255,.13) 43%,rgba(255,108,171,.19) 78%,rgba(255,173,114,.14));
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.34),inset 0 -5px 10px rgba(255,108,171,.08),0 5px 19px rgba(0,0,0,.22),0 0 19px rgba(255,108,171,.2);
+ animation:stash-bubble-attach .48s cubic-bezier(.2,.85,.25,1.35) both;
+}
+.confess-global-nav a:not(.nav-publish-center):active::before{transform:translate(-50%,-50%) scale(.9)}
+.confess-global-nav a:not(.nav-publish-center) b,.confess-global-nav a:not(.nav-publish-center) span{position:relative;z-index:1}
+.confess-global-nav a.nav-publish-center{transition:transform .34s cubic-bezier(.2,.9,.25,1.25),filter .25s ease!important}
+.confess-global-nav a.nav-publish-center.stash-bubble-active{transform:translateY(-2px) scale(1.055)!important;filter:drop-shadow(0 0 12px rgba(255,108,171,.34))}
+@keyframes stash-bubble-attach{0%{transform:translate(-50%,-50%) scale(.58,.72)}48%{transform:translate(-50%,-50%) scale(1.19,.91)}72%{transform:translate(-50%,-50%) scale(.96,1.08)}100%{transform:translate(-50%,-50%) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
+
 </style>
 </head><body><header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header><main><section class="hero"><div class="cover" id="cover"></div><div class="profile"><div class="avatar" id="avatar">?</div><div class="info"><h1 id="name">Profil membre</h1><p class="handle" id="handle"></p><p class="since" id="since"></p><button class="follow" id="followBtn" hidden>S'abonner</button><button class="message-btn" id="messageBtn" hidden>💬 Message</button><div class="moderation-actions" id="moderationActions" hidden><button id="blockBtn">🚫 Bloquer</button><button id="muteBtn">🙈 Masquer</button><button id="reportMemberBtn">⚑ Signaler</button></div></div></div><p class="bio" id="bio"></p><div class="stats"><div class="stat"><strong id="postsCount">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="followersCount">—</strong><span>Abonnés · Voir</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="followingCount">—</strong><span>Abonnements · Voir</span></button></div></section><div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">📝 Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">👤 À propos</button><button class="tab-btn" data-tab="wall" role="tab" aria-selected="false">💬 Mur</button></div><div id="postsTab"><div class="section-head"><h2>Publications publiques</h2></div><div id="posts"><div class="loading">Chargement du profil…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent"></div></div><div id="wallTab" hidden><div class="section-head"><h2>Le mur du profil</h2><span class="count" id="wallCount">0 message</span></div><div id="wallComposer"></div><div id="wallComments"><div class="loading">Chargement du mur…</div></div></div></main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>(()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),memberId=new URLSearchParams(location.search).get('id');let me=null,following=false;
@@ -304,22 +332,22 @@ document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click
 <a href="./profile.html" data-nav="profile"><b>◉</b><span>Profil</span></a>
 </nav>
 
-<script id="stash-ios-photo-nav">
+<script id="stash-liquid-bubbles-nav">
 (()=>{
- const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashSwipeReady)return;nav.dataset.stashSwipeReady='1';
+ const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashBubblesReady)return;nav.dataset.stashBubblesReady='1';
  const links=[...nav.querySelectorAll('a[href]')];if(!links.length)return;
- const indicator=document.createElement('span');indicator.className='stash-nav-indicator';indicator.setAttribute('aria-hidden','true');nav.prepend(indicator);
  const current=()=>links.find(a=>a.getAttribute('aria-current')==='page')||links.find(a=>{try{return new URL(a.href,location.href).pathname===location.pathname}catch(_){return false}})||links[0];
- let selected=current(),startX=0,startY=0,last=null,dragging=false,moved=false,suppressClick=false;
- function place(a,instant=false){if(!a)return;selected=a;const x=a.offsetLeft,w=a.offsetWidth;indicator.style.left=x+'px';indicator.style.width=w+'px';links.forEach(l=>l.classList.toggle('stash-nav-hover',l===a));if(instant){indicator.style.transition='none';requestAnimationFrame(()=>{indicator.style.transition=''});} }
- requestAnimationFrame(()=>{place(selected,true);nav.classList.add('stash-nav-ready')});
- function linkAt(x,y){const el=document.elementFromPoint(x,y);return el?.closest?.('.confess-global-nav a[href]')&&nav.contains(el.closest('.confess-global-nav a[href]'))?el.closest('.confess-global-nav a[href]'):null}
- nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;nav.classList.add('stash-nav-dragging');try{nav.setPointerCapture(e.pointerId)}catch(_){};place(a);},{passive:true});
- nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy)*1.15)moved=true;const a=linkAt(e.clientX,e.clientY);if(a){last=a;place(a)}if(moved&&e.cancelable)e.preventDefault();},{passive:false});
- function end(e){if(!dragging)return;dragging=false;nav.classList.remove('stash-nav-dragging');if(moved&&last){e.preventDefault();suppressClick=true;links.forEach(l=>l.classList.remove('stash-nav-hover'));location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else{place(current())}}
- nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;nav.classList.remove('stash-nav-dragging');place(current())});
+ let selected=current(),last=null,startX=0,startY=0,dragging=false,moved=false,suppressClick=false;
+ function activate(a){if(!a)return;selected=a;links.forEach(l=>{const on=l===a;l.classList.toggle('stash-bubble-active',on);l.classList.toggle('stash-nav-hover',on)});}
+ activate(selected);
+ function linkAt(x,y){const el=document.elementFromPoint(x,y);const a=el?.closest?.('.confess-global-nav a[href]');return a&&nav.contains(a)?a:null}
+ nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;activate(a);try{nav.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});
+ nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.12)moved=true;const a=linkAt(e.clientX,e.clientY);if(a&&a!==last){last=a;activate(a)}if(moved&&e.cancelable)e.preventDefault()},{passive:false});
+ function end(e){if(!dragging)return;dragging=false;if(moved&&last){e.preventDefault();suppressClick=true;activate(last);location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else activate(current())}
+ nav.addEventListener('pointerup',end);
+ nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;activate(current())});
  nav.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopPropagation()}},true);
- window.addEventListener('resize',()=>place(selected,true),{passive:true});
+ window.addEventListener('resize',()=>activate(selected),{passive:true});
 })();
 </script>
 </body></html>
