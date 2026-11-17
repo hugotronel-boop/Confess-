@@ -256,7 +256,7 @@ function layout(){
  const W=window.innerWidth,H=window.innerHeight,mobile=W<768||W/H<1;screenW=W;screenH=H;dpr=Math.min(window.devicePixelRatio||1,2);
  renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
  const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*10,visW=visH*camera.aspect;
- const sx=mobile?.5:.517,sy=mobile?.43:.488; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
+ const sx=mobile?.5:.517,sy=mobile?.40:.458; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
  const px=Math.min(H*.44,W*(mobile?.45:.29));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
  drawHeadline();resizeTargets();
 }
