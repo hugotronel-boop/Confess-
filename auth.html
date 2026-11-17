@@ -132,6 +132,10 @@ input:focus{border-color:#d77da7;box-shadow:0 0 0 3px #ff78ae18}
 }
 
 </style>
+<style id="stash-no-input-zoom">
+/* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
+input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}
+</style>
 </head>
 <body>
 <section class="hero" id="hero">
