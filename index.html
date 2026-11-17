@@ -26,6 +26,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .overlay{display:none;position:fixed;inset:0;background:#0009;z-index:30;align-items:center;justify-content:center;padding:18px}.overlay.show{display:flex}.modal{width:min(100%,520px);max-height:85vh;overflow:auto;background:var(--panel);border:1px solid #ffffff20;border-radius:22px;padding:19px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.modalhead h3{margin:0;font-size:17px}.close{border:0;background:#ffffff12;color:white;border-radius:10px;padding:7px 11px}.comment{padding:12px 0;border-bottom:1px solid #ffffff12}.comment.reply{margin-left:20px;padding-left:13px;border-left:2px solid #ff5ba755}.comment strong{font-size:12px}.comment p{font-size:13px;line-height:1.5;color:#e4deed;margin:5px 0}.comment small{color:var(--muted);font-size:10px}.comment-actions{display:flex;gap:8px;margin-top:7px}.comment-actions button{border:0;background:transparent;color:var(--muted);font-size:11px;padding:5px 7px;border-radius:8px}.comment-actions button.selected{color:#ff91c4;background:#ff5ba71a}.replying{display:none;align-items:center;justify-content:space-between;background:#ff5ba714;color:#ffb2d2;border-radius:10px;padding:8px 10px;font-size:11px;margin-bottom:8px}.replying.show{display:flex}.replying button{border:0;background:none;color:#ffb2d2;font-size:11px}.toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#302744;color:white;border:1px solid #ffffff22;padding:12px 16px;border-radius:13px;font-size:12px;z-index:50;display:none;max-width:90%;text-align:center}.toast.show{display:block}
 @media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr) 205px}.leftside{display:none}}
 @media(max-width:620px){.layout{display:block;padding:14px 12px}.rightside{display:none}.top{padding:11px 14px}.brand strong{font-size:18px}.topright .pill{padding:8px 10px}.welcome{padding:17px}.welcome h1{font-size:20px}.composer,.post{border-radius:18px;padding:14px}.bottomnav{display:flex}.feed-head{margin-top:17px}}
+.comment.deleted{opacity:.72;border-bottom-style:dashed}.comment.deleted p{font-style:italic;color:var(--muted)}.comment-actions [data-edit-comment]{color:#ffacd1}.comment-actions [data-delete-comment]{color:#ff8c8c}
 </style>
 </head>
 <body>
@@ -218,30 +219,55 @@ async function sharePost(id){
 }
 async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
 async function toggleSave(id){if(!session)return toast('Connecte-toi pour enregistrer une publication.');const {data:existing}=await db.from('post_bookmarks').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});if(result.error){toast('Impossible de modifier tes enregistrements.');return}toast(existing?'Publication retirée des favoris.':'Publication enregistrée.');loadFeed()}
-let activeReply=null,activeCommentSort='recent';
+let activeReply=null,activeCommentSort='recent',activeCommentRows=[];
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
  activePost=id;activeReply=null;$('replyingBar').classList.remove('show');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
- const {data,error}=await db.from('comments').select('id,body,author_label,created_at,parent_comment_id').eq('post_id',id).eq('status','published').order('created_at');
+ const {data,error}=await db.from('comments').select('id,body,author_label,created_at,updated_at,parent_comment_id,status').eq('post_id',id).in('status',['published','deleted']).order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
- const rows=data||[];
- if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas encore de réponse. Lance la discussion !</div>';return}
- const ids=rows.map(x=>x.id);
- const {data:reactions,error:reactionError}=await db.from('comment_reactions').select('comment_id,user_id').in('comment_id',ids);
- if(reactionError)console.error(reactionError);
+ const rows=data||[];activeCommentRows=rows;
+ if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas encore de réponse. Lance la discussion !</div>';updateCommentSortUI();return}
+ const ids=rows.map(x=>x.id),liveIds=rows.filter(x=>x.status==='published').map(x=>x.id);
+ let myCommentIds=new Set();
+ if(session){const {data:mine,error:mineError}=await db.rpc('get_my_confess_comment_ids',{p_comment_ids:ids});if(mineError)console.error(mineError);myCommentIds=new Set((mine||[]).map(x=>x.comment_id))}
+ let reactions=[];
+ if(liveIds.length){const {data,error:reactionError}=await db.from('comment_reactions').select('comment_id,user_id').in('comment_id',liveIds);if(reactionError)console.error(reactionError);reactions=data||[]}
  const counts={},liked=new Set();
- (reactions||[]).forEach(r=>{counts[r.comment_id]=(counts[r.comment_id]||0)+1;if(session&&r.user_id===session.user.id)liked.add(r.comment_id)});
+ reactions.forEach(r=>{counts[r.comment_id]=(counts[r.comment_id]||0)+1;if(session&&r.user_id===session.user.id)liked.add(r.comment_id)});
  const byId=new Map(rows.map(x=>[x.id,x]));
  const score=x=>counts[x.id]||0;
  const sortRows=list=>list.sort((a,b)=>activeCommentSort==='popular'?(score(b)-score(a)||new Date(b.created_at)-new Date(a.created_at)):(new Date(b.created_at)-new Date(a.created_at)));
  const roots=sortRows(rows.filter(x=>!x.parent_comment_id||!byId.has(x.parent_comment_id)));
  const children=sortRows(rows.filter(x=>x.parent_comment_id&&byId.has(x.parent_comment_id)));
  updateCommentSortUI();
- const renderComment=x=>'<div class="comment" id="comment-'+x.id+'"><strong>'+esc(x.author_label)+'</strong><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button></div></div>';
- $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child).replace('class="comment"','class="comment reply"')).join('')).join('');
- $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris ta réponse…';$('commentBody').focus()});
+ const renderComment=(x,isReply=false)=>{
+  const classes='comment'+(isReply?' reply':'')+(x.status==='deleted'?' deleted':'');
+  if(x.status==='deleted')return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>Commentaire supprimé</strong><p>Ce commentaire a été supprimé par son auteur.</p><small>'+ago(x.created_at)+'</small></div>';
+  const edited=x.updated_at&&new Date(x.updated_at).getTime()>new Date(x.created_at).getTime()+1000;
+  const ownerActions=myCommentIds.has(x.id)?'<button type="button" data-edit-comment="'+x.id+'">✏️ Modifier</button><button type="button" data-delete-comment="'+x.id+'">🗑️ Supprimer</button>':'';
+  return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>'+esc(x.author_label)+'</strong><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
+ };
+ $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child,true)).join('')).join('');
+ $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
  $('commentsList').querySelectorAll('[data-comment-like]').forEach(b=>b.onclick=()=>toggleCommentLike(b.dataset.commentLike));
  $('commentsList').querySelectorAll('[data-report-comment]').forEach(b=>b.onclick=()=>reportTarget('comment_id',b.dataset.reportComment));
+ $('commentsList').querySelectorAll('[data-edit-comment]').forEach(b=>b.onclick=()=>editComment(b.dataset.editComment));
+ $('commentsList').querySelectorAll('[data-delete-comment]').forEach(b=>b.onclick=()=>deleteComment(b.dataset.deleteComment));
+}
+async function editComment(id){
+ const row=activeCommentRows.find(x=>x.id===id);if(!session||!row||row.status!=='published')return;
+ const body=prompt('Modifie ta réponse (2 000 caractères maximum) :',row.body);if(body===null)return;
+ if(!body.trim()||body.trim().length>2000){toast('Ta réponse doit contenir entre 1 et 2 000 caractères.');return}
+ const {error}=await db.rpc('edit_confess_comment',{p_comment_id:id,p_body:body});
+ if(error){toast('Modification impossible : '+error.message);console.error(error);return}
+ toast('Ta réponse a été modifiée ✏️');await openComments(activePost);
+}
+async function deleteComment(id){
+ const row=activeCommentRows.find(x=>x.id===id);if(!session||!row||row.status!=='published')return;
+ if(!confirm('Supprimer définitivement le texte de cette réponse ? Les réponses associées resteront visibles.'))return;
+ const {error}=await db.rpc('delete_confess_comment',{p_comment_id:id});
+ if(error){toast('Suppression impossible : '+error.message);console.error(error);return}
+ toast('Ta réponse a été supprimée.');await openComments(activePost);loadFeed();
 }
 async function toggleCommentLike(id){
  if(!session){toast('Connecte-toi pour aimer une réponse.');return}
