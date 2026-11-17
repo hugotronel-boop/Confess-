@@ -53,6 +53,10 @@ main{position:relative;z-index:1}
 .empty,.loading{background:transparent!important;box-shadow:none!important;border:0!important}
 @media(max-width:640px){body:before,body:after{display:none!important}}
 </style>
+<style id="stash-no-input-zoom">
+/* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
+input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}
+</style>
 </head><body><main class="card"><h1>Encore une petite vérification 🔐</h1><p class="muted">Saisis le code à 6 chiffres affiché dans ton application d’authentification pour accéder à STASH.</p><div id="factorText" class="muted">Préparation de la vérification…</div><form id="form"><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-label="Code à 6 chiffres" required><button class="primary" id="verify" type="submit">Vérifier et continuer</button></form><button class="secondary" id="logout" type="button">Ce n’est pas mon compte — me déconnecter</button><div class="status" id="status" role="status"></div></main>
 <script>
 (()=>{const db=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');const $=id=>document.getElementById(id);const params=new URLSearchParams(location.search);const raw=params.get('next')||'index.html';const next=/^(index|member|messages|explore|notifications|settings|appeals)\.html(?:[?#].*)?$/.test(raw)?raw:'index.html';let factorId=null,challengeId=null;
