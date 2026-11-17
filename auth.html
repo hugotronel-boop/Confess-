@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>CONFESS — Entre dans la conversation</title>
+<title>STASH — Entre dans la conversation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,9 +87,9 @@ input::placeholder{color:#777}
 <section class="hero" id="hero">
 <canvas id="scene" aria-label="Cube de verre 3D rotatif. Faites glisser pour le faire tourner."></canvas>
 <div class="ui">
-<h1 class="sr-only">CONFESS — Dis les choses. Écoute les autres.</h1>
+<h1 class="sr-only">STASH — Dis les choses. Écoute les autres.</h1>
 <header class="nav">
-<a href="#" class="logo" aria-label="CONFESS"><i class="logo-mark"></i><b>CON</b><span>FESS</span></a>
+<a href="#" class="logo" aria-label="STASH"><i class="logo-mark"></i><b>ST</b><span>ASH</span></a>
 <div class="nav-note">Déjà parmi nous ? <button id="navLogin" type="button">Connexion</button></div>
 </header>
 <div class="arrows">
@@ -122,9 +122,9 @@ input::placeholder{color:#777}
 <div class="message" id="profileMessage" role="status"></div>
 <button class="logout" id="logoutBtn" type="button">Me déconnecter</button>
 </section>
-<p class="foot">En continuant, tu acceptes de respecter les autres membres et les règles de CONFESS.</p>
+<p class="foot">En continuant, tu acceptes de respecter les autres membres et les règles de STASH.</p>
 </div>
-<div class="loader" id="loader">Préparation de CONFESS</div>
+<div class="loader" id="loader">Préparation de STASH</div>
 <div class="cta-line"></div>
 </div>
 </section>
@@ -137,7 +137,7 @@ input::placeholder{color:#777}
  function message(id,text,kind=''){const el=$(id);el.textContent=text;el.className='message show '+kind}
  function setMode(next){
   mode=next;$('loginTab').classList.toggle('active',mode==='login');$('signupTab').classList.toggle('active',mode==='signup');
-  $('heading').textContent=mode==='login'?'Ravi de te revoir.':'Bienvenue dans CONFESS.';
+  $('heading').textContent=mode==='login'?'Ravi de te revoir.':'Bienvenue dans STASH.';
   $('intro').textContent=mode==='login'?'Reconnecte-toi pour retrouver les discussions.':'Crée ton compte et trouve ta place dans la conversation.';
   $('submitBtn').textContent=mode==='login'?'Me connecter':'Créer mon compte';$('forgotBtn').style.display=mode==='login'?'inline-block':'none';
   $('password').autocomplete=mode==='login'?'current-password':'new-password';$('authMessage').className='message';
@@ -174,7 +174,7 @@ input::placeholder{color:#777}
   const {data:updatedProfile,error}=await client.from('profiles').update({username}).eq('id',user.id).select('id').maybeSingle();
   if(error)message('profileMessage',error.code==='23505'?"Ce pseudonyme est déjà utilisé, choisis-en un autre.":error.message,'error');
   else if(!updatedProfile)message('profileMessage',"Ton profil n'a pas été trouvé. Déconnecte-toi puis reconnecte-toi pour réessayer.",'error');
-  else{message('profileMessage',"Ton pseudonyme est enregistré ! On t’emmène sur CONFESS…",'success');setTimeout(()=>location.href='index.html',650)}
+  else{message('profileMessage',"Ton pseudonyme est enregistré ! On t’emmène sur STASH…",'success');setTimeout(()=>location.href='index.html',650)}
  });
  $('logoutBtn').addEventListener('click',async()=>{await client.auth.signOut();await showSession()});
  client.auth.onAuthStateChange((event,session)=>{
@@ -233,8 +233,8 @@ function loadModel(){
    gltf.scene.updateMatrixWorld(true);const parts=[];
    gltf.scene.traverse(obj=>{if(!obj.isMesh||!obj.geometry)return;let g=obj.geometry.clone();['uv','color','tangent'].forEach(a=>{if(g.getAttribute(a))g.deleteAttribute(a)});g=mergeVertices(g,1e-4);g.applyMatrix4(obj.matrixWorld);g.computeVertexNormals();parts.push(g)});
    if(!parts.length)throw new Error('No mesh');const merged=mergeGeometries(parts,false);if(!merged)throw new Error('Merge failed');installGeometry(merged);
-  }catch(e){console.warn('CONFESS cube model fallback:',e);installGeometry(makeFallback())}
- },undefined,error=>{console.warn('CONFESS cube model fallback:',error);installGeometry(makeFallback())});
+  }catch(e){console.warn('STASH cube model fallback:',e);installGeometry(makeFallback())}
+ },undefined,error=>{console.warn('STASH cube model fallback:',error);installGeometry(makeFallback())});
 }
 function resizeTargets(){
  const w=Math.max(1,Math.floor(screenW*dpr)),h=Math.max(1,Math.floor(screenH*dpr));
