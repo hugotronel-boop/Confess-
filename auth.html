@@ -81,6 +81,56 @@ input::placeholder{color:#777}
  .auth-card{padding:20px 22px}
  h2{font-size:22px}.intro{margin-bottom:12px}label{margin-top:9px}input{padding:10px}.primary{margin-top:13px;padding:11px}
 }
+
+/* STASH — identité visuelle épurée, cohérente avec Feed et Messages */
+html,body{background:#050505}
+.hero{background:radial-gradient(ellipse at 50% 38%,#171219 0%,#09090b 42%,#050505 78%)}
+#scene{opacity:.12;filter:grayscale(1)}
+.nav{top:25px}
+.logo{font-size:17px;letter-spacing:.04em;gap:9px}
+.logo-mark{width:15px;height:29px;background:linear-gradient(180deg,#ff8ebc,#ffad72);border-radius:5px;box-shadow:0 0 22px #ff78ae35}
+.logo b{font-weight:800}.logo span{font-weight:400;letter-spacing:.12em}
+.nav-note{font-size:12px;text-transform:none;letter-spacing:0;color:#999}
+.nav-note button{color:#fff;text-decoration:none;margin-left:5px}
+.arrows,.dots,.tagline,.loader,.cta-line{display:none!important}
+.auth-wrap{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(420px,calc(100% - 36px))}
+.auth-card{padding:30px 28px 25px;border:1px solid #292929;border-radius:22px;background:#0b0b0d;box-shadow:0 18px 70px #0009;backdrop-filter:none;-webkit-backdrop-filter:none}
+h2{font-size:27px;letter-spacing:-.055em;font-weight:700;margin-bottom:7px}
+.intro{font-size:12px;color:#92929a;margin-bottom:22px}
+.tabs{border:0;border-bottom:1px solid #292929;border-radius:0;padding:0 0 0;margin-bottom:19px;background:transparent;gap:18px}
+.tabs button{position:relative;border:0;border-radius:0;background:transparent;color:#85858d;padding:11px 2px 13px;font-size:12px}
+.tabs button.active{background:transparent;color:#fff}
+.tabs button.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#ff78ae,#ffb078)}
+label{font-size:11px;color:#c9c9ce;margin:15px 0 7px}
+input{border:1px solid #303036;background:#111114;border-radius:12px;padding:13px 14px;font-size:13px}
+input:focus{border-color:#d77da7;box-shadow:0 0 0 3px #ff78ae18}
+.primary{border:0;border-radius:999px;padding:13px 16px;margin-top:21px;background:linear-gradient(100deg,#ff78ae,#ffad78);color:#160b11;font-size:13px;font-weight:700}
+.primary:hover{background:linear-gradient(100deg,#ff91bc,#ffc092);color:#160b11;filter:brightness(1.04)}
+.link{color:#aaa;text-decoration:none;font-size:11px}
+.link:hover{color:#fff}
+.message{border:1px solid #ffffff16;background:#ffffff0a}
+.profile .logout{border-radius:999px;border-color:#35353b}
+.foot{position:absolute;left:20px;right:20px;bottom:19px;max-width:none;text-align:center;color:#666;font-size:9px}
+@media(max-width:900px),(max-aspect-ratio:1/1){
+ .hero{min-height:100svh;overflow:hidden}
+ .auth-wrap{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(430px,calc(100% - 36px))}
+ .auth-card{padding:25px 23px 22px;background:#0b0b0df2}
+ .foot{position:absolute;left:20px;right:20px;bottom:16px;margin:0;text-align:center}
+}
+@media(max-width:640px){
+ .nav{top:20px;left:20px;right:20px}
+ .logo{font-size:15px}
+ .nav-note{font-size:10px}
+ .auth-wrap{width:calc(100% - 32px)}
+ .auth-card{padding:23px 20px 20px;border-radius:20px}
+ h2{font-size:24px}
+ .intro{margin-bottom:18px}
+ .tabs{margin-bottom:16px}
+ input{padding:12px 13px}
+ .primary{margin-top:18px}
+ .foot{font-size:8px;line-height:1.5}
+}
+
 </style>
 </head>
 <body>
