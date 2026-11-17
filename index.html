@@ -126,13 +126,23 @@ body:before,body:after{display:none!important}
 .top,.confess-global-nav{background:rgba(5,5,6,.86)!important;backdrop-filter:blur(22px)!important;border-color:rgba(255,255,255,.13)!important}
 @media(max-width:640px){.stash-3d-scene{opacity:.22}.stash-3d-controls{top:82px;right:14px}.stash-3d-controls .arrow{width:30px;height:30px}.stash-3d-loader{top:36%}}
 
+
+/* Hero 3D STASH : cube interactif cantonné à son propre espace */
+.stash-hero-3d{position:relative;z-index:1;width:100%;height:clamp(230px,31vw,320px);margin:0 0 15px;overflow:hidden;border:1px solid rgba(255,255,255,.15);border-radius:23px;background:#000;box-shadow:0 18px 55px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08)}
+.stash-3d-scene{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:1;mix-blend-mode:screen;touch-action:none;cursor:grab}
+.stash-3d-scene.dragging{cursor:grabbing}
+.stash-3d-controls{position:absolute;z-index:3;top:12px;right:12px;display:flex;gap:8px;pointer-events:auto}
+.stash-3d-controls .arrow{width:32px;height:32px;border:1.5px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:21px;line-height:1;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px)}
+.stash-3d-controls .arrow:hover{background:#fff;color:#000}
+.stash-3d-loader{position:absolute;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#ddd;opacity:.55;pointer-events:none;transition:opacity .6s;white-space:nowrap}
+.stash-3d-loader.done{opacity:0}
+@media(max-width:640px){.stash-hero-3d{height:245px;border-radius:18px}.stash-3d-controls{top:9px;right:9px}.stash-3d-controls .arrow{width:29px;height:29px}.stash-3d-scene{opacity:.92}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
-<canvas id="scene" class="stash-3d-scene" aria-label="Cube de verre 3D rotatif. Faites glisser pour le faire tourner."></canvas>
-<div class="stash-3d-controls" aria-label="Contrôles du cube"><button class="arrow" id="prev" type="button" aria-label="Tourner à gauche">‹</button><button class="arrow" id="next" type="button" aria-label="Tourner à droite">›</button></div>
-<div class="stash-3d-loader" id="loader">Préparation de STASH</div>
+
 <header class="top stash-feed-top">
  <div class="feed-logo-placeholder" aria-label="Emplacement du logo STASH"><span>LOGO</span></div>
  <div class="feed-wordmark">STASH</div>
@@ -153,7 +163,12 @@ body:before,body:after{display:none!important}
   <div class="sidecard" style="margin-top:13px"><div class="side-title">Explorer les thèmes</div><div class="category-list" id="categories"><div class="loading">Chargement…</div></div></div>
  </aside>
  <main class="center">
-  <section class="welcome"><h1>Bienvenue dans la conversation ✨</h1><p>Ici, chaque histoire mérite d'être entendue. Lis, réagis, partage… à ton rythme.</p></section>
+  <section class="stash-hero-3d" aria-label="Univers visuel STASH">
+<canvas id="scene" class="stash-3d-scene" aria-label="Cube de verre 3D rotatif. Faites glisser pour le faire tourner."></canvas>
+<div class="stash-3d-controls" aria-label="Contrôles du cube"><button class="arrow" id="prev" type="button" aria-label="Tourner à gauche">‹</button><button class="arrow" id="next" type="button" aria-label="Tourner à droite">›</button></div>
+<div class="stash-3d-loader" id="loader">Préparation de STASH</div>
+</section>
+<section class="welcome"><h1>Bienvenue dans la conversation ✨</h1><p>Ici, chaque histoire mérite d'être entendue. Lis, réagis, partage… à ton rythme.</p></section>
   <section class="composer" id="composer">
    <div class="compose-top"><div class="avatar" id="composeAvatar">?</div><div><strong id="composeTitle">Une chose à raconter ?</strong><small id="composeSub">Connecte-toi pour publier ta confession.</small></div></div>
    <textarea class="compose-input" id="postBody" maxlength="5000" placeholder="Qu'est-ce que tu as sur le cœur ?"></textarea>
@@ -606,7 +621,7 @@ function resizeTargets(){
  resolution.set(w,h);backMat.uniforms.uResolution.value.set(w,h);frontMat.uniforms.uResolution.value.set(w,h);
 }
 function drawHeadline(){
- const W=screenW,H=screenH,mobile=W<768||W/H<1;dpr=Math.min(window.devicePixelRatio||1,2);
+ const W=screenW,H=screenH,mobile=window.innerWidth<768||window.innerWidth/window.innerHeight<1;dpr=Math.min(window.devicePixelRatio||1,2);
  headlineCanvas.width=Math.max(1,Math.round(W*dpr));headlineCanvas.height=Math.max(1,Math.round(H*dpr));
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
  let fs=Math.min(H*.21,W*(mobile?.21:.118));ctx.font='800 '+fs+'px Poppins';let widest=Math.max(...['Explore','New','Ideas'].map(s=>ctx.measureText(s).width));
@@ -617,11 +632,11 @@ function drawHeadline(){
  headlineTexture.needsUpdate=true;
 }
 function layout(){
- const W=window.innerWidth,H=window.innerHeight,mobile=W<768||W/H<1;screenW=W;screenH=H;dpr=Math.min(window.devicePixelRatio||1,2);
+ const rect=canvas.getBoundingClientRect();const W=Math.max(1,rect.width||window.innerWidth),H=Math.max(1,rect.height||window.innerHeight),mobile=window.innerWidth<768||window.innerWidth/window.innerHeight<1;screenW=W;screenH=H;dpr=Math.min(window.devicePixelRatio||1,2);
  renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
  const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*10,visW=visH*camera.aspect;
- const sx=mobile?.5:.57,sy=mobile?.33:.29; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
- const px=Math.min(H*.29,W*(mobile?.34:.22));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
+ const sx=.5,sy=.5; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
+ const px=Math.min(H*.72,W*(mobile?.48:.45));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
  drawHeadline();resizeTargets();
 }
 backTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});frontTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});
