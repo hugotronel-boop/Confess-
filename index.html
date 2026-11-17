@@ -270,7 +270,7 @@ $('publishBtn').onclick=async()=>{
  const options=$('pollComposer').hidden?[]:Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value.trim()).filter(Boolean);
  if(!$('pollComposer').hidden&&(options.length<2||options.length>6))return toast('Un sondage doit avoir entre 2 et 6 choix.');
  $('publishBtn').disabled=true;
- const {data:postId,error}=await db.rpc('create_confess_post',{p_body:body||' ',p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});
+ const {data:postId,error}=await db.rpc('create_confess_post',{p_body:body||'📷',p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});
  if(error){$('publishBtn').disabled=false;toast('Publication impossible : '+error.message);return}
  if(!$('pollComposer').hidden){const poll=await db.rpc('create_confess_poll',{p_post_id:postId,p_options:options});if(poll.error){$('publishBtn').disabled=false;toast('Publication créée, mais sondage impossible : '+poll.error.message);return}}
  let imageFailed=false;
