@@ -106,7 +106,7 @@ async function exportMyData(){
    await get('messages_in_my_conversations',db.from('messages').select('id,conversation_id,sender_id,body,created_at,read_at').in('conversation_id',conversationIds));
   }else{out.data.conversations=[];out.data.messages_in_my_conversations=[]}
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='confess-mes-donnees-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  const url=window.URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='confess-mes-donnees-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();window.URL.revokeObjectURL(url);
   status.textContent='Export prêt ! Le téléchargement de ton fichier JSON a été lancé. ✅';toast('Tes données CONFESS sont prêtes.');
  }catch(e){console.error(e);status.textContent='Export incomplet : '+e.message+'. Aucune donnée n’a été supprimée.';toast('Export impossible pour le moment.')}
  finally{btn.disabled=false}
