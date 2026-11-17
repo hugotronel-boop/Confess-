@@ -144,7 +144,49 @@ body:before,body:after{display:none!important}
 .post{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important}
 .post+.post{border-top:0!important}
 .feed-head,#feedTabs,#visibilityFilters{border-left:0!important;border-right:0!important}
-\n</style>
+\n
+/* CORRECTION FEED : navigation réellement collée au bas de l'écran */
+html,body{min-height:100%;margin:0}
+body{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
+body>.confess-global-nav{
+  display:flex!important;position:fixed!important;
+  top:auto!important;right:0!important;bottom:0!important;left:0!important;
+  width:100%!important;max-width:none!important;height:auto!important;
+  margin:0!important;transform:none!important;
+  z-index:2147483000!important;
+  border-radius:20px 20px 0 0!important;
+  padding:10px 8px calc(10px + env(safe-area-inset-bottom))!important;
+  background:rgba(8,8,10,.94)!important;
+  backdrop-filter:blur(24px)!important;
+}
+/* Le cube devient un décor fixe plein écran, derrière tout le contenu */
+.stash-hero-3d{
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100vh!important;height:100dvh!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;background:transparent!important;
+  overflow:hidden!important;z-index:0!important;
+  pointer-events:none!important;
+}
+.stash-hero-3d .stash-3d-scene{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  opacity:.24!important;pointer-events:none!important;
+}
+.stash-hero-3d .stash-3d-controls{
+  position:fixed!important;top:105px!important;right:14px!important;
+  z-index:20!important;pointer-events:auto!important;
+}
+.stash-hero-3d .stash-3d-loader{position:fixed!important;top:43%!important;z-index:2!important}
+.top,.layout,.overlay,.toast{position:relative;z-index:2}
+.top{z-index:10!important}
+.confess-global-nav{z-index:2147483000!important}
+@media(max-width:640px){
+  .stash-hero-3d .stash-3d-scene{opacity:.18!important}
+  .stash-hero-3d .stash-3d-controls{top:82px!important;right:14px!important}
+}
+
+</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
 /* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
