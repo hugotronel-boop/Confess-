@@ -24,7 +24,7 @@ main{width:min(760px,100%);margin:26px auto;padding:0 15px}.hero{background:line
   <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
   <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
   <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
-  <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer les modifications</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
+  <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer les modifications</button><button class="secondary" id="publicProfileBtn" type="button">👀 Voir mon profil public</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
  </form>
  <div class="stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><div class="stat"><strong id="myFollowersStat">—</strong><span>Abonnés</span></div><div class="stat"><strong id="myFollowingStat">—</strong><span>Abonnements</span></div></div>
 </section>
@@ -73,7 +73,7 @@ $('avatarFile').addEventListener('change',async()=>{
  if(saveError){toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return}
  profile.avatar_path=data.path;showAvatar(data.path);toast('Photo de profil mise à jour !');
 });
-$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
+$('publicProfileBtn').onclick=()=>location.href='member.html?id='+encodeURIComponent(user.id);\n$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')location.href='auth.html'});
 load();
 })();
