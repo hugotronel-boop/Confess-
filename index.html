@@ -138,7 +138,13 @@ body:before,body:after{display:none!important}
 .stash-3d-loader.done{opacity:0}
 @media(max-width:640px){.stash-hero-3d{height:245px;border-radius:18px}.stash-3d-controls{top:9px;right:9px}.stash-3d-controls .arrow{width:29px;height:29px}.stash-3d-scene{opacity:.92}}
 
-</style>
+
+/* Feed sans cadres : cube et publications se fondent dans la page */
+.stash-hero-3d{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+.post{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important}
+.post+.post{border-top:0!important}
+.feed-head,#feedTabs,#visibilityFilters{border-left:0!important;border-right:0!important}
+\n</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
 /* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
