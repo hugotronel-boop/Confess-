@@ -44,6 +44,10 @@ main{position:relative;z-index:1}
 .empty,.loading{background:transparent!important;box-shadow:none!important;border:0!important}
 @media(max-width:640px){body:before,body:after{display:none!important}}
 </style>
+<style id="stash-no-input-zoom">
+/* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
+input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}
+</style>
 </head><body>
 <header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='moderation.html'">← Modération</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
