@@ -16,7 +16,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .navitem{width:100%;border:0;background:transparent;color:#ddd8eb;text-align:left;padding:11px 12px;border-radius:12px;display:flex;gap:11px;align-items:center;font-size:14px}.navitem.active,.navitem:hover{background:#ffffff10;color:white}.navitem span:first-child{font-size:18px;width:22px}
 .category-list{display:grid;gap:4px}.cat{width:100%;display:flex;align-items:center;gap:9px;text-align:left;border:0;background:transparent;color:#d7d1e7;padding:9px 10px;border-radius:11px;font-size:13px}.cat.active,.cat:hover{background:#ff5ba71c;color:#ff9bc9}
 .center{min-width:0}.welcome{margin-bottom:15px;background:linear-gradient(120deg,#42203f,#26203f 60%,#30203c);padding:20px}.welcome h1{font-size:22px;margin:0 0 6px}.welcome p{color:#d7cce0;font-size:13px;margin:0;line-height:1.5}
-.composer{margin-bottom:15px}.compose-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.compose-top strong{font-size:14px}.compose-top small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.compose-input{width:100%;min-height:86px;resize:vertical;background:#100e1b;border:1px solid var(--line);border-radius:14px;padding:13px;color:white;outline:none}.compose-input:focus,.field:focus{border-color:var(--pink)}
+.composer{margin-bottom:15px}.compose-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.compose-top strong{font-size:14px}.compose-top small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.compose-input{width:100%;min-height:86px;resize:vertical;background:#100e1b;border:1px solid var(--line);border-radius:14px;padding:13px;color:white;outline:none}.compose-input:focus,.field:focus{border-color:var(--pink)}#clearDraft{border:1px solid var(--line);background:#ffffff08}#clearDraft:disabled{opacity:.35;cursor:default}
 .compose-bottom{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-top:11px;flex-wrap:wrap}.compose-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.field{background:#100e1b;border:1px solid var(--line);color:#eee;border-radius:11px;padding:9px 10px;font-size:12px;outline:none;max-width:100%}.anon-label{display:flex;align-items:center;gap:7px;color:#d9d4e8;font-size:12px}.anon-label input{accent-color:var(--pink)}
 .primary{border:0;border-radius:12px;background:linear-gradient(100deg,var(--pink),var(--orange));color:#241326;font-weight:850;padding:11px 17px;font-size:13px}.primary:disabled{opacity:.5}
 .feed-head{display:flex;justify-content:space-between;align-items:center;margin:20px 3px 12px}.feed-head h2{font-size:17px;margin:0}.feed-head select{background:var(--panel);border:1px solid var(--line);color:#ddd;border-radius:10px;padding:8px;font-size:12px}
@@ -54,6 +54,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
     <select class="field" id="postCategory" aria-label="Catégorie"><option value="confession">Confession</option></select>
     <label class="anon-label"><input type="checkbox" id="anonymous"> Publier anonymement</label>
    </div><button class="primary" id="publishBtn">Publier ↗</button></div>
+   <div class="compose-bottom" style="margin-top:9px"><small id="draftStatus" style="color:var(--muted);font-size:11px">Brouillon automatique activé</small><button type="button" class="action" id="clearDraft" style="padding:6px 8px">Effacer le brouillon</button></div>
   </section>
   <div class="feed-head"><h2 id="feedTitle">Le fil CONFESS</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
   <div id="feed"><div class="loading">On prépare le fil…</div></div>
@@ -73,6 +74,32 @@ const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
 const db=window.supabase.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
 let session=null,profile=null,categories=[],currentCategory=null,savedOnly=false,activePost=null,postsCache=[];
+function draftKey(){return session?.user?.id?'confess_draft_'+session.user.id:null}
+function updateDraftStatus(message){const el=$('draftStatus');if(el)el.textContent=message}
+function restoreDraft(){
+ const key=draftKey();if(!key)return;
+ try{const raw=localStorage.getItem(key);if(!raw)return;const draft=JSON.parse(raw);if(!draft||typeof draft.body!=='string')return;
+  $('postBody').value=draft.body;$('postCategory').value=draft.category||$('postCategory').value;$('anonymous').checked=!!draft.anonymous;
+  updateDraftStatus('Brouillon retrouvé sur cet appareil ✨');
+ }catch(error){console.warn('Brouillon CONFESS illisible:',error)}
+}
+let draftTimer=null;
+function saveDraft(){
+ const key=draftKey();if(!key)return;
+ clearTimeout(draftTimer);
+ const body=$('postBody').value;
+ if(!body.trim()){updateDraftStatus('Brouillon automatique activé');return}
+ updateDraftStatus('Enregistrement du brouillon…');
+ draftTimer=setTimeout(()=>{
+  try{localStorage.setItem(key,JSON.stringify({body,category:$('postCategory').value,anonymous:$('anonymous').checked,updated_at:new Date().toISOString()}));updateDraftStatus('Brouillon enregistré sur cet appareil ✓')}
+  catch(error){updateDraftStatus('Stockage indisponible sur cet appareil')}
+ },350);
+}
+function clearDraft(){
+ const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}
+ clearTimeout(draftTimer);$('postBody').value='';$('anonymous').checked=false;
+ updateDraftStatus('Brouillon effacé');toast('Ton brouillon a été effacé.');
+}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
@@ -92,7 +119,7 @@ function startNotificationRealtime(){
   .subscribe(status=>{if(status==='SUBSCRIBED')loadNotificationCount()});
 }
 function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').textContent=name[0].toUpperCase();$('composeAvatar').textContent=name[0].toUpperCase();$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.'}
-async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();loadNotificationCount();startNotificationRealtime()}
+async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();if(session)restoreDraft();loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){$('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));$('feedTitle').textContent=savedOnly?'Publications enregistrées':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):'Le fil CONFESS'}
 async function loadFeed(){
@@ -211,7 +238,8 @@ async function editPost(id){
  if(!data){toast('Publication introuvable ou tu ne peux pas la modifier.');return}
  toast('Publication modifiée ✨');await loadFeed();
 }
-$('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
+$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
+$('publishBtn').onclick=async()=>{if(!session){toast('Connecte-toi avant de publier.');return}const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');if(body.length>5000)return toast('Maximum 5 000 caractères.');$('publishBtn').disabled=true;const {error}=await db.rpc('create_confess_post',{p_body:body,p_category_slug:$('postCategory').value,p_is_anonymous:$('anonymous').checked});$('publishBtn').disabled=false;if(error){toast('Publication impossible : '+error.message);return}$('postBody').value='';$('anonymous').checked=false;const key=draftKey();if(key){try{localStorage.removeItem(key)}catch(error){console.warn(error)}}updateDraftStatus('Aucun brouillon en attente');currentCategory=null;updateCategoryUI();toast('Ta publication est en ligne ✨');loadFeed()}
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
