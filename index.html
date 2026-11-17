@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#100e1b"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icon.svg"><title>CONFESS — Le fil</title>
+<meta name="theme-color" content="#100e1b"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icon.svg"><title>STASH — Le fil</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--panel2:#24203b;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f;--white:#fff}
@@ -28,7 +28,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 @media(max-width:620px){.layout{display:block;padding:14px 12px}.rightside{display:none}.top{padding:11px 14px}.brand strong{font-size:18px}.topright .pill{padding:8px 10px}.welcome{padding:17px}.welcome h1{font-size:20px}.composer,.post{border-radius:18px;padding:14px}.bottomnav{display:flex}.feed-head{margin-top:17px}}
 .comment.deleted{opacity:.72;border-bottom-style:dashed}.comment.deleted p{font-style:italic;color:var(--muted)}.comment-actions [data-edit-comment]{color:#ffacd1}.comment-actions [data-delete-comment]{color:#ff8c8c}
 
-/* CONFESS — nouvelle direction visuelle glass / noir */
+/* STASH — nouvelle direction visuelle glass / noir */
 :root{color-scheme:dark;--bg:#050506;--panel:rgba(255,255,255,.055);--panel2:rgba(255,255,255,.085);--muted:#a7a7ad;--pink:#ff6cab;--orange:#ffad72;--line:rgba(255,255,255,.16);--white:#fff}
 html{background:#050506}
 body{background:radial-gradient(ellipse at 50% -18%,rgba(255,108,171,.13),transparent 42%),radial-gradient(ellipse at 100% 35%,rgba(255,173,114,.08),transparent 34%),#050506!important;color:#fff;font-family:'Poppins',Inter,system-ui,-apple-system,sans-serif!important;position:relative;isolation:isolate}
@@ -57,7 +57,7 @@ main{position:relative;z-index:1}
 #composer{display:none!important}
 #publishNav{background:linear-gradient(110deg,#ff5ba7,#ff9b5b);color:#160d19;font-weight:800}
 
-/* Navigation principale persistante sur toutes les pages CONFESS */
+/* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
 .confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
@@ -68,7 +68,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </head>
 <body>
 <header class="top">
- <div class="brand"><div class="mark">C</div><div><strong>CONFESS</strong><small>DIS LES CHOSES.</small></div></div>
+ <div class="brand"><div class="mark">C</div><div><strong>STASH</strong><small>DIS LES CHOSES.</small></div></div>
  <div class="topright"><button class="msgbtn" id="messagesBtn" aria-label="Messages">💬</button><button class="bell" id="notificationsBtn" aria-label="Notifications">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
 </header>
 <div class="layout">
@@ -92,19 +92,19 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
    <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button type="button" class="action" id="togglePoll" style="border:1px solid var(--line);border-radius:12px;padding:8px 11px">📊 Ajouter un sondage</button><small style="color:var(--muted)">Optionnel · 2 à 6 choix</small></div>
    <div id="pollComposer" hidden style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong style="display:block;margin-bottom:8px">Les choix du sondage</strong><div id="pollOptionInputs" style="display:grid;gap:7px"><input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2"></div><button type="button" class="action" id="addPollOption" style="margin-top:8px">＋ Ajouter un choix</button><button type="button" class="action" id="removePoll" style="margin-top:8px">Retirer le sondage</button></div>
    <div class="compose-bottom"><div class="compose-controls">
-    <select class="field" id="postCategory" aria-label="Catégorie"><option value="confession">Confession</option></select>
+    <select class="field" id="postCategory" aria-label="Catégorie"><option value="confession">STASHion</option></select>
     <label class="anon-label"><input type="checkbox" id="anonymous"> Publier anonymement</label>
    </div><button class="primary" id="publishBtn">Publier ↗</button></div>
    <div class="compose-bottom" style="margin-top:9px"><small id="draftStatus" style="color:var(--muted);font-size:11px">Brouillon synchronisé avec ton compte</small><button type="button" class="action" id="clearDraft" style="padding:6px 8px">Effacer le brouillon</button></div>
   </section>
-  <div class="feed-head"><h2 id="feedTitle">Le fil CONFESS</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
+  <div class="feed-head"><h2 id="feedTitle">Le fil STASH</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
   <div style="display:flex;gap:8px;margin:0 0 10px"><input id="feedSearch" class="field" type="search" maxlength="100" placeholder="🔎 Rechercher dans les publications…" style="flex:1;min-width:0"><button id="feedSearchBtn" class="action" style="padding:10px 14px;border:1px solid var(--line);border-radius:12px">Rechercher</button></div>
   <div id="feedTabs" style="display:flex;gap:8px;margin:0 0 12px"><button type="button" class="action selected" data-feed="all" style="flex:1;border:1px solid var(--line);border-radius:12px;padding:11px">✨ Pour toi</button><button type="button" class="action" data-feed="following" style="flex:1;border:1px solid var(--line);border-radius:12px;padding:11px">👥 Abonnements</button></div>
   <div id="visibilityFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px"><button type="button" class="action selected" data-visibility="all">Toutes</button><button type="button" class="action" data-visibility="anonymous">🎭 Anonymes</button><button type="button" class="action" data-visibility="pseudo">👤 Sous pseudo</button></div>
   <div id="feed"><div class="loading">On prépare le fil…</div></div>
  </main>
  <aside class="side rightside">
-  <div class="rightcard"><h3>💬 Ici, on s'écoute.</h3><p>CONFESS est un espace de partage. Reste respectueux, même quand tu n'es pas d'accord.</p><div class="rule"><p>Tu peux choisir d'apparaître sous ton pseudo ou de publier anonymement, à chaque publication.</p></div></div>
+  <div class="rightcard"><h3>💬 Ici, on s'écoute.</h3><p>STASH est un espace de partage. Reste respectueux, même quand tu n'es pas d'accord.</p><div class="rule"><p>Tu peux choisir d'apparaître sous ton pseudo ou de publier anonymement, à chaque publication.</p></div></div>
   <div class="rightcard"><h3>🛡️ Un espace plus sûr</h3><p>Ne partage jamais tes mots de passe, coordonnées bancaires ou informations privées dans une publication publique.</p></div>
  </aside>
 </div>
@@ -143,7 +143,7 @@ function applyDraft(draft){
 function localDraft(){
  const key=draftKey();if(!key)return null;
  try{const raw=localStorage.getItem(key);if(!raw)return null;const draft=JSON.parse(raw);return draft&&typeof draft.body==='string'&&draft.body.trim()?draft:null}
- catch(error){console.warn('Brouillon CONFESS illisible:',error);return null}
+ catch(error){console.warn('Brouillon STASH illisible:',error);return null}
 }
 function draftPayload(draft){
  return {user_id:session.user.id,body:draft.body,category_slug:draft.category||draft.category_slug||null,is_anonymous:!!(draft.anonymous??draft.is_anonymous),poll_options:Array.isArray(draft.pollOptions)?draft.pollOptions.slice(0,6):Array.isArray(draft.poll_options)?draft.poll_options.slice(0,6):[],updated_at:draft.updated_at||new Date().toISOString()};
@@ -246,7 +246,7 @@ async function loadSession(){const {data}=await db.auth.getSession();session=dat
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){
  $('categories').querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('active',(b.dataset.cat||'')===(currentCategory||'')));
- $('feedTitle').textContent=savedOnly?'Publications enregistrées':currentFeed==='following'?'Fil de tes abonnements':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):currentSearch?'Résultats de recherche':'Le fil CONFESS';
+ $('feedTitle').textContent=savedOnly?'Publications enregistrées':currentFeed==='following'?'Fil de tes abonnements':currentCategory?'# '+(categories.find(c=>c.slug===currentCategory)?.label||'Thème'):currentSearch?'Résultats de recherche':'Le fil STASH';
  document.querySelectorAll('[data-visibility]').forEach(b=>b.classList.toggle('selected',b.dataset.visibility===currentVisibility));
  document.querySelectorAll('[data-feed]').forEach(b=>b.classList.toggle('selected',b.dataset.feed===currentFeed));
 }
@@ -259,7 +259,7 @@ async function loadFeed(reset=true){
   const {data:follows,error:followError}=await db.from('user_follows').select('followed_id').eq('follower_id',session.user.id).order('created_at',{ascending:false});
   if(followError){feedHasMore=false;$('feed').innerHTML='<div class="empty">Impossible de charger tes abonnements pour le moment.</div>';console.error(followError);return}
   followedIds=[...new Set((follows||[]).map(x=>x.followed_id).filter(id=>id&&id!==session.user.id))];
-  if(!followedIds.length){feedHasMore=false;$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore CONFESS pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
+  if(!followedIds.length){feedHasMore=false;$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore STASH pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
  }
  const linkedPostId=reset?new URLSearchParams(location.search).get('post'):null;
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
@@ -300,7 +300,7 @@ async function loadFeed(reset=true){
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre CONFESS'}</div></div><span class="category-badge">${esc(category)}</span></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre STASH'}</div></div><span class="category-badge">${esc(category)}</span></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
    <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
    <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
@@ -334,7 +334,7 @@ async function loadFeed(reset=true){
 async function sharePost(id){
  const post=postsCache.find(p=>p.id===id);if(!post)return;
  const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',id);
- const shareData={title:'Une publication sur CONFESS',text:post.body.slice(0,180),url:url.toString()};
+ const shareData={title:'Une publication sur STASH',text:post.body.slice(0,180),url:url.toString()};
  if(navigator.share){try{await navigator.share(shareData);return}catch(error){if(error&&error.name==='AbortError')return}}
  try{await navigator.clipboard.writeText(url.toString());toast('Lien de la publication copié 🔗')}catch(error){prompt('Copie le lien de cette publication :',url.toString())}
 }
@@ -478,10 +478,10 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  // pour éviter de bloquer le verrou interne de gestion de session.
  if(event==='SIGNED_OUT'){session=null;profile=null;draftLoadedForUser=null;draftCloudLoaded=false;draftUserEdited=false;setUser();startNotificationRealtime();loadNotificationCount();loadFeed();return}
  if(nextSession){session=nextSession;setUser()}
- setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session CONFESS:',error);toast("Impossible de vérifier la connexion.")})},0);
+ setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
 (async()=>{await loadCategories();await loadSession();await loadFeed()})();
 })();
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('CONFESS SW:',e)));}</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
 </body></html>
