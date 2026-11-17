@@ -65,6 +65,8 @@ main{position:relative;z-index:1}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a b{font-size:18px}}
 
+
+#feedSearch{display:none!important}#feedSearchBtn{display:none!important}main.center>div:has(#feedSearch){display:none!important}
 /* STASH FEED — direction visuelle inspirée de Threads */
 .stash-feed-top{height:62px;display:grid!important;grid-template-columns:44px 1fr 44px!important;align-items:center!important;justify-content:initial!important;padding:8px max(14px,calc((100vw - 680px)/2))!important;background:rgba(5,5,6,.94)!important;border-bottom:1px solid rgba(255,255,255,.11)!important}
 .feed-logo-placeholder{width:34px;height:34px;border:1px dashed rgba(255,255,255,.42);border-radius:11px;display:grid;place-items:center;color:#888;font-size:7px;letter-spacing:.8px;background:rgba(255,255,255,.035)}
