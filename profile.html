@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#100e1b"><title>CONFESS — Mon profil</title>
+<meta name="theme-color" content="#100e1b"><title>STASH — Mon profil</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--panel2:#24203b;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f}
@@ -16,7 +16,7 @@ main{width:min(760px,100%);margin:26px auto;padding:0 15px}.hero{background:line
 .stat-action{font:inherit;color:inherit;cursor:pointer;transition:transform .15s,border-color .15s}.stat-action:active{transform:scale(.97)}.stat-action:hover{border-color:#ff5ba7}
 .follow-modal[hidden]{display:none}.follow-modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:18px}.follow-shade{position:absolute;inset:0;background:#080611d9;backdrop-filter:blur(8px)}.follow-dialog{position:relative;width:min(480px,100%);max-height:min(720px,88dvh);display:flex;flex-direction:column;background:#1b1830;border:1px solid #ffffff24;border-radius:22px;box-shadow:0 24px 80px #0009;overflow:hidden}.follow-dialog-head{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 12px}.follow-dialog-head h2{font-size:18px;margin:0 0 4px}.follow-dialog-head p{font-size:11px;color:#aaa5c0;margin:0}.follow-close{border:1px solid #39334f;background:#100e1b;color:#fff;border-radius:12px;width:36px;height:36px;font-size:18px}.follow-switch{display:flex;gap:8px;padding:0 18px 13px}.follow-switch button{flex:1;border:1px solid #39334f;background:#100e1b;color:#aaa5c0;border-radius:11px;padding:10px;font-size:12px;font-weight:800}.follow-switch button.active{background:#ff5ba71c;border-color:#ff5ba7;color:#fff}.follow-list{overflow:auto;padding:0 14px 14px;min-height:130px}.follow-person{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid #ffffff12}.follow-person-main{display:flex;align-items:center;gap:11px;min-width:0;flex:1;color:#fff;text-decoration:none}.follow-avatar{width:43px;height:43px;border-radius:15px;flex:none;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#ff5ba7,#8f6bff);font-weight:900}.follow-avatar img{width:100%;height:100%;object-fit:cover}.follow-person-name{min-width:0}.follow-person-name strong{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.follow-person-name small{display:block;font-size:10px;color:#aaa5c0;margin-top:3px}.follow-person-action{border:1px solid #39334f;background:#100e1b;color:#fff;border-radius:20px;padding:8px 11px;font-size:10px;font-weight:800;white-space:nowrap}.follow-person-action.on{border-color:#ff5ba7;background:#ff5ba71c;color:#ffacd1}.follow-person-action:disabled{opacity:.55}.follow-empty{padding:28px 10px;text-align:center;color:#aaa5c0;font-size:12px}
 
-/* Navigation principale persistante sur toutes les pages CONFESS */
+/* Navigation principale persistante sur toutes les pages STASH */
 .confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;z-index:999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important}
 .confess-global-nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important;padding:3px 1px;border-radius:10px}
 .confess-global-nav a b{font-size:19px;line-height:1.1;font-weight:500}
@@ -26,11 +26,11 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 </style>
 </head>
 <body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Ton espace, tes mots. ✨</h1><p>Personnalise ton profil et retrouve tes publications publiques.</p></section>
 <section class="card">
- <div class="cover-wrap" id="cover"><div class="cover-placeholder">TON UNIVERS CONFESS ✨</div><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button></div><input id="coverFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="profile-head"><div class="avatar-wrap"><div class="avatar" id="avatar">?</div><button class="change" id="pickAvatar" aria-label="Changer la photo">＋</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></div><div class="identity"><h2 id="displayName">Mon profil</h2><p id="memberSince">Membre CONFESS</p></div></div>
+ <div class="cover-wrap" id="cover"><div class="cover-placeholder">TON UNIVERS STASH ✨</div><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button></div><input id="coverFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="profile-head"><div class="avatar-wrap"><div class="avatar" id="avatar">?</div><button class="change" id="pickAvatar" aria-label="Changer la photo">＋</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></div><div class="identity"><h2 id="displayName">Mon profil</h2><p id="memberSince">Membre STASH</p></div></div>
  <form id="profileForm">
   <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
   <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
@@ -50,7 +50,7 @@ const db=window.supabase.createClient(URL,KEY);const $=id=>document.getElementBy
 let user=null,profile=null;
 function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showCover(path){const el=$('cover');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.style.backgroundImage='url("'+data.publicUrl+'")';el.innerHTML='<img alt="Bannière de profil" src="'+esc(data.publicUrl)+'"><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button>';bindCoverButton()}else{el.style.backgroundImage='';el.innerHTML='<div class="cover-placeholder">TON UNIVERS CONFESS ✨</div><button class="cover-change" id="pickCover" type="button">📷 Ajouter une bannière</button>';bindCoverButton()}}function bindCoverButton(){$('pickCover').onclick=()=>$('coverFile').click()}function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.innerHTML='<img alt="Photo de profil" src="'+esc(data.publicUrl)+'">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
+function showCover(path){const el=$('cover');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.style.backgroundImage='url("'+data.publicUrl+'")';el.innerHTML='<img alt="Bannière de profil" src="'+esc(data.publicUrl)+'"><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button>';bindCoverButton()}else{el.style.backgroundImage='';el.innerHTML='<div class="cover-placeholder">TON UNIVERS STASH ✨</div><button class="cover-change" id="pickCover" type="button">📷 Ajouter une bannière</button>';bindCoverButton()}}function bindCoverButton(){$('pickCover').onclick=()=>$('coverFile').click()}function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.innerHTML='<img alt="Photo de profil" src="'+esc(data.publicUrl)+'">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
 async function load(){
  const {data:{session}}=await db.auth.getSession();user=session?.user;
  if(!user){location.href='auth.html';return}
@@ -85,9 +85,9 @@ async function loadFollowList(type){
  const followingIds=new Set((mine||[]).map(x=>x.followed_id));
  $('followList').innerHTML=ids.map(id=>{
   const p=byId.get(id);if(!p)return '';
-  const name=p.username||'Membre CONFESS';
+  const name=p.username||'Membre STASH';
   const avatar=p.avatar_path?'<img alt="" src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'">':esc(name.slice(0,1).toUpperCase());
-  const since=p.created_at?'Membre depuis '+new Date(p.created_at).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'Membre CONFESS';
+  const since=p.created_at?'Membre depuis '+new Date(p.created_at).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'Membre STASH';
   const isFollowing=followingIds.has(id);
   return '<article class="follow-person"><a class="follow-person-main" href="member.html?id='+encodeURIComponent(id)+'"><span class="follow-avatar">'+avatar+'</span><span class="follow-person-name"><strong>@'+esc(name)+'</strong><small>'+esc(since)+'</small></span></a>'+(id===user.id?'<span class="follow-person-action">Toi</span>':'<button class="follow-person-action '+(isFollowing?'on':'')+'" type="button" data-list-follow="'+id+'" data-following="'+isFollowing+'">'+(isFollowing?'✓ Abonné':'＋ S’abonner')+'</button>')+'</article>';
  }).join('')||'<div class="follow-empty">Aucun profil disponible.</div>';
@@ -147,7 +147,7 @@ load();
   const id=session?.user?.id||null;
   if(!id){badge.hidden=true;return}
   const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
-  if(error){console.warn('CONFESS notifications:',error.message);return}
+  if(error){console.warn('STASH notifications:',error.message);return}
   badge.textContent=(count||0)>99?'99+':String(count||0);
   badge.hidden=!count;
  }
