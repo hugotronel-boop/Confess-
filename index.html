@@ -164,31 +164,44 @@ body>.confess-global-nav{
   background:rgba(8,8,10,.94)!important;
   backdrop-filter:blur(24px)!important;
 }
-/* Le cube devient un décor fixe plein écran, derrière tout le contenu */
+/* En-tête, cube et titre Feed forment un bandeau fixe au scroll */
+.top.stash-feed-top{
+  position:sticky!important;top:0!important;z-index:40!important;
+  height:62px!important;
+}
 .stash-hero-3d{
-  position:fixed!important;inset:0!important;
-  width:100vw!important;height:100vh!important;height:100dvh!important;
+  position:sticky!important;top:62px!important;
+  width:100%!important;height:245px!important;
   margin:0!important;padding:0!important;
   border:0!important;border-radius:0!important;
-  box-shadow:none!important;background:transparent!important;
-  overflow:hidden!important;z-index:0!important;
-  pointer-events:none!important;
+  box-shadow:none!important;background:rgba(0,0,0,.96)!important;
+  overflow:hidden!important;z-index:30!important;
+  pointer-events:auto!important;
 }
 .stash-hero-3d .stash-3d-scene{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
-  opacity:.24!important;pointer-events:none!important;
+  opacity:.34!important;pointer-events:auto!important;z-index:1!important;
 }
 .stash-hero-3d .stash-3d-controls{
-  position:fixed!important;top:105px!important;right:14px!important;
-  z-index:20!important;pointer-events:auto!important;
+  position:absolute!important;top:12px!important;right:14px!important;
+  z-index:5!important;display:flex!important;pointer-events:auto!important;
 }
-.stash-hero-3d .stash-3d-loader{position:fixed!important;top:43%!important;z-index:2!important}
+.stash-hero-3d .stash-3d-loader{position:absolute!important;top:50%!important;z-index:2!important}
+.feed-head{
+  position:sticky!important;top:307px!important;z-index:35!important;
+  margin:0!important;min-height:62px!important;
+  background:rgba(5,5,6,.97)!important;
+  backdrop-filter:blur(20px)!important;
+  border-bottom:1px solid rgba(255,255,255,.14)!important;
+}
 .top,.layout,.overlay,.toast{position:relative;z-index:2}
-.top{z-index:10!important}
+.top{z-index:40!important}
 .confess-global-nav{z-index:2147483000!important}
 @media(max-width:640px){
-  .stash-hero-3d .stash-3d-scene{opacity:.18!important}
-  .stash-hero-3d .stash-3d-controls{top:82px!important;right:14px!important}
+  .stash-hero-3d{height:245px!important}
+  .stash-hero-3d .stash-3d-scene{opacity:.28!important}
+  .stash-hero-3d .stash-3d-controls{top:12px!important;right:14px!important}
+  .feed-head{top:307px!important}
 }
 
 </style>
