@@ -797,11 +797,12 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
 (async()=>{
- await loadCategories();
- // Affiche le fil sans attendre la restauration du brouillon cloud ou du profil.
+ // Le fil démarre AVANT les catégories : une erreur ou un délai sur categories ne doit jamais bloquer les publications.
  const firstFeedLoad=loadFeed();
+ try{await loadCategories()}catch(error){console.error('Catégories STASH indisponibles:',error)}
  try{await loadSession()}catch(error){console.error('Session STASH indisponible au démarrage:',error)}
  await firstFeedLoad;
+ // Recharge une fois catégories et session initialisées pour mettre à jour les filtres et le compte.
  await loadFeed();
 })();
 })();
