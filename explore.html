@@ -18,6 +18,7 @@ main{width:min(800px,100%);margin:24px auto;padding:0 15px}.hero{background:line
 <header class="top"><div class="brand"><div class="mark">C</div><strong>CONFESS</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Explore CONFESS 🔎</h1><p>Retrouve des discussions, des sujets et des membres de la communauté.</p></section>
+<section class="section"><h2>🔥 Tendances de la semaine</h2><span class="muted">7 derniers jours</span></section><div id="trending"><div class="loading">On repère les discussions qui montent…</div></div>
 <form class="search" id="searchForm"><input id="searchInput" type="search" maxlength="80" placeholder="Un sujet, un mot-clé, un pseudo…" autocomplete="off"><button class="primary" type="submit">Rechercher</button></form>
 <div class="tabs"><button class="tab active" data-mode="all">Tout</button><button class="tab" data-mode="posts">Publications</button><button class="tab" data-mode="members">Membres</button></div>
 <div id="results"><div class="empty">Lance une recherche pour découvrir CONFESS 👀</div></div>
@@ -26,11 +27,25 @@ main{width:min(800px,100%);margin:24px auto;padding:0 15px}.hero{background:line
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
 let mode='all',lastQuery='';
+async function loadTrends(){
+ const since=new Date(Date.now()-7*86400000).toISOString();
+ const {data:posts,error}=await db.from('posts').select('id,body,is_anonymous,author_label,created_at,categories(label)').eq('status','published').gte('created_at',since).order('created_at',{ascending:false}).limit(100);
+ if(error){console.error('Tendances CONFESS:',error);$('trending').innerHTML='<div class="empty">Les tendances sont momentanément indisponibles.</div>';return}
+ if(!posts?.length){$('trending').innerHTML='<div class="empty">Pas encore assez de discussions cette semaine. À toi de lancer la tendance ! ✨</div>';return}
+ const ids=posts.map(p=>p.id);
+ const [likesResult,commentsResult]=await Promise.all([db.from('post_reactions').select('post_id').in('post_id',ids),db.from('comments').select('post_id').in('post_id',ids).eq('status','published')]);
+ if(likesResult.error)console.warn(likesResult.error);if(commentsResult.error)console.warn(commentsResult.error);
+ const likes={},comments={};(likesResult.data||[]).forEach(x=>likes[x.post_id]=(likes[x.post_id]||0)+1);(commentsResult.data||[]).forEach(x=>comments[x.post_id]=(comments[x.post_id]||0)+1);
+ const ranked=posts.map(p=>{const ageHours=Math.max(0,(Date.now()-new Date(p.created_at).getTime())/3600000);const activity=(likes[p.id]||0)*2+(comments[p.id]||0)*3;const freshness=Math.max(0,24-ageHours)/24;return {...p,likes:likes[p.id]||0,replies:comments[p.id]||0,score:activity+freshness*2}}).sort((a,b)=>b.score-a.score).slice(0,8);
+ $('trending').innerHTML=ranked.map((p,i)=>'<article class="post"><div class="post-meta">🔥 #'+(i+1)+' · '+(p.is_anonymous?'🎭 '+esc(p.author_label):'💬 '+esc(p.author_label))+' · '+ago(p.created_at)+' · '+esc(p.categories?.label||'Discussion')+'</div><div class="post-body">'+esc(p.body.length>420?p.body.slice(0,420)+'…':p.body)+'</div><div class="post-meta" style="margin:10px 0 0">♡ '+p.likes+' réaction(s) · '+p.replies+' réponse(s) <button class="open" style="float:right" data-trend-post="'+esc(p.id)+'">Voir la discussion ↗</button></div></article>').join('');
+ $('trending').querySelectorAll('[data-trend-post]').forEach(b=>b.onclick=()=>location.href='index.html?post='+encodeURIComponent(b.dataset.trendPost));
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function ago(v){const d=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(d<3600)return Math.floor(d/60)+' min';if(d<86400)return Math.floor(d/3600)+' h';if(d<604800)return Math.floor(d/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function switchMode(next){mode=next;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));if(lastQuery)search(lastQuery)}
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
+loadTrends();
 $('searchForm').addEventListener('submit',e=>{e.preventDefault();search($('searchInput').value)});
 async function search(raw){
  const q=raw.trim();if(q.length<2){toast('Entre au moins 2 caractères pour rechercher.');return}lastQuery=q;$('results').innerHTML='<div class="loading">On cherche…</div>';
