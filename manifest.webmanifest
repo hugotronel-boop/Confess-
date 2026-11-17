@@ -2,7 +2,7 @@
   "id": "./",
   "name": "STASH — Le réseau des confessions",
   "short_name": "STASH",
-  "description": "STASHions, discussions et rencontres autour des histoires de chacun.",
+  "description": "Confessions, discussions et rencontres autour des histoires de chacun.",
   "lang": "fr-FR",
   "start_url": "./index.html",
   "scope": "./",
