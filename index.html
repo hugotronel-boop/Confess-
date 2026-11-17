@@ -517,7 +517,9 @@ async function loadFeed(reset=true){
   followedIds=[...new Set((follows||[]).map(x=>x.followed_id).filter(id=>id&&id!==session.user.id))];
   if(!followedIds.length){feedHasMore=false;$('feed').innerHTML='<div class="empty">Tu ne suis encore personne 👀<br><br>Explore STASH pour découvrir des membres et les suivre.<br><br><button class="action" type="button" onclick="location.href=\'explore.html\'">Explorer les membres</button></div>';renderLoadMoreButton();return}
  }
- const linkedPostId=reset?new URLSearchParams(location.search).get('post'):null;
+ const pageParams=reset?new URLSearchParams(location.search):new URLSearchParams();
+ const linkedPostId=pageParams.get('post');
+ const newlyPublishedId=pageParams.get('newpost');
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(linkedPostId){query=query.eq('id',linkedPostId);followedIds=null;savedOnly=false}
  else {
@@ -529,6 +531,12 @@ async function loadFeed(reset=true){
  const {data,error}=await query;if(error){if(reset)$('feed').innerHTML='<div class="empty">Impossible de charger le fil pour le moment.</div>';else{const more=$('loadMorePosts');if(more){more.disabled=false;more.textContent='Réessayer'}}console.error(error);return}
  const pageRows=data||[];feedOffset+=pageRows.length;feedHasMore=pageRows.length===40;
  let rows=reset?pageRows:[...postsCache,...pageRows];
+ // Après une publication, recharge explicitement le post créé pour qu'il apparaisse même si le fil paginé vient juste d'être actualisé.
+ if(reset&&newlyPublishedId&&!rows.some(post=>post.id===newlyPublishedId)){
+  const {data:justPublished,error:publishedError}=await db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('id',newlyPublishedId).eq('status','published').maybeSingle();
+  if(publishedError)console.warn('Publication récente introuvable dans le fil:',publishedError);
+  if(justPublished)rows=[justPublished,...rows];
+ }
  if(session){
   const [{data:muted},{data:blocked}]=await Promise.all([
    db.from('user_mutes').select('muted_user_id').eq('user_id',session.user.id),
