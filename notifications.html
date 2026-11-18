@@ -253,15 +253,14 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
  .confess-global-nav a.nav-publish-center span{font-size:10px!important}
 }
 </style>
-<style id="stash-capsule-cleanup">/* STASH — navigation capsule épurée : seul l'onglet actif est en pastille blanche */
+<style id="stash-capsule-cleanup">/* Navigation STASH — capsule nette, sélection identique à l'onglet Profil */
 .confess-global-nav a{border:1px solid transparent!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:rgba(255,255,255,.9)!important}
-.confess-global-nav a[data-nav="home"]{padding:0 12px!important;gap:0!important}
-.confess-global-nav a[data-nav="home"] img{display:none!important}
-.confess-global-nav a[data-nav="profile"]{background:transparent!important;color:rgba(255,255,255,.9)!important;border-color:transparent!important;min-width:0!important;padding:0 10px!important}
-.confess-global-nav a[data-nav="profile"] span{color:inherit!important;font-weight:500!important}
-.confess-global-nav a.nav-publish-center{border:1px solid transparent!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:rgba(255,255,255,.9)!important}
-.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{background:#fff!important;color:#101012!important;border:1px solid #fff!important;outline:1px solid rgba(255,255,255,.9)!important;outline-offset:0!important;box-shadow:0 2px 9px rgba(255,255,255,.12)!important}
+.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{background:#fff!important;color:#101012!important;border:1px solid #fff!important;outline:1px solid #fff!important;outline-offset:0!important;box-shadow:0 2px 9px rgba(255,255,255,.12)!important}
 .confess-global-nav a.stash-bubble-active span,.confess-global-nav a[aria-current="page"] span{color:#101012!important}
+.confess-global-nav .nav-icon{display:block!important;width:19px!important;height:19px!important;flex:0 0 19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.confess-global-nav a.nav-publish-center{background:transparent!important;color:rgba(255,255,255,.9)!important;border:1px solid transparent!important;box-shadow:none!important}
+.confess-global-nav a.nav-publish-center.stash-bubble-active,.confess-global-nav a.nav-publish-center[aria-current="page"]{background:#fff!important;color:#101012!important;border-color:#fff!important;outline:1px solid #fff!important}
+.confess-global-nav a.stash-nav-hover{transform:none!important}
 </style>
 </head>
 <body>
@@ -333,11 +332,11 @@ load();
 </script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
 <a href="./index.html" data-nav="home"><span>Feed</span></a>
-<a href="./messages.html" data-nav="messages"><span>Messages</span></a>
-<a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><span>Publier</span></a>
+<a href="./messages.html" data-nav="messages"><svg class="nav-icon nav-mail-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.2"></rect><path d="m4.5 7 7.5 6 7.5-6"></path></svg><span>Messages</span></a>
+<a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><svg class="nav-icon nav-plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span>Publier</span></a>
 <a href="./notifications.html" data-nav="notifications"><span>Actus</span></a>
 <a href="./profile.html" data-nav="profile"><span>Profil</span></a>
 </nav>
 
-<script id="stash-liquid-bubbles-nav">(()=>{const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashBubblesReady)return;nav.dataset.stashBubblesReady='1';const links=[...nav.querySelectorAll('a[href]')];if(!links.length)return;const current=()=>links.find(a=>a.getAttribute('aria-current')==='page')||links.find(a=>{try{return new URL(a.href,location.href).pathname===location.pathname}catch(_){return false}})||links[0];let selected=current(),last=null,startX=0,startY=0,dragging=false,moved=false,suppressClick=false;function activate(a){if(!a)return;selected=a;links.forEach(l=>{const on=l===a;l.classList.toggle('stash-bubble-active',on);l.classList.toggle('stash-nav-hover',on)})}activate(selected);function linkAt(x,y){const el=document.elementFromPoint(x,y);const a=el?.closest?.('.confess-global-nav a[href]');return a&&nav.contains(a)?a:null}nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;activate(a);try{nav.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.12)moved=true;const a=linkAt(e.clientX,e.clientY);if(a&&a!==last){last=a;activate(a)}if(moved&&e.cancelable)e.preventDefault()},{passive:false});function end(e){if(!dragging)return;dragging=false;if(moved&&last){e.preventDefault();suppressClick=true;activate(last);location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else activate(current())}nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;activate(current())});nav.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopPropagation()}},true);window.addEventListener('resize',()=>activate(selected),{passive:true})})();</script>
+
 </body></html>
