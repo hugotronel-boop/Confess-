@@ -577,6 +577,19 @@ html body header.top.stash-feed-top .feed-logo-image{
 html body header.top.stash-feed-top .feed-search-button{
   align-self:center!important;justify-self:end!important;
 }
+
+/* STASH — cœur rouge plein quand la publication est aimée */
+#feed .post-actions .action[data-like].selected,
+#feed .post-actions .action[data-like].selected svg{
+  color:#ff3b5f!important;
+}
+#feed .post-actions .action[data-like].selected svg path{
+  fill:#ff3b5f!important;
+  stroke:#ff3b5f!important;
+}
+#feed .post-actions .action[data-like] svg path{
+  transition:fill .18s ease,stroke .18s ease;
+}
 </style>
 </head>
 <body>
