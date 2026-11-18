@@ -113,8 +113,15 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-custom-logo">
+.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}
+.feed-logo-image{width:36px;height:36px}
+.auth-brand-image{width:34px;height:34px}
+.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
+</style>
 </head><body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Mes sanctions & recours ⚖️</h1><p>Une décision de modération te semble injuste ? Tu peux expliquer ta situation et demander un nouvel examen. Chaque recours est étudié par l’équipe.</p></section>
 <section class="card"><h2>Mes décisions</h2><p class="desc">Retrouve les avertissements, suspensions et bannissements liés à ton compte. Lorsqu’un recours est possible, tu peux le déposer ici.</p><div id="mySanctions"><div class="empty">Chargement de ton dossier…</div></div></section>
