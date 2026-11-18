@@ -204,7 +204,7 @@ body>.confess-global-nav{
   .feed-head{top:307px!important}
 }
 
-</style>
+\n/* FEED HEADER : une seule bannière, logo centré et cube entièrement visible */\n.stash-feed-top{grid-template-columns:1fr 1fr 44px!important;height:62px!important}\n.feed-header-label{justify-self:start;font-size:14px;font-weight:650;letter-spacing:.2px;color:#fff}\n.stash-feed-top .feed-logo-image{justify-self:center;width:50px!important;height:50px!important;max-width:100%;object-fit:contain!important}\n.stash-feed-top .feed-search-button{justify-self:end}\n.stash-hero-3d{height:245px!important;top:62px!important}\n.stash-hero-3d .stash-3d-scene{opacity:.9!important}\n@media(max-width:640px){.stash-feed-top{grid-template-columns:1fr 1fr 40px!important;padding:8px 14px!important}.stash-feed-top .feed-logo-image{width:48px!important;height:48px!important}.stash-hero-3d{height:245px!important}}\n</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
 /* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
@@ -379,8 +379,8 @@ header.top.stash-feed-top{
 <body>
 
 <header class="top stash-feed-top">
+ <div class="feed-header-label">Feed</div>
  <img class="stash-brand-image feed-logo-image" src="./assets/stash-logo.png" alt="STASH">
- <div class="feed-wordmark">STASH</div>
  <button class="feed-search-button" id="feedSearchOpen" type="button" aria-label="Rechercher"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
  <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
 </header>
@@ -887,7 +887,7 @@ function layout(){
  renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
  const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*10,visW=visH*camera.aspect;
  const sx=.5,sy=.5; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
- const px=Math.min(H*.72,W*(mobile?.48:.45));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
+ const px=Math.min(H*.38,W*(mobile?.28:.27));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
  drawHeadline();resizeTargets();
 }
 backTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});frontTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});
