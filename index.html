@@ -204,7 +204,16 @@ body>.confess-global-nav{
   .feed-head{top:307px!important}
 }
 
-\n/* FEED HEADER : une seule bannière, logo centré et cube entièrement visible */\n.stash-feed-top{grid-template-columns:1fr 1fr 44px!important;height:62px!important}\n.feed-header-label{justify-self:start;font-size:14px;font-weight:650;letter-spacing:.2px;color:#fff}\n.stash-feed-top .feed-logo-image{justify-self:center;width:50px!important;height:50px!important;max-width:100%;object-fit:contain!important}\n.stash-feed-top .feed-search-button{justify-self:end}\n.stash-hero-3d{height:245px!important;top:62px!important}\n.stash-hero-3d .stash-3d-scene{opacity:.9!important}\n@media(max-width:640px){.stash-feed-top{grid-template-columns:1fr 1fr 40px!important;padding:8px 14px!important}.stash-feed-top .feed-logo-image{width:48px!important;height:48px!important}.stash-hero-3d{height:245px!important}}\n</style>
+\n/* FEED HEADER : logo agrandi x3, titre Feed en bas supprimé */
+.stash-feed-top{grid-template-columns:1fr 1fr 44px!important;height:154px!important;min-height:154px!important;padding:5px 18px!important}
+.feed-header-label{justify-self:start;font-size:14px;font-weight:650;letter-spacing:.2px;color:#fff}
+.stash-feed-top .feed-logo-image{justify-self:center;width:144px!important;height:144px!important;max-width:none!important;object-fit:contain!important}
+.stash-feed-top .feed-search-button{justify-self:end}
+.feed-head{display:none!important}
+.stash-hero-3d{height:285px!important;top:154px!important}
+.stash-hero-3d .stash-3d-scene{opacity:1!important}
+@media(max-width:640px){.stash-feed-top{grid-template-columns:1fr 1fr 40px!important;height:154px!important;min-height:154px!important;padding:5px 14px!important}.stash-feed-top .feed-logo-image{width:144px!important;height:144px!important}.stash-hero-3d{height:285px!important;top:154px!important}}
+</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
 /* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
@@ -826,7 +835,7 @@ const MODEL_URL='https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH0
 const canvas=document.getElementById('scene'),loaderEl=document.getElementById('loader');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
 renderer.setClearColor(0x000000,1);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,.1,100);camera.position.set(0,0,10);camera.lookAt(0,0,0);
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,.1,100);camera.position.set(0,0,12);camera.lookAt(0,0,0);
 const bgScene=new THREE.Scene(),bgCamera=new THREE.Camera();
 const headlineCanvas=document.createElement('canvas'),ctx=headlineCanvas.getContext('2d');
 const headlineTexture=new THREE.CanvasTexture(headlineCanvas);headlineTexture.colorSpace=THREE.SRGBColorSpace;headlineTexture.minFilter=THREE.LinearFilter;headlineTexture.magFilter=THREE.LinearFilter;headlineTexture.generateMipmaps=false;
@@ -885,9 +894,9 @@ function drawHeadline(){
 function layout(){
  const rect=canvas.getBoundingClientRect();const W=Math.max(1,rect.width||window.innerWidth),H=Math.max(1,rect.height||window.innerHeight),mobile=window.innerWidth<768||window.innerWidth/window.innerHeight<1;screenW=W;screenH=H;dpr=Math.min(window.devicePixelRatio||1,2);
  renderer.setPixelRatio(dpr);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
- const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*10,visW=visH*camera.aspect;
+ const visH=2*Math.tan(THREE.MathUtils.degToRad(30)/2)*camera.position.z,visW=visH*camera.aspect;
  const sx=.5,sy=.5; pivot.position.set((sx-.5)*visW,(.5-sy)*visH,0);
- const px=Math.min(H*.38,W*(mobile?.28:.27));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
+ const px=Math.min(H*.30,W*(mobile?.24:.23));const scale=(px/H)*visH;pivot.scale.setScalar(scale);
  drawHeadline();resizeTargets();
 }
 backTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});frontTarget=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:true});
