@@ -249,6 +249,62 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 .confess-global-nav .nav-icon{display:block!important;width:19px!important;height:19px!important;flex:0 0 19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(max-width:430px){.confess-global-nav{width:calc(100% - 18px)!important;height:56px!important;min-height:56px!important;padding:5px 6px!important;gap:2px!important}.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{height:44px!important;min-height:44px!important;padding:0 5px!important;gap:4px!important}.confess-global-nav a span{font-size:10px!important}.confess-global-nav .nav-icon{width:18px!important;height:18px!important;flex-basis:18px!important}}</style>
+
+<style id="stash-profile-feed-redesign">
+/* Profil STASH — aligné sur le fil */
+html,body{background:#050506!important;color:#f5f5f5!important}
+body{background-image:none!important;padding-bottom:110px!important}
+.top{background:rgba(5,5,6,.94)!important;border-bottom:1px solid #ffffff18!important;backdrop-filter:blur(18px)!important;padding:12px max(16px,calc((100vw - 760px)/2))!important}
+.top .brand{gap:9px}.top .brand strong{font-size:18px;letter-spacing:2px}
+.stash-brand-image{width:34px!important;height:34px!important;object-fit:contain}
+.top>div:nth-child(2){gap:7px!important}
+.back,.confess-bell{background:transparent!important;border:1px solid #ffffff25!important;color:#f2f2f2!important;border-radius:999px!important}
+main{width:min(680px,100%)!important;margin:0 auto!important;padding:20px 16px 35px!important}
+.hero{background:transparent!important;border:0!important;border-radius:0!important;padding:8px 0 18px!important;margin:0!important}
+.hero h1{font-size:23px!important;font-weight:750!important;letter-spacing:-.6px!important;margin:0 0 5px!important}
+.hero p{font-size:12px!important;color:#99999f!important}
+.card{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0 0 20px!important}
+.cover-wrap{height:165px!important;border-radius:17px!important;margin:0 0 0!important;background:linear-gradient(115deg,#242027,#17171b 60%,#302126)!important;border:1px solid #ffffff18!important}
+.cover-placeholder{font-size:12px!important;letter-spacing:2.5px!important;color:#d4cbd1!important}
+.cover-change{background:#080808d9!important;border:1px solid #ffffff35!important;border-radius:999px!important}
+.profile-head{position:relative;margin:-35px 0 22px!important;padding:0 15px!important;align-items:flex-end!important;gap:14px!important}
+.avatar{width:88px!important;height:88px!important;border-radius:50%!important;background:linear-gradient(135deg,#ff6cab,#ffad72)!important;border:4px solid #050506!important}
+.change{right:0!important;bottom:0!important;width:29px!important;height:29px!important;background:#f5f5f5!important;color:#111!important;border:2px solid #050506!important}
+.identity{padding-bottom:5px!important}
+.identity h2{font-size:19px!important;font-weight:750!important}
+.identity p{font-size:11px!important;color:#99999f!important}
+#profileForm{padding:18px 0!important;border-top:1px solid #ffffff18!important;border-bottom:1px solid #ffffff18!important}
+.field-label{font-size:11px!important;color:#d5d5d8!important}
+.field{background:#101012!important;border:1px solid #29292d!important;border-radius:12px!important;padding:12px 13px!important}
+.hint{color:#85858c!important}
+.primary{background:#f2f2f2!important;color:#111!important;border-radius:999px!important}
+.secondary{background:transparent!important;border:1px solid #39393e!important;border-radius:999px!important;color:#eee!important}
+.stats{gap:0!important;margin:16px 0 0!important;border-top:1px solid #ffffff18!important;border-bottom:1px solid #ffffff18!important}
+.stat{background:transparent!important;border:0!important;border-radius:0!important;padding:15px 6px!important}
+.stat+ .stat{border-left:1px solid #ffffff18!important}
+.stat strong{font-size:19px!important;font-weight:700!important}
+.stat span{font-size:10px!important;color:#99999f!important}
+.tabbar{display:flex!important;gap:0!important;background:transparent!important;border:0!important;border-bottom:1px solid #ffffff24!important;border-radius:0!important;padding:0!important;margin:18px 0 0!important}
+.tab-btn{border-radius:0!important;background:transparent!important;padding:14px 8px!important;color:#8d8d93!important;font-size:12px!important}
+.tab-btn.active{background:transparent!important;color:#fff!important;border-bottom:2px solid #fff!important}
+.section-head{margin:20px 2px 10px!important}
+.section-head h2{font-size:16px!important}
+.post{background:transparent!important;border:0!important;border-bottom:1px solid #ffffff20!important;border-radius:0!important;padding:17px 2px!important;margin:0!important}
+.post-meta{color:#99999f!important}
+.post-body{font-size:14px!important;line-height:1.7!important}
+.post-foot{border-top:0!important;margin-top:10px!important;padding-top:0!important}
+.about-panel{background:transparent!important;border:0!important;border-top:1px solid #ffffff20!important;border-radius:0!important;padding:18px 2px!important}
+.pin-btn{background:#171719!important;border:1px solid #39393e!important;border-radius:999px!important}
+.empty,.loading{color:#99999f!important}
+@media(max-width:520px){
+ main{padding:16px 15px 30px!important}
+ .cover-wrap{height:145px!important}
+ .profile-head{padding:0 10px!important}
+ .avatar{width:80px!important;height:80px!important}
+ .top .back{padding:8px 10px!important;font-size:10px!important}
+}
+</style>
+
 </head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
