@@ -250,27 +250,28 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
  .confess-global-nav a.nav-publish-center span{font-size:10px!important}
 }
 </style>
-<style id="stash-capsule-cleanup">/* STASH — navigation sans pastilles : textes et icônes sur la barre grise */
+<style id="stash-capsule-cleanup">/* STASH — barre de navigation unique, gris uni, fixée au bas de l'écran */
 .confess-global-nav{
- position:fixed!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;
- bottom:calc(12px + env(safe-area-inset-bottom))!important;width:min(650px,calc(100% - 24px))!important;
- min-height:58px!important;padding:7px 9px!important;display:flex!important;align-items:center!important;
- justify-content:space-between!important;gap:5px!important;border:0!important;border-radius:999px!important;
- background:#3a3a3f!important;box-shadow:0 8px 24px rgba(0,0,0,.28)!important;overflow:visible!important;
- -webkit-backdrop-filter:blur(14px)!important;backdrop-filter:blur(14px)!important
+ position:fixed!important;left:50%!important;right:auto!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
+ top:auto!important;transform:translateX(-50%)!important;
+ width:min(650px,calc(100% - 24px))!important;height:58px!important;min-height:58px!important;
+ padding:6px 9px!important;display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:space-between!important;gap:5px!important;box-sizing:border-box!important;
+ border:0!important;border-radius:999px!important;background:#3b3b3b!important;
+ background-image:none!important;box-shadow:0 5px 18px rgba(0,0,0,.28)!important;
+ opacity:1!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
 }
-.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"],
-.confess-global-nav a.nav-publish-center,.confess-global-nav a.nav-publish-center.stash-bubble-active{
- flex:1 1 0!important;min-width:0!important;min-height:42px!important;margin:0!important;padding:0 9px!important;
- display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:7px!important;
- border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;
+.confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important;background:none!important}
+.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"],.confess-global-nav a.nav-publish-center{
+ flex:1 1 0!important;min-width:0!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0 8px!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;
  color:#fff!important;box-shadow:none!important;transform:none!important;text-decoration:none!important;white-space:nowrap!important;
- font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important
 }
-.confess-global-nav a span,.confess-global-nav a.stash-bubble-active span,.confess-global-nav a[aria-current="page"] span{color:#fff!important;font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important}
+.confess-global-nav a span,.confess-global-nav a.stash-bubble-active span,.confess-global-nav a[aria-current="page"] span{color:#fff!important}
 .confess-global-nav .nav-icon{display:block!important;width:19px!important;height:19px!important;flex:0 0 19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-.confess-global-nav a.stash-nav-hover{transform:none!important}
-@media(max-width:430px){.confess-global-nav{width:calc(100% - 18px)!important;min-height:54px!important;padding:5px 6px!important;gap:2px!important}.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{min-height:42px!important;padding:0 5px!important;gap:4px!important}.confess-global-nav a span{font-size:10px!important}.confess-global-nav .nav-icon{width:18px!important;height:18px!important;flex-basis:18px!important}}</style>
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+@media(max-width:430px){.confess-global-nav{width:calc(100% - 18px)!important;height:56px!important;min-height:56px!important;padding:5px 6px!important;gap:2px!important}.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{height:44px!important;min-height:44px!important;padding:0 5px!important;gap:4px!important}.confess-global-nav a span{font-size:10px!important}.confess-global-nav .nav-icon{width:18px!important;height:18px!important;flex-basis:18px!important}}</style>
 </head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
