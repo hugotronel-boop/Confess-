@@ -506,6 +506,13 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 .confess-global-nav .nav-icon{display:block!important;width:19px!important;height:19px!important;flex:0 0 19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
 body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(max-width:430px){.confess-global-nav{width:calc(100% - 18px)!important;height:56px!important;min-height:56px!important;padding:5px 6px!important;gap:2px!important}.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{height:44px!important;min-height:44px!important;padding:0 5px!important;gap:4px!important}.confess-global-nav a span{font-size:10px!important}.confess-global-nav .nav-icon{width:18px!important;height:18px!important;flex-basis:18px!important}}</style>
+<style id="stash-nav-active-pill">
+.confess-global-nav a{border-radius:14px!important;transition:background .16s ease,color .16s ease}
+.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{background:#f2f2f2!important;background-image:none!important;color:#111!important;border-radius:14px!important;box-shadow:none!important}
+.confess-global-nav a.stash-nav-current span,.confess-global-nav a[aria-current="page"] span{color:#111!important}
+.confess-global-nav a.stash-nav-current .nav-icon,.confess-global-nav a[aria-current="page"] .nav-icon{stroke:#111!important}
+.confess-global-nav a.nav-publish-center.stash-nav-current{background:#f2f2f2!important;color:#111!important}
+</style>
 </head>
 <body>
 
@@ -1053,4 +1060,12 @@ Promise.race([Promise.all([document.fonts.load('800 100px Poppins'),document.fon
 </script>
 
 
+<script id="stash-nav-current-page">
+(()=>{const nav=document.querySelector('.confess-global-nav');if(!nav)return;
+const file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+const map={'index.html':'home','messages.html':'messages','publish.html':'publish','notifications.html':'notifications','explore.html':'home','profile.html':'profile','settings.html':'profile','member.html':'profile','admin.html':'profile','moderation.html':'profile','appeals.html':'profile','sanctions.html':'profile'};
+const current=map[file]||'home';
+nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===current;a.classList.toggle('stash-nav-current',active);a.classList.toggle('stash-bubble-active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+})();
+</script>
 </body></html>
