@@ -344,10 +344,24 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a.nav-publish-center{flex:0 0 60px!important;min-width:60px!important}}
 </style>
 <style id="stash-messages-feed-banner">
-header.top.stash-feed-top.messages-feed-top{height:154px!important;min-height:154px!important;position:sticky!important;top:0!important;z-index:70!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;align-items:center!important;padding:12px 22px!important;background:rgba(5,5,6,.94)!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.11)!important;box-shadow:none!important;backdrop-filter:blur(22px)!important}
-.messages-feed-top .feed-header-label{justify-self:start!important;font-size:20px!important;font-weight:600!important;letter-spacing:-.5px!important;color:#fff!important}
-.messages-feed-top .feed-logo-image{justify-self:center!important;width:174px!important;height:174px!important;max-width:174px!important;object-fit:contain!important}
-@media(max-width:700px){header.top.stash-feed-top.messages-feed-top{height:154px!important;min-height:154px!important;padding:12px 14px!important}.messages-feed-top .feed-logo-image{width:144px!important;height:144px!important;max-width:144px!important}}
+/* Dimensions identiques au bandeau Feed, sans bouton à droite */
+header.top.stash-feed-top.messages-feed-top{
+  height:154px!important;min-height:154px!important;
+  position:sticky!important;top:0!important;z-index:70!important;
+  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;
+  align-items:center!important;padding:12px 22px!important;
+  background:rgba(5,5,6,.92)!important;
+  border:0!important;box-shadow:none!important;
+  backdrop-filter:blur(22px)!important;
+}
+.messages-feed-top .feed-header-label{
+  justify-self:start!important;font-size:20px!important;
+  font-weight:600!important;letter-spacing:-.5px!important;color:#fff!important;
+}
+.messages-feed-top .feed-logo-image{
+  justify-self:center!important;width:174px!important;height:174px!important;
+  max-width:174px!important;object-fit:contain!important;
+}
 </style>
 </head>
 <body>
