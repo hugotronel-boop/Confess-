@@ -772,7 +772,25 @@ async function loadFeed(reset=true){
    db.from('user_blocks').select('blocked_id').eq('blocker_id',session.user.id)
   ]);
   const hiddenAuthors=new Set([...(muted||[]).map(x=>x.muted_user_id),...(blocked||[]).map(x=>x.blocked_id)]);
-  if(hiddenAuthors.size)rows=rows.filter(post=>!post.author_profile_id||!hiddenAuthors.has(post.author_profile_id));
+  // Ne jamais masquer les publications de son propre compte, même si une relation mute/block est incohérente.
+  if(hiddenAuthors.size)rows=rows.filter(post=>post.author_profile_id===session.user.id||!post.author_profile_id||!hiddenAuthors.has(post.author_profile_id));
+ }
+ // Secours ciblé : si le fil global ne remonte pas les publications du membre connecté,
+ // les récupérer directement depuis son profil pour éviter un Feed vide à tort.
+ if(reset&&session&&currentFeed==='all'&&!currentCategory&&!currentSearch&&currentVisibility==='all'&&!savedOnly&&!linkedPostId){
+  const ownIds=new Set(rows.filter(post=>post.author_profile_id===session.user.id).map(post=>post.id));
+  if(ownIds.size===0){
+   const {data:ownPosts,error:ownPostsError}=await db.from('posts')
+    .select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at,categories(label)')
+    .eq('author_profile_id',session.user.id).eq('status','published')
+    .order('created_at',{ascending:false}).limit(50);
+   if(ownPostsError)console.error('STASH Feed: récupération de secours du profil impossible:',ownPostsError);
+   else if(ownPosts?.length){
+    const existing=new Set(rows.map(post=>post.id));
+    rows=[...ownPosts.filter(post=>!existing.has(post.id)),...rows]
+     .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+   }
+  }
  }
  if(savedOnly){
   if(!session){$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver tes publications enregistrées.</div>';return}
