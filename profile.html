@@ -305,6 +305,13 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:20px 16px 3
 }
 </style>
 
+<style id="stash-nav-active-pill">
+.confess-global-nav a{border-radius:14px!important;transition:background .16s ease,color .16s ease}
+.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{background:#f2f2f2!important;background-image:none!important;color:#111!important;border-radius:14px!important;box-shadow:none!important}
+.confess-global-nav a.stash-nav-current span,.confess-global-nav a[aria-current="page"] span{color:#111!important}
+.confess-global-nav a.stash-nav-current .nav-icon,.confess-global-nav a[aria-current="page"] .nav-icon{stroke:#111!important}
+.confess-global-nav a.nav-publish-center.stash-nav-current{background:#f2f2f2!important;color:#111!important}
+</style>
 </head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
@@ -462,4 +469,12 @@ load();
 </nav>
 
 
+<script id="stash-nav-current-page">
+(()=>{const nav=document.querySelector('.confess-global-nav');if(!nav)return;
+const file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+const map={'index.html':'home','messages.html':'messages','publish.html':'publish','notifications.html':'notifications','explore.html':'home','profile.html':'profile','settings.html':'profile','member.html':'profile','admin.html':'profile','moderation.html':'profile','appeals.html':'profile','sanctions.html':'profile'};
+const current=map[file]||'home';
+nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===current;a.classList.toggle('stash-nav-current',active);a.classList.toggle('stash-bubble-active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+})();
+</script>
 </body></html>
