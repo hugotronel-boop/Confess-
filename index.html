@@ -920,7 +920,7 @@ async function loadFeed(reset=true){
  const ids=rows.map(p=>p.id);let reactions=[],comments=[],marks=[];
  if(ids.length){
   const r=await db.from('post_reactions').select('post_id,user_id,reaction').in('post_id',ids);reactions=r.data||[];
-  const c=await db.from('comments').select('post_id').in('post_id',ids);comments=c.data||[];
+  const c=await db.from('comments').select('post_id').eq('status','published').in('post_id',ids);comments=c.data||[];
   if(session){const m=await db.from('post_bookmarks').select('post_id').eq('user_id',session.user.id).in('post_id',ids);marks=m.data||[]}
  }
  const counts={};reactions.forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1});
@@ -1025,7 +1025,7 @@ let activeReply=null,activeCommentSort='recent',activeCommentRows=[];
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
  activePost=id;activeReply=null;$('replyingBar').classList.remove('show');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
- const {data,error}=await db.from('comments').select('id,body,author_label,created_at,updated_at,parent_comment_id,status').eq('post_id',id).in('status',['published','deleted']).order('created_at');
+ const {data,error}=await db.from('comments').select('id,body,author_label,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
  const rows=data||[];activeCommentRows=rows;
  if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas encore de réponse. Lance la discussion !</div>';updateCommentSortUI();return}
@@ -1069,7 +1069,12 @@ async function deleteComment(id){
  if(!confirm('Supprimer définitivement le texte de cette réponse ? Les réponses associées resteront visibles.'))return;
  const {error}=await db.rpc('delete_confess_comment',{p_comment_id:id});
  if(error){toast('Suppression impossible : '+error.message);console.error(error);return}
- toast('Ta réponse a été supprimée.');await openComments(activePost);loadFeed();
+ /* Retire immédiatement le commentaire de l’interface, puis synchronise le compteur. */
+ activeCommentRows=activeCommentRows.filter(x=>x.id!==id);
+ const commentNode=$('comment-'+id);if(commentNode)commentNode.remove();
+ toast('Ta réponse a été supprimée.');
+ await openComments(activePost);
+ await loadFeed();
 }
 async function toggleCommentLike(id){
  if(!session){toast('Connecte-toi pour aimer une réponse.');return}
