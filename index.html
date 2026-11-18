@@ -368,11 +368,18 @@ header.top.stash-feed-top{
 }
 </style>
 
+
+<style id="stash-custom-logo">
+.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}
+.feed-logo-image{width:36px;height:36px}
+.auth-brand-image{width:34px;height:34px}
+.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
+</style>
 </head>
 <body>
 
 <header class="top stash-feed-top">
- <div class="feed-logo-placeholder" aria-label="Emplacement du logo STASH"><span>LOGO</span></div>
+ <img class="stash-brand-image feed-logo-image" src="./assets/stash-logo.png" alt="STASH">
  <div class="feed-wordmark">STASH</div>
  <button class="feed-search-button" id="feedSearchOpen" type="button" aria-label="Rechercher"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
  <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
