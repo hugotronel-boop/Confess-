@@ -365,6 +365,24 @@ header.top.stash-feed-top.messages-feed-top{
   max-width:174px!important;object-fit:contain!important;
 }
 </style>
+
+<style id="stash-messages-header-fixed-final">
+/* Même ancrage que Feed : haut du logo au pixel 0 du viewport */
+html body header.top.stash-feed-top.messages-feed-top{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  width:100%!important;height:154px!important;min-height:154px!important;
+  margin:0!important;padding:0 22px!important;z-index:2147483000!important;
+  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;
+  align-items:start!important;box-sizing:border-box!important;
+}
+html body header.top.stash-feed-top.messages-feed-top .feed-header-label{
+  align-self:center!important;font-size:20px!important;font-weight:600!important;letter-spacing:-.5px!important;
+}
+html body header.top.stash-feed-top.messages-feed-top .feed-logo-image{
+  align-self:start!important;justify-self:center!important;width:174px!important;height:174px!important;
+  max-width:174px!important;margin:0!important;object-fit:contain!important;
+}
+</style>
 </head>
 <body>
 <header class="top stash-feed-top messages-feed-top">
