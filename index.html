@@ -594,10 +594,12 @@ html body header.top.stash-feed-top .feed-search-button{
 /* STASH — commentaires en panneau coulissant façon réseau social */
 @media(max-width:620px){
  #commentsOverlay{
+  position:fixed!important;
+  inset:0!important;
   align-items:flex-end!important;
   justify-content:center!important;
   padding:8px 0 0!important;
-  z-index:14!important;
+  z-index:99999!important;
   background:rgba(0,0,0,.62)!important;
   backdrop-filter:blur(3px);
   -webkit-backdrop-filter:blur(3px);
