@@ -947,10 +947,12 @@ async function reportPost(id){return reportTarget('post_id',id)}
 async function deletePost(id){
  const post=postsCache.find(p=>p.id===id);
  if(!post||!session||post.author_profile_id!==session.user.id)return;
- if(!confirm('Supprimer cette publication de ton fil ? Les réponses et réactions seront conservées pour préserver l’historique.'))return;
- const {error}=await db.from('posts').update({status:'deleted',updated_at:new Date().toISOString()}).eq('id',id).eq('author_profile_id',session.user.id);
+ if(!confirm('Cette publication sera définitivement supprimée. Cette action est irréversible.'))return;
+ const {data,error}=await db.from('posts').delete().eq('id',id).eq('author_profile_id',session.user.id).select('id').maybeSingle();
  if(error){console.error(error);toast('Impossible de supprimer cette publication.');return}
- toast('Publication supprimée de ton fil.');await loadFeed();
+ if(!data){toast('Publication introuvable ou tu ne peux pas la supprimer.');return}
+ postsCache=postsCache.filter(p=>p.id!==id);
+ toast('Publication supprimée définitivement.');await loadFeed();
 }
 async function editPost(id){
  const post=postsCache.find(p=>p.id===id);
