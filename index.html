@@ -591,14 +591,14 @@ html body header.top.stash-feed-top .feed-search-button{
   transition:fill .18s ease,stroke .18s ease;
 }
 
-/* STASH — commentaires en panneau coulissant façon réseau social */
+/* STASH — panneau commentaires plein écran avec fermeture par glissement */
 @media(max-width:620px){
  #commentsOverlay{
   position:fixed!important;
   inset:0!important;
   align-items:flex-end!important;
   justify-content:center!important;
-  padding:8px 0 0!important;
+  padding:0!important;
   z-index:99999!important;
   background:rgba(0,0,0,.62)!important;
   backdrop-filter:blur(3px);
@@ -607,9 +607,9 @@ html body header.top.stash-feed-top .feed-search-button{
  #commentsOverlay .modal{
   width:calc(100vw + 16px)!important;
   max-width:none!important;
-  height:calc(100dvh - 108px - 62px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  height:calc(100dvh - 112px - env(safe-area-inset-top))!important;
   max-height:none!important;
-  margin:0 0 calc(62px + env(safe-area-inset-bottom))!important;
+  margin:0!important;
   margin-left:-8px!important;
   padding:18px 18px calc(14px + env(safe-area-inset-bottom))!important;
   border:0!important;
@@ -634,10 +634,11 @@ html body header.top.stash-feed-top .feed-search-button{
  #commentsOverlay .modalhead{
   flex:0 0 auto;
   margin-bottom:12px!important;
+  touch-action:none;
+  cursor:grab;
  }
  #commentsOverlay .modalhead h3{font-size:16px!important}
- #commentsOverlay .close{font-size:0!important;padding:7px 10px!important}
- #commentsOverlay .close:after{content:"✕";font-size:17px}
+ #commentsOverlay .close{display:none!important}
  #commentsOverlay #commentSort{flex:0 0 auto;overflow-x:auto}
  #commentsOverlay #commentsList{
   flex:1 1 auto;
@@ -653,10 +654,7 @@ html body header.top.stash-feed-top .feed-search-button{
   padding-bottom:env(safe-area-inset-bottom);
   background:var(--panel);
  }
- #commentsOverlay #commentBody{
-  max-height:110px;
-  resize:none;
- }
+ #commentsOverlay #commentBody{max-height:110px;resize:none}
 }
 @media(prefers-reduced-motion:reduce){
  #commentsOverlay .modal{transition:none!important}
@@ -1078,6 +1076,33 @@ $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour r
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
 document.querySelectorAll('[data-comment-sort]').forEach(b=>b.onclick=()=>{activeCommentSort=b.dataset.commentSort;updateCommentSortUI();openComments(activePost)});
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
+/* Fermeture du panneau en tirant sa poignée supérieure vers le bas */
+(()=>{
+ const overlay=$('commentsOverlay'),panel=overlay.querySelector('.modal'),head=overlay.querySelector('.modalhead');
+ let startY=0,deltaY=0,dragging=false;
+ head.addEventListener('touchstart',e=>{
+  if(!overlay.classList.contains('show')||!e.touches.length)return;
+  startY=e.touches[0].clientY;deltaY=0;dragging=true;
+  panel.style.transition='none';
+ },{passive:true});
+ head.addEventListener('touchmove',e=>{
+  if(!dragging||!e.touches.length)return;
+  deltaY=Math.max(0,e.touches[0].clientY-startY);
+  panel.style.transform='translateY('+deltaY+'px)';
+  if(deltaY>0)e.preventDefault();
+ },{passive:false});
+ const finish=()=>{
+  if(!dragging)return;dragging=false;
+  panel.style.transition='';
+  if(deltaY>125){
+   panel.style.transform='translateY(105%)';
+   setTimeout(()=>{overlay.classList.remove('show');panel.style.transform='';},220);
+  }else panel.style.transform='';
+  deltaY=0;
+ };
+ head.addEventListener('touchend',finish,{passive:true});
+ head.addEventListener('touchcancel',finish,{passive:true});
+})();
 $('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))$('commentsOverlay').classList.remove('show')});
 $('authBtn').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('notificationsBtn').onclick=()=>location.href='notifications.html';
