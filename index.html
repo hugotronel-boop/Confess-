@@ -943,7 +943,24 @@ async function loadFeed(reset=true){
   const slot=document.querySelector('[data-poll-slot="'+pollId+'"]');if(!slot)continue;
   slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage · '+total+' vote(s)</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':'Ton vote est enregistré')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
  }
- $('feed').querySelectorAll('[data-option]').forEach(b=>b.onclick=async()=>{if(!session)return toast('Connecte-toi pour voter.');const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});if(vote.error){toast('Vote impossible : '+vote.error.message);return}toast('Ton vote est enregistré ✓');loadFeed()});
+ $('feed').querySelectorAll('[data-option]').forEach(b=>b.onclick=async()=>{
+  if(!session)return toast('Connecte-toi pour voter.');
+  if(b.dataset.busy==='1')return;
+  b.dataset.busy='1';b.style.opacity='.65';
+  const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});
+  delete b.dataset.busy;b.style.opacity='';
+  if(vote.error){toast('Vote impossible : '+vote.error.message);console.error(vote.error);return}
+  const slot=b.closest('.poll-slot'),pollId=slot?.dataset.pollSlot;
+  if(slot&&pollId){
+   const result=await db.rpc('get_confess_poll_results',{p_post_id:pollId});
+   if(!result.error&&result.data?.length){
+    const options=result.data,total=Number(options[0].total_votes||0),mine=options.some(x=>x.my_vote),closed=options[0].closes_at&&new Date(options[0].closes_at)<=new Date();
+    slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage · '+total+' vote(s)</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':'Ton vote est enregistré')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
+    slot.querySelectorAll('[data-option]').forEach(btn=>btn.onclick=async()=>{if(!session)return toast('Connecte-toi pour voter.');const v=await db.rpc('vote_confess_poll',{p_option_id:btn.dataset.option});if(v.error){toast('Vote impossible : '+v.error.message);return}const again=await db.rpc('get_confess_poll_results',{p_post_id:pollId});if(!again.error&&again.data?.length){const data=again.data,t=Number(data[0].total_votes||0);slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage · '+t+' vote(s)</strong>'+data.map(o=>{const pct=t?Math.round(Number(o.votes)*100/t):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+'</div>';slot.querySelectorAll('[data-option]').forEach(x=>x.onclick=btn.onclick)}});
+   }
+  }
+  toast('Ton vote est enregistré ✓');
+ });
  $('feed').querySelectorAll('[data-post-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const panel=document.querySelector('[data-post-menu-panel="'+b.dataset.postMenu+'"]');const willOpen=!panel.classList.contains('open');document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));$('feed').querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(willOpen){panel.classList.add('open');b.setAttribute('aria-expanded','true')}});
  if(!window.stashPostMenuOutside){document.addEventListener('click',()=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'))});window.stashPostMenuOutside=true}
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
@@ -964,8 +981,42 @@ async function sharePost(id){
  if(navigator.share){try{await navigator.share(shareData);return}catch(error){if(error&&error.name==='AbortError')return}}
  try{await navigator.clipboard.writeText(url.toString());toast('Lien de la publication copié 🔗')}catch(error){prompt('Copie le lien de cette publication :',url.toString())}
 }
-async function toggleLike(id){if(!session)return toast('Connecte-toi pour réagir à une publication.');const {data:existing}=await db.from('post_reactions').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});if(result.error){toast('Action impossible : '+result.error.message);return}loadFeed()}
-async function toggleSave(id){if(!session)return toast('Connecte-toi pour enregistrer une publication.');const {data:existing}=await db.from('post_bookmarks').select('post_id').eq('post_id',id).eq('user_id',session.user.id).maybeSingle();let result;if(existing)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});if(result.error){toast('Impossible de modifier tes enregistrements.');return}toast(existing?'Publication retirée des favoris.':'Publication enregistrée.');loadFeed()}
+async function toggleLike(id){
+ if(!session)return toast('Connecte-toi pour réagir à une publication.');
+ const button=document.querySelector('[data-like="'+CSS.escape(id)+'"]');
+ if(!button||button.dataset.busy==='1')return;
+ const wasLiked=button.classList.contains('selected'),countNode=button.querySelector('span');
+ const oldCount=Number(countNode?.textContent||0);
+ button.dataset.busy='1';
+ button.classList.toggle('selected',!wasLiked);
+ if(countNode)countNode.textContent=String(Math.max(0,oldCount+(wasLiked?-1:1)));
+ let result;
+ if(wasLiked)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);
+ else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});
+ delete button.dataset.busy;
+ if(result.error){
+  button.classList.toggle('selected',wasLiked);
+  if(countNode)countNode.textContent=String(oldCount);
+  toast('Action impossible : '+result.error.message);
+  console.error(result.error);
+ }
+}
+async function toggleSave(id){
+ if(!session)return toast('Connecte-toi pour enregistrer une publication.');
+ const button=document.querySelector('[data-save="'+CSS.escape(id)+'"]');
+ if(!button||button.dataset.busy==='1')return;
+ const wasSaved=button.textContent.includes('Enregistré');
+ button.dataset.busy='1';button.textContent=wasSaved?'♧ Enregistrer':'✓ Enregistré';
+ let result;
+ if(wasSaved)result=await db.from('post_bookmarks').delete().eq('post_id',id).eq('user_id',session.user.id);
+ else result=await db.from('post_bookmarks').insert({post_id:id,user_id:session.user.id});
+ delete button.dataset.busy;
+ if(result.error){
+  button.textContent=wasSaved?'✓ Enregistré':'♧ Enregistrer';
+  toast('Impossible de modifier tes enregistrements.');console.error(result.error);return;
+ }
+ toast(wasSaved?'Publication retirée des favoris.':'Publication enregistrée.');
+}
 let activeReply=null,activeCommentSort='recent',activeCommentRows=[];
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
