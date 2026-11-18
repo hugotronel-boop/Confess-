@@ -605,11 +605,12 @@ html body header.top.stash-feed-top .feed-search-button{
   -webkit-backdrop-filter:blur(3px);
  }
  #commentsOverlay .modal{
+  --comments-keyboard-inset:0px;
   width:calc(100vw + 16px)!important;
   max-width:none!important;
-  height:calc(100dvh - 112px - env(safe-area-inset-top))!important;
+  height:calc(100dvh - 112px - env(safe-area-inset-top) - var(--comments-keyboard-inset,0px))!important;
   max-height:none!important;
-  margin:0!important;
+  margin:0 0 var(--comments-keyboard-inset,0px)!important;
   margin-left:-8px!important;
   padding:18px 18px calc(14px + env(safe-area-inset-bottom))!important;
   border:0!important;
@@ -1076,6 +1077,24 @@ $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour r
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
 document.querySelectorAll('[data-comment-sort]').forEach(b=>b.onclick=()=>{activeCommentSort=b.dataset.commentSort;updateCommentSortUI();openComments(activePost)});
 $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
+/* Ajuste le panneau au-dessus du clavier iOS sans déplacer son contenu */
+(()=>{
+ const overlay=$('commentsOverlay'),panel=overlay.querySelector('.modal'),input=$('commentBody');
+ const vv=window.visualViewport;
+ const update=()=>{
+  if(!vv)return;
+  const keyboardInset=Math.max(0,Math.round(window.innerHeight-(vv.height+vv.offsetTop)));
+  panel.style.setProperty('--comments-keyboard-inset',keyboardInset+'px');
+ };
+ if(vv){
+  vv.addEventListener('resize',update);
+  vv.addEventListener('scroll',update);
+  window.addEventListener('resize',update);
+ }
+ input.addEventListener('focus',()=>{update();requestAnimationFrame(update)});
+ input.addEventListener('blur',()=>{setTimeout(()=>panel.style.setProperty('--comments-keyboard-inset','0px'),80)});
+ overlay.addEventListener('transitionend',e=>{if(e.target===panel&&overlay.classList.contains('show'))update()});
+})();
 /* Fermeture du panneau en tirant sa poignée supérieure vers le bas */
 (()=>{
  const overlay=$('commentsOverlay'),panel=overlay.querySelector('.modal'),head=overlay.querySelector('.modalhead');
