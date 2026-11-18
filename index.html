@@ -966,8 +966,8 @@ $('notificationsBtn').onclick=()=>location.href='notifications.html';
 $('feedSearchOpen').onclick=()=>location.href='explore.html';
 $('messagesBtn').onclick=()=>location.href='messages.html';
 $('messagesNav').onclick=()=>$('messagesBtn').click();
-$('mobileMessages').onclick=()=>$('messagesBtn').click();
-$('mobileNotifications').onclick=()=>$('notificationsBtn').click();
+if($('mobileMessages'))$('mobileMessages').onclick=()=>$('messagesBtn').click();
+if($('mobileNotifications'))$('mobileNotifications').onclick=()=>$('notificationsBtn').click();
 if($('sortSelect'))$('sortSelect').onchange=()=>loadFeed();
 $('feedSearchBtn').onclick=()=>{currentSearch=$('feedSearch').value.trim().slice(0,100);updateCategoryUI();loadFeed()};
 $('feedSearch').addEventListener('keydown',event=>{if(event.key==='Enter')$('feedSearchBtn').click()});
@@ -980,11 +980,11 @@ document.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{
 });
 $('profileNav').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('publishNav').onclick=()=>location.href=session?'publish.html':'auth.html';
-$('mobileHome').onclick=()=>$('homeNav').click();
-$('mobileExplore').onclick=()=>location.href='explore.html';
-$('exploreNav').onclick=()=>$('mobileExplore').click();
-$('mobileWrite').onclick=()=>location.href=session?'publish.html':'auth.html';
-$('mobileProfile').onclick=()=>$('profileNav').click();
+if($('mobileHome'))$('mobileHome').onclick=()=>$('homeNav').click();
+if($('mobileExplore'))$('mobileExplore').onclick=()=>location.href='explore.html';
+$('exploreNav').onclick=()=>location.href='explore.html';
+if($('mobileWrite'))$('mobileWrite').onclick=()=>location.href=session?'publish.html':'auth.html';
+if($('mobileProfile'))$('mobileProfile').onclick=()=>$('profileNav').click();
 db.auth.onAuthStateChange((event,nextSession)=>{
  // Le callback Auth reste synchrone : les appels Supabase sont différés
  // pour éviter de bloquer le verrou interne de gestion de session.
