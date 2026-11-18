@@ -84,8 +84,15 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-custom-logo">
+.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}
+.feed-logo-image{width:36px;height:36px}
+.auth-brand-image{width:34px;height:34px}
+.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
+</style>
 </head><body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Gestion de l’équipe 🛡️</h1><p>Ajoute des membres de confiance à l’équipe de modération ou retire leur accès. Seuls les administrateurs peuvent utiliser cet espace.</p></section>
 <section class="card"><h2>Ajouter un modérateur</h2><p class="desc">Recherche un membre par son pseudonyme. Vérifie bien son compte avant de lui donner accès.</p><div class="searchrow"><input class="field" id="search" maxlength="20" placeholder="Ex. : pseudo_confess" autocomplete="off"><button class="primary" id="searchBtn">Rechercher</button></div><div id="results"><div class="empty">Entre un pseudonyme pour rechercher un membre.</div></div><p class="hint">Un modérateur peut traiter les signalements, mais ne peut pas nommer d’autres modérateurs ni gérer les administrateurs.</p></section>
