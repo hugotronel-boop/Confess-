@@ -596,7 +596,8 @@ html body header.top.stash-feed-top .feed-search-button{
  #commentsOverlay{
   align-items:flex-end!important;
   justify-content:center!important;
-  padding:0!important;
+  padding:8px 0 0!important;
+  z-index:14!important;
   background:rgba(0,0,0,.62)!important;
   backdrop-filter:blur(3px);
   -webkit-backdrop-filter:blur(3px);
@@ -604,9 +605,9 @@ html body header.top.stash-feed-top .feed-search-button{
  #commentsOverlay .modal{
   width:100%!important;
   max-width:none!important;
-  height:min(88dvh,780px)!important;
-  max-height:88dvh!important;
-  margin:0!important;
+  height:calc(100dvh - 82px - env(safe-area-inset-top))!important;
+  max-height:none!important;
+  margin:0 0 calc(62px + env(safe-area-inset-bottom))!important;
   padding:12px 16px calc(14px + env(safe-area-inset-bottom))!important;
   border:1px solid #ffffff18!important;
   border-bottom:0!important;
