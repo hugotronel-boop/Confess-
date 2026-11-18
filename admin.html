@@ -91,6 +91,60 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 .auth-brand-image{width:34px;height:34px}
 .messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
 </style>
+<style id="stash-capsule-navigation">
+/* STASH — navigation capsule inspirée de la référence */
+.confess-global-nav{
+ position:fixed!important;left:50%!important;right:auto!important;
+ bottom:calc(12px + env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;width:min(650px,calc(100% - 24px))!important;
+ min-height:58px!important;padding:7px 9px!important;display:flex!important;
+ flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+ gap:5px!important;overflow:visible!important;border:1.5px solid rgba(255,255,255,.88)!important;
+ border-radius:999px!important;background:#080809!important;
+ box-shadow:0 9px 28px rgba(0,0,0,.48),0 3px 12px rgba(255,255,255,.08)!important;
+ -webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important;
+}
+.confess-global-nav a{
+ position:relative!important;z-index:1!important;flex:1 1 auto!important;min-width:0!important;
+ min-height:40px!important;margin:0!important;padding:0 10px!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;
+ gap:8px!important;border:1px solid transparent!important;border-radius:999px!important;
+ background:transparent!important;color:rgba(255,255,255,.9)!important;
+ font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important;text-decoration:none!important;
+ white-space:nowrap!important;box-shadow:none!important;transform:none!important;
+}
+.confess-global-nav a b{display:none!important}
+.confess-global-nav a span{font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important;color:inherit!important}
+.confess-global-nav a[data-nav="home"]{flex:0 0 auto!important;padding:3px 12px 3px 4px!important;gap:9px!important}
+.confess-global-nav a[data-nav="home"] img{display:block!important;width:34px!important;height:34px!important;object-fit:cover!important;border-radius:50%!important;background:#fff!important;border:2px solid #fff!important}
+.confess-global-nav a.stash-bubble-active:not(.nav-publish-center),
+.confess-global-nav a[aria-current="page"]:not(.nav-publish-center){
+ background:#fff!important;color:#101012!important;border-color:#fff!important;
+ box-shadow:0 2px 9px rgba(255,255,255,.16)!important;
+}
+.confess-global-nav a.nav-publish-center{
+ flex:1 1 auto!important;min-width:0!important;min-height:40px!important;margin:0!important;padding:0 10px!important;
+ border:1px solid transparent!important;border-radius:999px!important;
+ background:transparent!important;color:#fff!important;box-shadow:none!important;
+}
+.confess-global-nav a.nav-publish-center b{display:none!important}
+.confess-global-nav a.nav-publish-center span{font-size:12px!important;color:inherit!important}
+.confess-global-nav a.nav-publish-center.stash-bubble-active{background:#fff!important;color:#101012!important}
+.confess-global-nav a[data-nav="profile"]{flex:0 0 auto!important;min-width:65px!important;padding:0 15px!important;background:#fff!important;color:#111!important;border-color:#fff!important}
+.confess-global-nav a[data-nav="profile"] span{color:#111!important;font-weight:600!important}
+.confess-global-nav a.stash-nav-hover{transform:scale(1.02)!important}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+@media(max-width:430px){
+ .confess-global-nav{width:calc(100% - 18px)!important;min-height:54px!important;padding:5px 6px!important;gap:1px!important}
+ .confess-global-nav a{padding:0 7px!important;gap:5px!important;font-size:10px!important}
+ .confess-global-nav a span{font-size:10px!important}
+ .confess-global-nav a[data-nav="home"]{padding:3px 7px 3px 3px!important;gap:5px!important}
+ .confess-global-nav a[data-nav="home"] img{width:30px!important;height:30px!important}
+ .confess-global-nav a[data-nav="profile"]{min-width:54px!important;padding:0 10px!important}
+ .confess-global-nav a.nav-publish-center{padding:0 7px!important}
+ .confess-global-nav a.nav-publish-center span{font-size:10px!important}
+}
+</style>
 </head><body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Paramètres</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
@@ -145,11 +199,11 @@ $('searchBtn').onclick=searchMembers;$('search').addEventListener('keydown',e=>{
 })();
 </script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
-<a href="./index.html" data-nav="home"><b>⌂</b><span>Feed</span></a>
-<a href="./messages.html" data-nav="messages"><b>💬</b><span>Messages</span></a>
-<a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><b>＋</b><span>Publier</span></a>
-<a href="./notifications.html" data-nav="notifications"><b>🔔</b><span>Actus</span></a>
-<a href="./profile.html" data-nav="profile"><b>◉</b><span>Profil</span></a>
+<a href="./index.html" data-nav="home"><img src="./assets/stash-logo.png" alt="STASH"><span>Feed</span></a>
+<a href="./messages.html" data-nav="messages"><span>Messages</span></a>
+<a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><span>Publier</span></a>
+<a href="./notifications.html" data-nav="notifications"><span>Actus</span></a>
+<a href="./profile.html" data-nav="profile"><span>Profil</span></a>
 </nav>
 
 <script id="stash-liquid-bubbles-nav">(()=>{const nav=document.querySelector('.confess-global-nav');if(!nav||nav.dataset.stashBubblesReady)return;nav.dataset.stashBubblesReady='1';const links=[...nav.querySelectorAll('a[href]')];if(!links.length)return;const current=()=>links.find(a=>a.getAttribute('aria-current')==='page')||links.find(a=>{try{return new URL(a.href,location.href).pathname===location.pathname}catch(_){return false}})||links[0];let selected=current(),last=null,startX=0,startY=0,dragging=false,moved=false,suppressClick=false;function activate(a){if(!a)return;selected=a;links.forEach(l=>{const on=l===a;l.classList.toggle('stash-bubble-active',on);l.classList.toggle('stash-nav-hover',on)})}activate(selected);function linkAt(x,y){const el=document.elementFromPoint(x,y);const a=el?.closest?.('.confess-global-nav a[href]');return a&&nav.contains(a)?a:null}nav.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const a=linkAt(e.clientX,e.clientY);if(!a)return;startX=e.clientX;startY=e.clientY;last=a;dragging=true;moved=false;activate(a);try{nav.setPointerCapture(e.pointerId)}catch(_){}},{passive:true});nav.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.12)moved=true;const a=linkAt(e.clientX,e.clientY);if(a&&a!==last){last=a;activate(a)}if(moved&&e.cancelable)e.preventDefault()},{passive:false});function end(e){if(!dragging)return;dragging=false;if(moved&&last){e.preventDefault();suppressClick=true;activate(last);location.href=last.href;setTimeout(()=>{suppressClick=false},700)}else activate(current())}nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',()=>{dragging=false;moved=false;activate(current())});nav.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopPropagation()}},true);window.addEventListener('resize',()=>activate(selected),{passive:true})})();</script>
