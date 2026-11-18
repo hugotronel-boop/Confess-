@@ -525,6 +525,27 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a.nav-publish-center{flex:0 0 60px!important;min-width:60px!important}}
 </style>
+
+<style id="stash-feed-header-fixed-final">
+/* Bandeau Feed fixé au viewport, bord supérieur du logo aligné sur le haut de l'écran */
+html body header.top.stash-feed-top{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  width:100%!important;height:154px!important;min-height:154px!important;
+  margin:0!important;padding:0 22px!important;z-index:2147483000!important;
+  display:grid!important;grid-template-columns:1fr 1fr 1fr!important;
+  align-items:start!important;box-sizing:border-box!important;
+}
+html body header.top.stash-feed-top .feed-header-label{
+  align-self:center!important;font-size:20px!important;font-weight:600!important;letter-spacing:-.5px!important;
+}
+html body header.top.stash-feed-top .feed-logo-image{
+  align-self:start!important;justify-self:center!important;width:174px!important;height:174px!important;
+  max-width:174px!important;margin:0!important;object-fit:contain!important;
+}
+html body header.top.stash-feed-top .feed-search-button{
+  align-self:center!important;justify-self:end!important;
+}
+</style>
 </head>
 <body>
 
