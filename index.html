@@ -278,6 +278,19 @@ header.top.stash-feed-top{height:154px!important;min-height:154px!important;posi
 .post-actions .action svg{width:21px!important;height:21px!important;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .post-actions .action[data-like] svg{fill:none}
 @media(max-width:620px){.post-head{padding-right:32px!important}.post-menu-panel{right:-2px}.post-actions{gap:25px!important}}
+
+/* Ajustements du feed : actions resserrées et menu flottant */
+#feed .post{overflow:visible!important;isolation:auto!important}
+#feed .post:has(.post-menu-panel.open){z-index:60!important}
+#feed .post-head{overflow:visible!important}
+#feed .post-thread-mark{display:none!important}
+#feed .post-menu-wrap{z-index:100!important}
+#feed .post-menu-panel{z-index:1000!important;top:34px!important;right:0!important}
+#feed .post-actions{justify-content:flex-start!important;gap:24px!important}
+#feed .post-actions .action{flex:0 0 auto!important}
+@media(max-width:620px){
+ #feed .post-actions{justify-content:flex-start!important;gap:22px!important}
+}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
