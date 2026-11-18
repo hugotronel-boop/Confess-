@@ -87,8 +87,10 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-custom-logo">.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}</style>
 </head><body>
-<header class="top"><div class="brand"><div class="mark">C</div><strong>STASH</strong></div><button class="back" onclick="location.href='moderation.html'">← Modération</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='moderation.html'">← Modération</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="hero"><h1>Sanctions & protection ⚖️</h1><p>Consulte l’historique d’un membre et applique une mesure proportionnée. Chaque sanction est enregistrée et traçable.</p></section>
 <section class="card"><h2>Rechercher un membre</h2><p class="desc">Recherche par pseudonyme pour consulter son historique de modération.</p><div class="row"><input class="field" id="search" maxlength="30" placeholder="Pseudo du membre"><button class="primary" id="searchBtn">Rechercher</button></div><div id="results"><div class="empty">Aucun membre sélectionné.</div></div></section>
