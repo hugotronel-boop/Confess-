@@ -749,7 +749,7 @@ async function loadFeed(reset=true){
  const pageParams=reset?new URLSearchParams(location.search):new URLSearchParams();
  const linkedPostId=pageParams.get('post');
  const newlyPublishedId=pageParams.get('newpost');
- let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
+ let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at,categories(label)').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(linkedPostId){query=query.eq('id',linkedPostId);followedIds=null;savedOnly=false}
  else {
   if(followedIds)query=query.in('author_profile_id',followedIds);
@@ -975,12 +975,10 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
 (async()=>{
- // Le fil démarre AVANT les catégories : une erreur ou un délai sur categories ne doit jamais bloquer les publications.
- const firstFeedLoad=loadFeed();
+ // Initialise d'abord les catégories et la session, puis lance un seul chargement du fil.
+ // Cela évite deux requêtes concurrentes qui pouvaient se remplacer dans le conteneur.
  try{await loadCategories()}catch(error){console.error('Catégories STASH indisponibles:',error)}
  try{await loadSession()}catch(error){console.error('Session STASH indisponible au démarrage:',error)}
- await firstFeedLoad;
- // Recharge une fois catégories et session initialisées pour mettre à jour les filtres et le compte.
  await loadFeed();
 })();
 })();
