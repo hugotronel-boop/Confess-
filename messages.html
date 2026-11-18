@@ -343,9 +343,18 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
 @media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a.nav-publish-center{flex:0 0 60px!important;min-width:60px!important}}
 </style>
+<style id="stash-messages-feed-banner">
+header.top.stash-feed-top.messages-feed-top{height:154px!important;min-height:154px!important;position:sticky!important;top:0!important;z-index:70!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;align-items:center!important;padding:12px 22px!important;background:rgba(5,5,6,.94)!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.11)!important;box-shadow:none!important;backdrop-filter:blur(22px)!important}
+.messages-feed-top .feed-header-label{justify-self:start!important;font-size:20px!important;font-weight:600!important;letter-spacing:-.5px!important;color:#fff!important}
+.messages-feed-top .feed-logo-image{justify-self:center!important;width:174px!important;height:174px!important;max-width:174px!important;object-fit:contain!important}
+@media(max-width:700px){header.top.stash-feed-top.messages-feed-top{height:154px!important;min-height:154px!important;padding:12px 14px!important}.messages-feed-top .feed-logo-image{width:144px!important;height:144px!important;max-width:144px!important}}
+</style>
 </head>
 <body>
-<header class="top messages-top"><div class="messages-brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><h1>MESSAGES</h1></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top stash-feed-top messages-feed-top">
+ <div class="feed-header-label">Messages</div>
+ <img class="stash-brand-image feed-logo-image" src="./assets/stash-logo.png" alt="STASH">
+</header>
 <main>
 <section class="shell" id="shell">
  <aside class="inbox"><div class="inbox-head"><input class="inbox-search" id="inboxSearch" type="search" maxlength="60" placeholder="Rechercher"><div class="inbox-actions"><button class="action" onclick="location.href='index.html'">+ Privé</button><button class="group-create" id="openGroup">+ Groupe</button></div></div><div class="inbox-list" id="inboxList"><div class="loading">Chargement des conversations…</div></div></aside>
