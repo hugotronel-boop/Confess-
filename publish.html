@@ -235,10 +235,17 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
 
 </style>
+
+<style id="stash-custom-logo">
+.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}
+.feed-logo-image{width:36px;height:36px}
+.auth-brand-image{width:34px;height:34px}
+.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
+</style>
 </head>
 <body>
 <header class="top stash-feed-top publish-page-top">
- <div class="feed-logo-placeholder" aria-label="Emplacement du logo STASH"><span>LOGO</span></div>
+ <img class="stash-brand-image feed-logo-image" src="./assets/stash-logo.png" alt="STASH">
  <div class="feed-wordmark">STASH</div>
  <button type="button" class="pill publish-top-action" id="publishTopAction">Publier</button>
  <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
