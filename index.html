@@ -853,7 +853,11 @@ function updateCategoryUI(){
 }
 function renderLoadMoreButton(){const old=$('loadMorePosts');if(old)old.remove();if(!feedHasMore)return;const more=document.createElement('button');more.id='loadMorePosts';more.className='action';more.textContent='Charger plus de publications';more.style.cssText='display:block;width:100%;padding:14px;margin:14px 0 24px;border:1px solid var(--line);border-radius:14px;font-weight:750';more.onclick=()=>loadFeed(false);$('feed').after(more)}
 async function loadFeed(reset=true){
- if(reset){feedOffset=0;feedHasMore=true;postsCache=[];$('feed').innerHTML='<div class="loading">Chargement du fil…</div>'}else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
+ if(reset){
+  feedOffset=0;feedHasMore=true;
+  /* Conserve le fil affiché pendant la récupération : aucun écran noir ni flash de chargement. */
+  if(!$('feed').children.length)$('feed').innerHTML='<div class="loading">Chargement du fil…</div>';
+ }else{const more=$('loadMorePosts');if(more){more.disabled=true;more.textContent='Chargement…'}}
  let followedIds=null;
  if(currentFeed==='following'){
   if(!session){feedHasMore=false;$('feed').innerHTML='<div class="empty">Connecte-toi pour retrouver les confessions des personnes que tu suis.<br><br><button class="action" type="button" onclick="location.href=\'auth.html\'">Se connecter</button></div>';renderLoadMoreButton();return}
