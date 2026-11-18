@@ -153,6 +153,13 @@ input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16
 }
 </style>
 
+
+<style id="stash-custom-logo">
+.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}
+.feed-logo-image{width:36px;height:36px}
+.auth-brand-image{width:34px;height:34px}
+.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}
+</style>
 </head>
 <body>
 <section class="hero" id="hero">
@@ -160,7 +167,7 @@ input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16
 <div class="ui">
 <h1 class="sr-only">STASH — Dis les choses. Écoute les autres.</h1>
 <header class="nav">
-<a href="#" class="logo" aria-label="STASH"><i class="logo-mark"></i><b>ST</b><span>ASH</span></a>
+<a href="#" class="logo" aria-label="STASH"><img class="stash-brand-image auth-brand-image" src="./assets/stash-logo.png" alt=""><b>ST</b><span>ASH</span></a>
 <div class="nav-note">Déjà parmi nous ? <button id="navLogin" type="button">Connexion</button></div>
 </header>
 <div class="arrows">
