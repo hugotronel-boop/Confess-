@@ -992,13 +992,18 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  if(nextSession){session=nextSession;setUser()}
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
-(async()=>{
- // Initialise d'abord les catégories et la session, puis lance un seul chargement du fil.
- // Cela évite deux requêtes concurrentes qui pouvaient se remplacer dans le conteneur.
- try{await loadCategories()}catch(error){console.error('Catégories STASH indisponibles:',error)}
- try{await loadSession()}catch(error){console.error('Session STASH indisponible au démarrage:',error)}
- await loadFeed();
-})();
+// Affiche le fil immédiatement : le chargement du profil/brouillon ne doit jamais le bloquer.
+loadFeed().catch(error=>{
+ console.error('Erreur inattendue pendant le chargement du Feed STASH:',error);
+ $('feed').innerHTML='<div class="empty">Le fil n’a pas pu se charger. Actualise la page pour réessayer.</div>';
+});
+Promise.allSettled([loadCategories(),loadSession()]).then(()=>{
+ // Une fois la session et les catégories prêtes, actualise les données avec le contexte complet.
+ loadFeed().catch(error=>{
+  console.error('Erreur lors de l’actualisation du Feed STASH:',error);
+  $('feed').innerHTML='<div class="empty">Le fil n’a pas pu se charger. Actualise la page pour réessayer.</div>';
+ });
+});
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
