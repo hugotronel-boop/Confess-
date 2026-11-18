@@ -259,6 +259,25 @@ header.top.stash-feed-top{height:154px!important;min-height:154px!important;posi
  #feed .post-actions .action svg{width:21px!important;height:21px!important}
 }
 
+
+/* STASH — actions des publications façon Threads */
+.post-head{position:relative!important;padding-right:34px!important}
+.post-avatar{position:relative!important}
+.avatar-follow-plus{display:none!important}
+.post-menu-wrap{position:absolute;right:0;top:0;z-index:8}
+.post-menu-trigger{width:34px;height:34px;border:0!important;border-radius:50%;background:transparent!important;color:#aaa!important;font-size:25px!important;line-height:1;letter-spacing:1px;padding:0 0 8px!important;display:grid;place-items:center}
+.post-menu-trigger:hover,.post-menu-trigger[aria-expanded="true"]{background:rgba(255,255,255,.1)!important;color:#fff!important}
+.post-menu-panel{display:none;position:absolute;right:0;top:38px;width:190px;padding:6px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(24,23,28,.98);box-shadow:0 14px 40px rgba(0,0,0,.5);backdrop-filter:blur(20px);z-index:20}
+.post-menu-panel.open{display:block}
+.post-menu-item{display:block;width:100%;padding:11px 12px;border:0!important;border-radius:9px;background:transparent!important;color:#f4f1f5!important;text-align:left;font-size:12px!important}
+.post-menu-item:hover{background:rgba(255,255,255,.09)!important}
+.post-menu-item.danger{color:#ff8b9b!important}
+.post-menu-separator{height:1px;background:rgba(255,255,255,.12);margin:5px 4px}
+.post-actions{margin-left:48px!important;justify-content:flex-start!important;gap:28px!important}
+.post-actions .action{display:flex!important;align-items:center;gap:7px;font-size:13px!important;padding:6px 2px!important}
+.post-actions .action svg{width:21px!important;height:21px!important;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.post-actions .action[data-like] svg{fill:none}
+@media(max-width:620px){.post-head{padding-right:32px!important}.post-menu-panel{right:-2px}.post-actions{gap:25px!important}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
@@ -811,14 +830,11 @@ async function loadFeed(reset=true){
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}<span class="avatar-follow-plus">+</span></div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
-   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}" aria-label="J'aime" title="J'aime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11A4.8 4.8 0 0 1 12 6.5a4.8 4.8 0 0 1 8.8 2.3Z"/></svg><span>${counts[p.id]||0}</span></button>
-   <button class="action" data-comments="${p.id}" aria-label="Répondre" title="Répondre"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
-   <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}" aria-label="Enregistrer" title="Enregistrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h13l-3-3m3 3-3 3M20 17H7l3 3m-3-3 3-3"/></svg><span>${bookmarked.has(p.id)?'✓':''}</span></button>
+   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}" aria-label="J'aime" title="J'aime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 11-8.8-11A4.8 4.8 0 0 1 12 6.5a4.8 4.8 0 0 1 8.8 2.3Z"/></svg><span>${counts[p.id]||0}</span></button>
+   <button class="action" data-comments="${p.id}" aria-label="Commenter" title="Commenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
    <button class="action" data-share="${p.id}" aria-label="Partager" title="Partager"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-7.5 18-3.8-7.7L2 9.5 21 3Z"/><path d="M9.7 13.3 21 3"/></svg></button>
-   <button class="action post-report-icon" data-report="${p.id}" aria-label="Signaler" title="Signaler">•••</button>
-   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'" aria-label="Modifier" title="Modifier">✎</button><button class="action" data-delete="'+p.id+'" aria-label="Supprimer" title="Supprimer">×</button>':''}
   </div></article>`}).join('');
  const pollQuery=await db.from('polls').select('post_id').in('post_id',ids);
  const pollIds=(pollQuery.data||[]).map(x=>x.post_id);
@@ -831,6 +847,8 @@ async function loadFeed(reset=true){
   slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage · '+total+' vote(s)</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':'Ton vote est enregistré')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
  }
  $('feed').querySelectorAll('[data-option]').forEach(b=>b.onclick=async()=>{if(!session)return toast('Connecte-toi pour voter.');const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});if(vote.error){toast('Vote impossible : '+vote.error.message);return}toast('Ton vote est enregistré ✓');loadFeed()});
+ $('feed').querySelectorAll('[data-post-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const panel=document.querySelector('[data-post-menu-panel="'+b.dataset.postMenu+'"]');const willOpen=!panel.classList.contains('open');document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));$('feed').querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(willOpen){panel.classList.add('open');b.setAttribute('aria-expanded','true')}});
+ if(!window.stashPostMenuOutside){document.addEventListener('click',()=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'))});window.stashPostMenuOutside=true}
  $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
