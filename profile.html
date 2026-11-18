@@ -227,6 +227,16 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
  .confess-global-nav a.nav-publish-center span{font-size:10px!important}
 }
 </style>
+<style id="stash-capsule-cleanup">/* STASH — navigation capsule épurée : seul l'onglet actif est en pastille blanche */
+.confess-global-nav a{border:1px solid transparent!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:rgba(255,255,255,.9)!important}
+.confess-global-nav a[data-nav="home"]{padding:0 12px!important;gap:0!important}
+.confess-global-nav a[data-nav="home"] img{display:none!important}
+.confess-global-nav a[data-nav="profile"]{background:transparent!important;color:rgba(255,255,255,.9)!important;border-color:transparent!important;min-width:0!important;padding:0 10px!important}
+.confess-global-nav a[data-nav="profile"] span{color:inherit!important;font-weight:500!important}
+.confess-global-nav a.nav-publish-center{border:1px solid transparent!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:rgba(255,255,255,.9)!important}
+.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{background:#fff!important;color:#101012!important;border:1px solid #fff!important;outline:1px solid rgba(255,255,255,.9)!important;outline-offset:0!important;box-shadow:0 2px 9px rgba(255,255,255,.12)!important}
+.confess-global-nav a.stash-bubble-active span,.confess-global-nav a[aria-current="page"] span{color:#101012!important}
+</style>
 </head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
@@ -376,7 +386,7 @@ load();
 })();
 </script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
-<a href="./index.html" data-nav="home"><img src="./assets/stash-logo.png" alt="STASH"><span>Feed</span></a>
+<a href="./index.html" data-nav="home"><span>Feed</span></a>
 <a href="./messages.html" data-nav="messages"><span>Messages</span></a>
 <a href="./publish.html" data-nav="publish" class="nav-publish-center" aria-label="Publier"><span>Publier</span></a>
 <a href="./notifications.html" data-nav="notifications"><span>Actus</span></a>
