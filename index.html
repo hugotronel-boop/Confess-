@@ -213,6 +213,52 @@ body>.confess-global-nav{
 .stash-hero-3d{height:285px!important;top:154px!important}
 .stash-hero-3d .stash-3d-scene{opacity:1!important}
 @media(max-width:640px){.stash-feed-top{grid-template-columns:1fr 1fr 40px!important;height:154px!important;min-height:154px!important;padding:5px 14px!important}.stash-feed-top .feed-logo-image{width:144px!important;height:144px!important}.stash-hero-3d{height:285px!important;top:154px!important}}
+
+/* STASH FEED — version minimaliste plein écran, inspirée du modèle fourni */
+.stash-hero-3d,.welcome,.feed-head,#feedTabs,#visibilityFilters{display:none!important}
+header.top.stash-feed-top{height:154px!important;min-height:154px!important;position:relative!important;top:auto!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;align-items:center!important;padding:12px 22px!important;background:#050506!important;border:0!important;box-shadow:none!important}
+.stash-feed-top .feed-header-label{justify-self:start!important;font-size:20px!important;font-weight:600!important;letter-spacing:-.5px!important}
+.stash-feed-top .feed-logo-image{justify-self:center!important;width:174px!important;height:174px!important;max-width:174px!important;object-fit:contain!important}
+.stash-feed-top .feed-search-button{justify-self:end!important;width:48px!important;height:48px!important}
+.stash-feed-top .feed-search-button svg{width:32px!important;height:32px!important;stroke-width:2!important}
+.layout{width:min(680px,100%)!important;padding:clamp(72px,12vh,142px) 0 110px!important;margin:0 auto!important}
+#feed{width:100%!important}
+#feed .post{position:relative!important;display:grid!important;grid-template-columns:54px minmax(0,1fr)!important;column-gap:12px!important;padding:18px 17px 22px!important;margin:0!important;min-height:174px!important;background:#050506!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.12)!important;border-radius:0!important;box-shadow:none!important}
+#feed .post-head{grid-column:1 / -1!important;display:grid!important;grid-template-columns:54px minmax(0,1fr) 26px!important;align-items:center!important;gap:12px!important;min-height:48px!important}
+#feed .post-avatar{grid-column:1!important;grid-row:1!important;width:48px!important;height:48px!important;min-width:48px!important;position:relative!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:#26262a!important;font-size:20px!important}
+#feed .avatar-follow-plus{position:absolute;right:-4px;bottom:-3px;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#080808;font-size:17px;font-weight:800;line-height:1;border:1px solid #050506}
+#feed .post-author-line{grid-column:2!important;display:flex!important;align-items:baseline!important;gap:7px!important;min-width:0!important}
+#feed .author{font-size:15px!important;font-weight:750!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#feed .meta{font-size:13px!important;color:#77777d!important;white-space:nowrap!important;margin:0!important}
+#feed .post-thread-mark{grid-column:3!important;grid-row:1!important;display:block!important;color:#fff!important;font-size:27px!important;line-height:1!important;text-align:center!important}
+#feed .category-badge{display:none!important}
+#feed .post-body{grid-column:2!important;margin:3px 0 17px!important;padding:0!important;font-size:15px!important;line-height:1.55!important;letter-spacing:.02px!important;color:#f4f4f5!important;overflow-wrap:anywhere!important}
+#feed .poll-slot{grid-column:2!important;margin:0 0 14px!important}
+#feed .post-actions{grid-column:2!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:13px!important;margin:0!important;padding:0!important;border:0!important;max-width:100%!important}
+#feed .post-actions .action{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;min-width:0!important;padding:4px 2px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#aaaab0!important;font-size:13px!important;line-height:1!important}
+#feed .post-actions .action svg{width:22px!important;height:22px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important;flex:0 0 auto!important}
+#feed .post-actions .action.selected{color:#fff!important}
+#feed .post-actions .post-report-icon{font-size:12px!important;letter-spacing:2px!important}
+#feed .post-actions [data-edit],#feed .post-actions [data-delete]{font-size:16px!important}
+#feed .empty,#feed .loading{padding:30px 18px!important;text-align:center!important}
+.confess-global-nav{left:0!important;right:0!important;bottom:0!important;transform:none!important;width:100%!important;max-width:none!important;min-height:104px!important;justify-content:space-around!important;align-items:center!important;padding:12px 14px calc(12px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.23)!important;border-bottom:0!important;border-radius:28px 28px 0 0!important;background:rgba(12,12,14,.88)!important;box-shadow:0 -12px 45px rgba(255,108,171,.07)!important}
+.confess-global-nav a{font-size:11px!important;gap:5px!important;color:#aaa!important}
+.confess-global-nav a b{font-size:24px!important}
+.confess-global-nav a[aria-current="page"]{background:radial-gradient(ellipse,rgba(255,108,171,.24),rgba(255,108,171,.02) 72%)!important;color:#fff!important;border-radius:50%!important}
+.confess-global-nav a.nav-publish-center{min-height:74px!important;min-width:72px!important;flex-basis:72px!important;margin-top:-22px!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:27px!important;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,108,171,.16))!important;color:#fff!important;box-shadow:0 0 35px rgba(255,108,171,.22),inset 0 1px 12px rgba(255,255,255,.24)!important}
+.confess-global-nav a.nav-publish-center b{width:44px!important;height:44px!important;border-radius:16px!important;background:rgba(255,255,255,.16)!important;font-size:34px!important;color:#fff!important}
+.confess-global-nav a.nav-publish-center span{font-size:10px!important;color:#fff!important}
+@media(max-width:620px){
+ .layout{padding-top:clamp(65px,12vh,130px)!important}
+ #feed .post{padding:17px 14px 21px!important;grid-template-columns:52px minmax(0,1fr)!important;column-gap:10px!important;min-height:174px!important}
+ #feed .post-head{grid-template-columns:52px minmax(0,1fr) 24px!important;gap:10px!important}
+ #feed .post-avatar{width:46px!important;height:46px!important;min-width:46px!important}
+ #feed .post-body{font-size:15px!important}
+ #feed .post-actions{gap:9px!important}
+ #feed .post-actions .action{font-size:12px!important;gap:5px!important}
+ #feed .post-actions .action svg{width:21px!important;height:21px!important}
+}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style id="stash-no-input-zoom">
@@ -631,14 +677,14 @@ async function loadFeed(reset=true){
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)} · ${p.is_anonymous?'Publication anonyme':'Membre STASH'}</div></div><span class="category-badge">${esc(category)}</span></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}<span class="avatar-follow-plus">+</span></div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
-   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}">♡ ${counts[p.id]||0} J'aime</button>
-   <button class="action" data-comments="${p.id}">▢ ${commentCounts[p.id]||0} Réponses</button>
-   <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}">${bookmarked.has(p.id)?'▣ Enregistré':'▢ Enregistrer'}</button>
-   <button class="action" data-report="${p.id}">⚑ Signaler</button>
-   <button class="action" data-share="${p.id}">↗️ Partager</button>
-   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'">✏️ Modifier</button><button class="action" data-delete="'+p.id+'">🗑️ Supprimer</button>':''}
+   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}" aria-label="J'aime" title="J'aime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11A4.8 4.8 0 0 1 12 6.5a4.8 4.8 0 0 1 8.8 2.3Z"/></svg><span>${counts[p.id]||0}</span></button>
+   <button class="action" data-comments="${p.id}" aria-label="Répondre" title="Répondre"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
+   <button class="action ${bookmarked.has(p.id)?'selected':''}" data-save="${p.id}" aria-label="Enregistrer" title="Enregistrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h13l-3-3m3 3-3 3M20 17H7l3 3m-3-3 3-3"/></svg><span>${bookmarked.has(p.id)?'✓':''}</span></button>
+   <button class="action" data-share="${p.id}" aria-label="Partager" title="Partager"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-7.5 18-3.8-7.7L2 9.5 21 3Z"/><path d="M9.7 13.3 21 3"/></svg></button>
+   <button class="action post-report-icon" data-report="${p.id}" aria-label="Signaler" title="Signaler">•••</button>
+   ${session&&p.author_profile_id===session.user.id?'<button class="action" data-edit="'+p.id+'" aria-label="Modifier" title="Modifier">✎</button><button class="action" data-delete="'+p.id+'" aria-label="Supprimer" title="Supprimer">×</button>':''}
   </div></article>`}).join('');
  const pollQuery=await db.from('polls').select('post_id').in('post_id',ids);
  const pollIds=(pollQuery.data||[]).map(x=>x.post_id);
