@@ -307,9 +307,11 @@ body>.confess-global-nav,
 }
 </style>
 
+
+<style id="stash-custom-logo">.stash-brand-image{width:38px;height:38px;object-fit:contain;display:block;flex:0 0 auto}.messages-brand{display:flex;align-items:center;gap:12px}.messages-brand h1{margin:0}</style>
 </head>
 <body>
-<header class="top messages-top"><h1>MESSAGES</h1><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top messages-top"><div class="messages-brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><h1>MESSAGES</h1></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 <section class="shell" id="shell">
  <aside class="inbox"><div class="inbox-head"><input class="inbox-search" id="inboxSearch" type="search" maxlength="60" placeholder="Rechercher"><div class="inbox-actions"><button class="action" onclick="location.href='index.html'">+ Privé</button><button class="group-create" id="openGroup">+ Groupe</button></div></div><div class="inbox-list" id="inboxList"><div class="loading">Chargement des conversations…</div></div></aside>
