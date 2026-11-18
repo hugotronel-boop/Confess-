@@ -434,6 +434,56 @@ html body .inbox,html body .chat,html body .chat-scroll{
 }
 </style>
 
+
+<style id="stash-messages-layout-demo-fix">
+/* Décaler la messagerie sous le bandeau pour dégager les commandes */
+html body header.top.stash-feed-top.messages-feed-top{
+ height:104px!important;min-height:104px!important;
+ align-items:center!important;padding:0 20px!important;
+}
+html body header.top.stash-feed-top.messages-feed-top .feed-logo-image{
+ width:82px!important;height:82px!important;max-width:82px!important;
+ align-self:center!important;justify-self:center!important;margin:0!important;
+}
+html body header.top.stash-feed-top.messages-feed-top .feed-header-label{
+ align-self:center!important;font-size:19px!important;line-height:1.2!important;
+}
+html body main{
+ padding-top:104px!important;
+}
+html body .shell{
+ height:calc(100dvh - 180px)!important;
+ min-height:380px!important;
+}
+html body .inbox-head{
+ padding:15px 16px!important;
+ min-height:70px!important;
+}
+html body .inbox-actions{gap:9px!important}
+html body .inbox-actions .action,
+html body .inbox-actions .group-create{
+ width:42px!important;height:42px!important;min-width:42px!important;
+ border-radius:14px!important;font-size:0!important;padding:0!important;
+ display:grid!important;place-items:center!important;
+}
+html body .inbox-actions .action:after{content:"＋"!important;font-size:25px!important;line-height:1}
+html body .inbox-actions .group-create:after{content:"♧"!important;font-size:0!important}
+html body .inbox-actions .group-create:before{
+ content:"👥"!important;font-size:19px!important;line-height:1
+}
+.demo-thread{position:relative;background:linear-gradient(100deg,rgba(255,108,171,.12),rgba(255,255,255,.025))!important}
+.demo-avatar{background:linear-gradient(135deg,#ff6cab,#ffad72)!important;color:#160d13;font-weight:900}
+.demo-online{width:9px;height:9px;border-radius:50%;background:#54d88b;box-shadow:0 0 0 3px #54d88b22;flex:none}
+.demo-date{text-align:center;color:#777;font-size:9px;letter-spacing:1.5px;margin:0 auto 12px}
+.demo-note{align-self:center;margin:18px 0 0;padding:7px 11px;border:1px solid rgba(255,255,255,.12);border-radius:20px;color:#777;font-size:9px;text-align:center}
+@media(max-width:700px){
+ html body header.top.stash-feed-top.messages-feed-top{height:104px!important;min-height:104px!important;padding:0 16px!important}
+ html body header.top.stash-feed-top.messages-feed-top .feed-logo-image{width:82px!important;height:82px!important}
+ html body main{padding-top:104px!important}
+ html body .shell{height:calc(100dvh - 180px)!important;min-height:360px!important}
+ html body .inbox-head{padding:13px 14px!important}
+}
+</style>
 </head>
 <body>
 <header class="top stash-feed-top messages-feed-top">
@@ -491,9 +541,19 @@ const memberIds=[...new Set((allMembers||[]).map(x=>x.user_id))];let profiles={}
 if(memberIds.length){const {data}=await db.from('profiles').select('id,username,avatar_path').in('id',memberIds);(data||[]).forEach(p=>profiles[p.id]=p)}
 const titles={};(conversationRows||[]).forEach(c=>titles[c.id]=c.title);
 threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==me.id);const msgs=(allMessages||[]).filter(m=>m.conversation_id===id);const last=msgs[0];const isGroup=people.length>1;const unread=msgs.filter(m=>m.sender_id!==me.id&&(isGroup?!readSet.has(m.id):!m.read_at)).length;const names=people.map(x=>profiles[x.user_id]?.username||'Membre');const peer=isGroup?{username:titles[id]||names.join(', '),group:true,memberCount:people.length+1}:{...(profiles[people[0]?.user_id]||{username:'Membre'}),group:false};return {id,peerId:people[0]?.user_id,peer,isGroup,memberCount:people.length+1,last,unread}}).sort((a,b)=>new Date(b.last?.created_at||0)-new Date(a.last?.created_at||0));
-$('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
+const demoRow='<button class="thread demo-thread" data-demo-thread="1"><span class="avatar demo-avatar">M</span><span class="thread-copy"><span class="thread-top"><strong>Manon · STASH</strong><small>12:42</small></span><span class="preview">Trop bien le nouveau design 😍 On valide cette version ?</span></span><span class="demo-online"></span></button>';
+$('inboxList').innerHTML=demoRow+threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
 $('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
+$('inboxList').querySelector('[data-demo-thread]')?.addEventListener('click',openDemoConversation);
 applyThreadSearch();
+}
+function openDemoConversation(){
+ activeId=null;activePeer={username:'Manon · STASH',group:false};$('shell').classList.add('chat-open');
+ $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button><span class="avatar">M</span><div><strong>Manon · STASH</strong><small>En ligne · conversation fictive</small></div>';
+ $('backInbox').onclick=()=>$('shell').classList.remove('chat-open');
+ $('messageBody').disabled=true;$('sendBtn').disabled=true;
+ $('chatScroll').innerHTML='<div class="demo-date">AUJOURD’HUI</div><div class="bubble">Coucou ! Tu as vu la nouvelle page Messages ? 👀<time>12:38</time></div><div class="bubble mine">Ouiii, je suis en train de peaufiner le design. Je veux un truc simple et élégant ✨<time>12:40 · Lu</time></div><div class="bubble">Trop bien le nouveau design 😍 On valide cette version ?<time>12:42</time></div><div class="demo-note">Aperçu fictif — aucun message n’est enregistré ni envoyé.</div>';
+ $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
 async function openConversation(id){
  if(!threads.some(t=>t.id===id)){
