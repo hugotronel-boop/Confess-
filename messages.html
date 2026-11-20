@@ -225,7 +225,7 @@ $('groupSearch').addEventListener('input',renderGroupDirectory);$('groupName').a
 async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('openGroup').hidden=true;$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
 await loadThreads();const target=new URLSearchParams(location.search).get('conversation');if(target)await openConversation(target)}
 async function loadThreads(){const {data:members,error}=await db.from('conversation_members').select('conversation_id').eq('user_id',me.id);if(error){$('inboxList').innerHTML='<div class="empty">Impossible de charger les conversations.</div>';console.error(error);return}
-const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<button class="thread demo-thread" data-demo-thread="1"><span class="avatar demo-avatar">M</span><span class="thread-copy"><span class="thread-top"><strong>@lune.noire</strong><small>21:16</small></span><span class="preview">J’aime trop cette ambiance, ça change vraiment des autres applis ✨</span></span><span class="demo-online"></span></button><div class="empty">Tes vraies conversations apparaîtront ici.</div>';$('inboxList').querySelector('[data-demo-thread]')?.addEventListener('click',openDemoConversation);applyThreadSearch();return}
+const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<div class="empty">Tu n’as pas encore de conversation.<br><br><a href="new-message.html" style="color:#fff;text-decoration:underline">Écrire ton premier message</a></div>';applyThreadSearch();return}
 const [{data:allMembers},{data:allMessages},{data:conversationRows}]=await Promise.all([
 db.from('conversation_members').select('conversation_id,user_id').in('conversation_id',ids),
 db.from('messages').select('id,conversation_id,sender_id,body,created_at,read_at').in('conversation_id',ids).order('created_at',{ascending:false}).limit(300),
@@ -237,20 +237,10 @@ const memberIds=[...new Set((allMembers||[]).map(x=>x.user_id))];let profiles={}
 if(memberIds.length){const {data}=await db.from('profiles').select('id,username,avatar_path').in('id',memberIds);(data||[]).forEach(p=>profiles[p.id]=p)}
 const titles={};(conversationRows||[]).forEach(c=>titles[c.id]=c.title);
 threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==me.id);const msgs=(allMessages||[]).filter(m=>m.conversation_id===id);const last=msgs[0];const isGroup=people.length>1;const unread=msgs.filter(m=>m.sender_id!==me.id&&(isGroup?!readSet.has(m.id):!m.read_at)).length;const names=people.map(x=>profiles[x.user_id]?.username||'Membre');const peer=isGroup?{username:titles[id]||names.join(', '),group:true,memberCount:people.length+1}:{...(profiles[people[0]?.user_id]||{username:'Membre'}),group:false};return {id,peerId:people[0]?.user_id,peer,isGroup,memberCount:people.length+1,last,unread}}).sort((a,b)=>new Date(b.last?.created_at||0)-new Date(a.last?.created_at||0));
-const demoRow='<button class="thread demo-thread" data-demo-thread="1"><span class="avatar demo-avatar">L</span><span class="thread-copy"><span class="thread-top"><strong>@lune.noire</strong><small>21:16</small></span><span class="preview">J’aime trop cette ambiance, ça change vraiment des autres applis ✨</span></span><span class="demo-online"></span></button>';
-$('inboxList').innerHTML=demoRow+threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
+
+$('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
 $('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
-$('inboxList').querySelector('[data-demo-thread]')?.addEventListener('click',openDemoConversation);
 applyThreadSearch();
-}
-function openDemoConversation(){
- document.body.classList.add('chat-conversation-open');
- activeId=null;activePeer={username:'@lune.noire',group:false};$('shell').classList.add('chat-open');
- $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button><span class="avatar">L</span><div><strong>@lune.noire</strong><small>En ligne · aperçu de conversation</small></div>';
- $('backInbox').onclick=()=>{$('shell').classList.remove('chat-open');document.body.classList.remove('chat-conversation-open')};
- $('messageBody').disabled=true;$('sendBtn').disabled=true;
- $('chatScroll').innerHTML='<div class="demo-date">AUJOURD’HUI</div><div class="bubble">Hey ! Alors, tu avances sur ton projet STASH ? 👀<time>20:48</time></div><div class="bubble mine">Oui, justement ! Je reprends toute la partie messages pour que ce soit plus fluide sur téléphone.</div><div class="bubble">Ah trop bien. J’ai vu la nouvelle interface, elle est beaucoup plus propre.</div><div class="bubble mine">Merci ! Je voulais quelque chose de simple, sans mille couleurs ni éléments partout.</div><div class="bubble">Franchement ça fonctionne. On comprend directement où sont les conversations et comment répondre.</div><div class="bubble mine">C’est le but 😅 Il me reste quelques détails à régler, surtout l’affichage des discussions.</div><div class="bubble">Tu comptes ajouter les messages de groupe aussi ?</div><div class="bubble mine">Oui, c’est déjà prévu ! On pourra créer un groupe, choisir les membres et lui donner un nom.</div><div class="bubble">Trop cool. Et les notifications quand on reçoit un message ?</div><div class="bubble mine">Elles sont aussi prévues. Je veux que tout reste simple, mais que les fonctions importantes soient là.</div><div class="bubble">J’aime bien cette ambiance, ça change vraiment des autres applis ✨</div><div class="bubble mine">C’est exactement ce que je voulais. Merci pour ton avis !</div><div class="bubble">Avec plaisir ! Hâte de voir la suite 😊<time>21:16</time></div><div class="demo-note">Aperçu fictif — aucun message n’est enregistré ni envoyé.</div>';
- $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
 async function openConversation(id){
  if(!threads.some(t=>t.id===id)){
@@ -312,7 +302,7 @@ async function setTyping(value){
 function subscribe(id){
  if(realtime){db.removeChannel(realtime);realtime=null}
  clearTimeout(typingTimer);isTyping=false;
- realtime=db.channel('confess-dm:'+id,{config:{private:true,presence:{key:me.id}}})
+ realtime=db.channel('confess-dm:'+id,{config:{presence:{key:me.id}}})
   .on('presence',{event:'sync'},renderTyping)
   .on('presence',{event:'join'},renderTyping)
   .on('presence',{event:'leave'},renderTyping)
