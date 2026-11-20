@@ -1540,7 +1540,7 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   animate(star,[{transform:'scale(1) rotate(0deg)'},{transform:'scale(1.22) rotate(45deg)',offset:.5},{transform:'scale(1) rotate(90deg)'}],{delay:impact+500,duration:3400,iterations:2,easing:'ease-in-out',fill:'none'});
  }
  function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
- resize();addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
+ resize();ambient.forEach(a=>{a.x=Math.random()*W;a.y=Math.random()*H});addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
  // Le lancement reste visible au moins le temps de l'animation et jusqu'à ce que le Feed ait fini son premier rendu.
  const started=performance.now(),feed=document.getElementById('feed');let feedReady=false;
  const check=()=>{if(!feed)return false;const loading=feed.querySelector('.loading');const text=feed.textContent||'';return !loading&&!/Chargement du fil|Chargement…|Chargement\.\.\./i.test(text)};
