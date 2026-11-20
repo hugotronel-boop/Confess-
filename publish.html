@@ -703,7 +703,9 @@ $('removePoll').onclick=()=>{$('pollComposer').hidden=true;$('pollOptionInputs')
 $('pollOptionInputs').addEventListener('input',saveDraft);$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
 $('publishTopAction').onclick=()=>$('publishBtn').click();
 $('publishBtn').onclick=async()=>{
- if(!session){toast('Connecte-toi avant de publier.');return}
+ // Revalide la session au clic si le chargement initial n'est pas terminé.
+ if(!session){try{await loadSession()}catch(error){console.error('Vérification de session impossible:',error)}}
+ if(!session){toast('Ta connexion a expiré. Reconnecte-toi puis réessaie.');return}
  const body=$('postBody').value.trim();if(!body)return toast('Écris quelque chose avant de publier.');
  if(body.length>5000)return toast('Maximum 5 000 caractères.');
  const options=$('pollComposer').hidden?[]:Array.from(document.querySelectorAll('.poll-option-input')).map(x=>x.value.trim()).filter(Boolean);
@@ -754,7 +756,7 @@ db.auth.onAuthStateChange((event,nextSession)=>{
  if(nextSession){session=nextSession;setUser()}
  setTimeout(()=>{loadSession().then(()=>loadFeed()).catch(error=>{console.error('Erreur de session STASH:',error);toast("Impossible de vérifier la connexion.")})},0);
 });
-(async()=>{await loadCategories();await loadSession();await loadFeed()})();
+(async()=>{await loadSession();await loadCategories();await loadFeed()})();
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('STASH SW:',e)));}</script>
