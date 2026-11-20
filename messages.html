@@ -222,6 +222,9 @@ body.chat-conversation-open .confess-global-nav{display:none!important}
   font-size:20px!important;
  }
  body.chat-conversation-open .chat-head .avatar{width:40px!important;height:40px!important;min-width:40px!important}
+ body.chat-conversation-open .chat-title-copy{flex:1;min-width:0}
+ body.chat-conversation-open .draft-add-people{flex:0 0 38px;width:38px;height:38px;border:1px solid #333;border-radius:50%;background:#171717;color:#fff;font-size:22px;line-height:1}
+
  body.chat-conversation-open .toast{bottom:calc(78px + env(safe-area-inset-bottom))!important}
 }
 </style>
@@ -250,7 +253,7 @@ body.chat-conversation-open .confess-global-nav{display:none!important}
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[];
+let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
@@ -278,8 +281,26 @@ async function createGroup(){
 $('openGroup').onclick=openGroupModal;$('cancelGroup').onclick=()=>$('groupOverlay').hidden=true;
 $('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))$('groupOverlay').hidden=true});
 $('groupSearch').addEventListener('input',renderGroupDirectory);$('groupName').addEventListener('input',updateGroupSelection);$('createGroup').onclick=createGroup;
+async function openDraft(ids){
+ draftMode=true;draftRecipientIds=[...new Set(ids)].filter(id=>id&&id!==me.id);
+ if(!draftRecipientIds.length){toast('Choisis au moins une personne.');return}
+ const {data,error}=await db.from('profiles').select('id,username,avatar_path').in('id',draftRecipientIds);
+ if(error||!data||data.length!==draftRecipientIds.length){toast('Impossible de charger les participants.');return}
+ draftProfiles=data;
+ const isGroup=draftRecipientIds.length>1;
+ activeId=null;
+ activePeer=isGroup?{username:draftProfiles.map(p=>p.username).join(', '),group:true,memberCount:draftRecipientIds.length+1}: {...draftProfiles[0],group:false};
+ document.body.classList.add('chat-conversation-open');
+ $('shell').classList.add('chat-open');
+ $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(activePeer)+'<div class="chat-title-copy"><strong>'+esc(activePeer.username)+'</strong><small>'+(isGroup?'Nouveau groupe · '+(draftRecipientIds.length+1)+' participants':'Nouvelle conversation')+'</small></div><button class="draft-add-people" id="addDraftPeople" aria-label="Ajouter des participants" title="Ajouter des participants">＋</button>';
+ $('backInbox').onclick=()=>{location.href='messages.html'};
+ $('addDraftPeople').onclick=()=>{location.href='new-message.html?mode=add&draft='+encodeURIComponent(draftRecipientIds.join(','))};
+ $('chatScroll').innerHTML='<div class="placeholder">Écris le premier message pour démarrer '+(isGroup?'ce groupe':'cette conversation')+' ✨</div>';
+ $('messageBody').disabled=false;$('sendBtn').disabled=false;
+ $('typingStatus')?.remove();
+}
 async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('openGroup').hidden=true;$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
-await loadThreads();const target=new URLSearchParams(location.search).get('conversation');if(target)await openConversation(target)}
+await loadThreads();const params=new URLSearchParams(location.search);const target=params.get('conversation');const draft=params.get('draft');if(target)await openConversation(target);else if(draft)await openDraft(draft.split(','))}
 async function loadThreads(){const {data:members,error}=await db.from('conversation_members').select('conversation_id').eq('user_id',me.id);if(error){$('inboxList').innerHTML='<div class="empty">Impossible de charger les conversations.</div>';console.error(error);return}
 const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<div class="empty">Tu n’as pas encore de conversation.<br><br><a href="new-message.html" style="color:#fff;text-decoration:underline">Écrire ton premier message</a></div>';applyThreadSearch();return}
 const [{data:allMembers},{data:allMessages},{data:conversationRows}]=await Promise.all([
@@ -307,7 +328,7 @@ async function openConversation(id){
  const t=threads.find(x=>x.id===id);if(!t)return;
  document.body.classList.add('chat-conversation-open');
  activeId=id;activePeer=t.peer;$('shell').classList.add('chat-open');
- $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
+ $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div class="chat-title-copy"><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
  $('backInbox').onclick=()=>{$('shell').classList.remove('chat-open');document.body.classList.remove('chat-conversation-open')};
  $('messageBody').disabled=false;$('sendBtn').disabled=false;
  await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id);
@@ -379,9 +400,27 @@ function subscribe(id){
 }
 
 async function send(){
- if(!activeId)return;const body=$('messageBody').value.trim();if(!body)return;
+ const body=$('messageBody').value.trim();if(!body)return;
  clearTimeout(typingTimer);await setTyping(false);
  const btn=$('sendBtn');btn.disabled=true;
+ if(!activeId&&draftMode){
+  let created;
+  if(draftRecipientIds.length===1){
+   created=await db.rpc('create_direct_conversation',{p_recipient_id:draftRecipientIds[0]});
+  }else{
+   const names=draftProfiles.map(p=>p.username);
+   let title=names.slice(0,3).join(', ')+(names.length>3?' + '+(names.length-3):'');
+   if(title.length>60)title=title.slice(0,57)+'…';
+   created=await db.rpc('create_group_conversation',{p_title:title,p_member_ids:draftRecipientIds});
+  }
+  if(created.error){btn.disabled=false;toast(created.error.message||'Impossible de créer la conversation.');return}
+  activeId=created.data;draftMode=false;
+  history.replaceState({},'', 'messages.html?conversation='+encodeURIComponent(activeId));
+  await loadThreads();
+  const found=threads.find(t=>t.id===activeId);
+  if(found){activePeer=found.peer;$('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(found.peer)+'<div class="chat-title-copy"><strong>'+esc(found.peer.username)+'</strong><small id="typingStatus">'+(found.isGroup?'Groupe · '+found.memberCount+' membres':'Conversation privée')+'</small></div>';$('backInbox').onclick=()=>{document.body.classList.remove('chat-conversation-open');$('shell').classList.remove('chat-open')}}
+  subscribe(activeId);
+ }
  const {error}=await db.rpc('send_direct_message',{p_conversation_id:activeId,p_body:body});
  btn.disabled=false;
  if(error){toast(error.message||'Envoi impossible.');return}
