@@ -342,8 +342,18 @@ function renderRecipientSuggestions(query){
  box.innerHTML=rows.map(p=>'<button type="button" data-add-recipient="'+p.id+'">'+avatar(p)+'<span>'+esc(p.username)+'</span></button>').join('');
  box.querySelectorAll('[data-add-recipient]').forEach(b=>b.onclick=async()=>{const id=b.dataset.addRecipient;if(draftRecipientIds.length>=20){toast('Maximum 20 participants.');return}draftRecipientIds.push(id);const p=recipientDirectory.find(x=>x.id===id);if(p)draftProfiles.push(p);renderRecipientHeader();$('recipientSearch').focus();});
 }
+window.addEventListener('popstate',event=>{
+ if(document.body.classList.contains('chat-conversation-open')){
+  document.body.classList.remove('chat-conversation-open');
+  $('shell').classList.remove('chat-open');
+  activeId=null;activePeer=null;draftMode=false;
+  clearTimeout(typingTimer);setTyping(false);
+  if(realtime){db.removeChannel(realtime);realtime=null}
+  history.replaceState({stashInbox:true},'','messages.html');
+ }
+});
 async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('openGroup').hidden=true;$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
-await loadThreads();const {data:directory}=await db.from('profiles').select('id,username,avatar_path').neq('id',me.id).order('username').limit(500);recipientDirectory=directory||[];const params=new URLSearchParams(location.search);const target=params.get('conversation');const draft=params.get('draft');if(target)await openConversation(target);else if(draft)await openDraft(draft.split(','))}
+await loadThreads();const {data:directory}=await db.from('profiles').select('id,username,avatar_path').neq('id',me.id).order('username').limit(500);recipientDirectory=directory||[];const params=new URLSearchParams(location.search);const target=params.get('conversation');const draft=params.get('draft');history.replaceState({stashInbox:true},'',location.href);if(target)await openConversation(target,true);else if(draft)await openDraft(draft.split(','))}
 async function loadThreads(){const {data:members,error}=await db.from('conversation_members').select('conversation_id').eq('user_id',me.id);if(error){$('inboxList').innerHTML='<div class="empty">Impossible de charger les conversations.</div>';console.error(error);return}
 const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<div class="empty">Tu n’as pas encore de conversation.<br><br><a href="new-message.html" style="color:#fff;text-decoration:underline">Écrire ton premier message</a></div>';applyThreadSearch();return}
 const [{data:allMembers},{data:allMessages},{data:conversationRows}]=await Promise.all([
@@ -362,17 +372,18 @@ $('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId
 $('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
 applyThreadSearch();
 }
-async function openConversation(id){
+async function openConversation(id,fromInitialUrl=false){
  if(!threads.some(t=>t.id===id)){
   const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
   if(!membership){toast('Cette conversation est introuvable.');return}
   await loadThreads();
  }
  const t=threads.find(x=>x.id===id);if(!t)return;
+ if(!fromInitialUrl)history.pushState({stashConversation:id},'','messages.html?conversation='+encodeURIComponent(id));
  document.body.classList.add('chat-conversation-open');
  activeId=id;activePeer=t.peer;$('shell').classList.add('chat-open');
  $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div class="chat-title-copy"><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
- $('backInbox').onclick=()=>{$('shell').classList.remove('chat-open');document.body.classList.remove('chat-conversation-open')};
+ $('backInbox').onclick=()=>history.back();
  $('messageBody').disabled=false;$('sendBtn').disabled=false;
  await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id);
 }
