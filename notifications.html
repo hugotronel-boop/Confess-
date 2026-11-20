@@ -684,6 +684,7 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function ago(v){const sec=Math.max(0,(Date.now()-new Date(v).getTime())/1000);if(sec<60)return "à l'instant";if(sec<3600)return Math.floor(sec/60)+' min';if(sec<86400)return Math.floor(sec/3600)+' h';if(sec<604800)return Math.floor(sec/86400)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function message(n,actor){const who=actor?.username||'Quelqu’un';switch(n.kind){
+case 'new_post':return {icon:'📝',title:who+' a publié une nouvelle confession',sub:'Une nouvelle publication dans ton réseau'};
 case 'follow':return {icon:'👋',title:who+' a commencé à te suivre',sub:'Découvre son profil'};
 case 'message':return {icon:'💬',title:who+' t’a envoyé un message',sub:'Ouvre ta conversation privée'};
 case 'reaction':return {icon:'❤️',title:who+' a aimé ta publication',sub:'Une réaction à ta confession'};
