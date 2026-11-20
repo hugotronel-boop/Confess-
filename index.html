@@ -781,6 +781,7 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
 <style id="stash-launch-screen-styles">
+body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important}
 #stash-launch-screen{position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;overflow:hidden;background:#000;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease;isolation:isolate}
 #stash-launch-screen.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 #stash-launch-screen *{box-sizing:border-box}
@@ -796,7 +797,7 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 @media(prefers-reduced-motion:reduce){#stash-launch-screen{transition:none}}
 </style>
 </head>
-<body>
+<body class="stash-launch-active">
 
 <div id="stash-launch-screen" role="status" aria-label="Ouverture de STASH" aria-live="polite">
  <canvas class="stash-splash-fx"></canvas><div class="stash-splash-glow"></div>
@@ -1539,7 +1540,7 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
    animate(letter,[{backgroundPosition:'100% 0'},{backgroundPosition:'0% 0'}],{duration:1000,delay:impact+1100+i*130,iterations:2,easing:'ease-in-out',fill:'none'})});
   animate(star,[{transform:'scale(1) rotate(0deg)'},{transform:'scale(1.22) rotate(45deg)',offset:.5},{transform:'scale(1) rotate(90deg)'}],{delay:impact+500,duration:3400,iterations:2,easing:'ease-in-out',fill:'none'});
  }
- function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
+ function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');document.body.classList.remove('stash-launch-active');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
  resize();ambient.forEach(a=>{a.x=Math.random()*W;a.y=Math.random()*H});addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
  // Le lancement reste visible au moins le temps de l'animation et jusqu'à ce que le Feed ait fini son premier rendu.
  const started=performance.now(),feed=document.getElementById('feed');let feedReady=false;
@@ -1547,8 +1548,6 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
  const maybeClose=()=>{if(feedReady&&performance.now()-started>=4700)close()};
  if(feed){const observer=new MutationObserver(()=>{if(check()){feedReady=true;observer.disconnect();maybeClose()}});observer.observe(feed,{childList:true,subtree:true,characterData:true});if(check()){feedReady=true;observer.disconnect()}}
  const minWait=Math.max(0,4700-(performance.now()-started));setTimeout(maybeClose,minWait);
- // Évite de laisser l'écran bloqué si le réseau ne répond pas.
- setTimeout(close,12000);
 })();
 </script>
 </body></html>
