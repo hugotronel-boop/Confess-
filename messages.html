@@ -253,16 +253,16 @@ function openDemoConversation(){
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
 async function openConversation(id){
- document.body.classList.add('chat-conversation-open');
  if(!threads.some(t=>t.id===id)){
   const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
   if(!membership){toast('Cette conversation est introuvable.');return}
   await loadThreads();
  }
  const t=threads.find(x=>x.id===id);if(!t)return;
+ document.body.classList.add('chat-conversation-open');
  activeId=id;activePeer=t.peer;$('shell').classList.add('chat-open');
  $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
- $('backInbox').onclick=()=>$('shell').classList.remove('chat-open');
+ $('backInbox').onclick=()=>{$('shell').classList.remove('chat-open');document.body.classList.remove('chat-conversation-open')};
  $('messageBody').disabled=false;$('sendBtn').disabled=false;
  await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id);
 }
