@@ -33,6 +33,7 @@ h1{font-size:24px;letter-spacing:-.7px;margin:0 0 5px;font-weight:800}.sub{font-
 .selected-chips{display:flex;gap:7px;overflow:auto;padding-bottom:10px}.chip{white-space:nowrap;border:1px solid #ffffff17;background:#ffffff0a;color:#f4eaf0;border-radius:20px;padding:6px 9px;font-size:10px}
 .start{width:100%;border:0;border-radius:13px;padding:13px;background:linear-gradient(105deg,var(--pink),var(--orange));color:#1b1016;font-size:12px;font-weight:850;box-shadow:0 8px 24px rgba(255,108,171,.15)}
 .start:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+body:not(.stash-add-mode) .selection{display:none}body.stash-add-mode .selection{display:block}
 @media(min-width:700px){.page{padding-top:30px}.person{padding:12px 10px}.selection{bottom:16px}}
 </style>
 
@@ -694,7 +695,7 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let me=null,profiles=[],followers=new Set(),following=new Set(),selected=new Set(),tab='followers',busy=false;
+let me=null,profiles=[],followers=new Set(),following=new Set(),selected=new Set(),tab='followers',busy=false,addMode=false,initialDraftIds=[];
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function avatar(p){const url=p.avatar_path?db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl:null;return '<span class="avatar">'+(url?'<img src="'+esc(url)+'" alt="">':esc((p.username||'?')[0].toUpperCase()))+'</span>'}
 function tabRows(){
@@ -709,7 +710,11 @@ function render(){
  const labels={followers:'Les personnes qui te suivent',following:'Les personnes que tu suis',mutual:'Vous vous suivez mutuellement',all:'Tous les membres STASH'};
  $('sectionLabel').textContent=labels[tab]+(q?' · recherche':'');
  $('people').innerHTML=rows.length?rows.map(p=>'<button class="person '+(selected.has(p.id)?'selected':'')+'" data-user="'+p.id+'">'+avatar(p)+'<span class="person-info"><span class="username">'+esc(p.username)+'</span><span class="hint">'+(followers.has(p.id)&&following.has(p.id)?'Vous vous suivez mutuellement':following.has(p.id)?'Tu suis cette personne':followers.has(p.id)?'Cette personne te suit':'Membre STASH')+'</span></span><span class="check">'+(selected.has(p.id)?'✓':'')+'</span></button>').join(''):'<div class="empty">'+(q?'Aucun membre ne correspond à ta recherche.':'Aucune personne dans cette liste pour le moment.')+'</div>';
- $('people').querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>toggle(b.dataset.user));
+ $('people').querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>{
+  const id=b.dataset.user;
+  if(!addMode){location.href='messages.html?draft='+encodeURIComponent(id);return}
+  toggle(id);
+ });
  $('tabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
  $('tabs').querySelector('[data-tab="followers"]').innerHTML='Abonnés <span class="count">'+followers.size+'</span>';
  $('tabs').querySelector('[data-tab="following"]').innerHTML='Abonnements <span class="count">'+following.size+'</span>';
@@ -725,18 +730,11 @@ function renderSelection(){
  $('start').disabled=!chosen.length||busy;
 }
 async function startConversation(){
- if(!selected.size||busy)return;busy=true;$('start').textContent='Préparation…';$('start').disabled=true;
- const ids=[...selected];let result;
- if(ids.length===1){
-  result=await db.rpc('create_direct_conversation',{p_recipient_id:ids[0]});
- }else{
-  const names=profiles.filter(p=>selected.has(p.id)).map(p=>p.username);
-  let title=names.slice(0,3).join(', ')+(names.length>3?' + '+(names.length-3):'');
-  if(title.length>60)title=title.slice(0,57)+'…';
-  result=await db.rpc('create_group_conversation',{p_title:title,p_member_ids:ids});
- }
- if(result.error){alert(result.error.message||'Impossible de créer la discussion.');busy=false;$('start').textContent='Continuer →';renderSelection();return}
- location.href='messages.html?conversation='+encodeURIComponent(result.data);
+ if(!selected.size||busy)return;
+ const ids=[...selected];
+ if(addMode){location.href='messages.html?draft='+encodeURIComponent(ids.join(','));return}
+ if(ids.length===1){location.href='messages.html?draft='+encodeURIComponent(ids[0]);return}
+ location.href='messages.html?draft='+encodeURIComponent(ids.join(','));
 }
 $('start').onclick=startConversation;
 $('search').addEventListener('input',render);
@@ -745,6 +743,12 @@ $('back').onclick=()=>location.href='messages.html';
 async function init(){
  const {data:{session}}=await db.auth.getSession();me=session?.user||null;
  if(!me){location.href='auth.html';return}
+ const params=new URLSearchParams(location.search);
+ addMode=params.get('mode')==='add';
+ if(addMode)document.body.classList.add('stash-add-mode');
+ initialDraftIds=(params.get('draft')||'').split(',').filter(Boolean);
+ initialDraftIds.forEach(id=>selected.add(id));
+ if(addMode){$('start').textContent='Valider les participants →';$('selectionCount').textContent='Participants de la conversation';}
  const [f,r,p]=await Promise.all([
   db.from('user_follows').select('follower_id').eq('followed_id',me.id),
   db.from('user_follows').select('followed_id').eq('follower_id',me.id),
@@ -755,6 +759,11 @@ async function init(){
  (r.data||[]).forEach(x=>following.add(x.followed_id));
  profiles=p.data||[];
  render();
+ if(addMode){
+  $('selectedChips').insertAdjacentHTML('afterbegin','');
+  $('sub')?.replaceChildren(document.createTextNode('Ajoute ou retire des participants avant le premier message.'));
+  $('start').textContent='Valider les participants →';
+ }
 }
 init();
 })();
