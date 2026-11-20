@@ -39,6 +39,215 @@ h1{font-size:24px;letter-spacing:-.7px;margin:0 0 5px;font-weight:800}.sub{font-
 <style id="stash-pure-black-background">
 html,body{background:#000!important;background-image:none!important}body{background:#000!important;background-image:none!important}body::before,body::after{content:none!important;display:none!important;background:none!important;box-shadow:none!important}
 </style>
+
+
+
+<style id="stash-no-input-zoom">
+/* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
+input,textarea,select,[contenteditable="true"],[contenteditable=""]{font-size:16px!important}
+
+/* STASH GLASS CUBE NAV — barre flottante en verre prismatique */
+.confess-global-nav{
+  position:fixed!important;left:50%!important;right:auto!important;
+  bottom:calc(12px + env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  width:min(520px,calc(100% - 24px))!important;
+  min-height:68px!important;padding:9px 12px!important;
+  display:flex!important;align-items:center!important;justify-content:space-around!important;
+  gap:7px!important;overflow:visible!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  border-radius:25px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.045) 38%,rgba(255,108,171,.075) 72%,rgba(255,173,114,.08))!important;
+  -webkit-backdrop-filter:blur(28px) saturate(165%)!important;backdrop-filter:blur(28px) saturate(165%)!important;
+  box-shadow:0 14px 48px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.06),0 0 28px rgba(255,108,171,.09)!important;
+}
+.confess-global-nav:before{
+  content:"";position:absolute;inset:1px;border-radius:23px;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.13),transparent 30%,transparent 68%,rgba(255,173,114,.08));
+  opacity:.9;
+}
+.confess-global-nav:after{
+  content:"";position:absolute;left:22%;right:22%;top:-1px;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);
+}
+.confess-global-nav a{
+  position:relative;z-index:1;flex:1!important;min-width:0!important;min-height:48px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  gap:3px!important;padding:5px 2px!important;border:1px solid transparent!important;border-radius:16px!important;
+  color:rgba(255,255,255,.68)!important;background:transparent!important;
+  font:500 9px/1.1 Poppins,Inter,system-ui,sans-serif!important;
+  text-decoration:none!important;transition:background .2s ease,border-color .2s ease,transform .2s ease!important;
+}
+.confess-global-nav a b{font-size:20px!important;line-height:1!important;font-weight:500!important;filter:drop-shadow(0 1px 5px rgba(255,255,255,.12))}
+.confess-global-nav a[aria-current="page"]:not(.nav-publish-center){
+  color:#fff!important;border-color:rgba(255,255,255,.23)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.055))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 18px rgba(0,0,0,.18),0 0 17px rgba(255,108,171,.1)!important;
+}
+.confess-global-nav a.nav-publish-center{
+  flex:0 0 58px!important;min-width:58px!important;min-height:58px!important;
+  margin:-21px 2px 0!important;padding:5px!important;border-radius:19px!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.34),rgba(255,108,171,.28) 48%,rgba(255,173,114,.23))!important;
+  color:#fff!important;
+  box-shadow:0 8px 25px rgba(255,108,171,.24),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -7px 15px rgba(0,0,0,.14)!important;
+  -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
+}
+.confess-global-nav a.nav-publish-center b{
+  width:37px!important;height:37px!important;display:grid!important;place-items:center!important;
+  border:1px solid rgba(255,255,255,.36)!important;border-radius:12px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.32),rgba(255,255,255,.07))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 12px rgba(0,0,0,.18)!important;
+  font-size:27px!important;color:#fff!important;
+}
+.confess-global-nav a.nav-publish-center span{font-size:8px!important;color:#fff!important;text-shadow:0 1px 5px #0008}
+.confess-global-nav a:active{transform:scale(.94)!important}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+@media(max-width:420px){
+ .confess-global-nav{width:calc(100% - 18px)!important;bottom:calc(9px + env(safe-area-inset-bottom))!important;min-height:64px!important;padding:7px 7px!important;gap:3px!important;border-radius:22px!important}
+ .confess-global-nav a{font-size:8px!important;min-height:45px!important}
+ .confess-global-nav a b{font-size:19px!important}
+ .confess-global-nav a.nav-publish-center{flex-basis:54px!important;min-width:54px!important;min-height:54px!important;margin-top:-18px!important}
+ .confess-global-nav a.nav-publish-center b{width:34px!important;height:34px!important;font-size:25px!important}
+ body{padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+}
+@media(prefers-reduced-motion:reduce){.confess-global-nav a{transition:none!important}}
+
+
+/* STASH — navigation façon Photos iOS : indicateur liquide qui suit le doigt */
+.confess-global-nav{position:relative!important;isolation:isolate!important;touch-action:pan-y!important;}
+.confess-global-nav .stash-nav-indicator{position:absolute!important;z-index:0!important;top:7px!important;left:0;bottom:7px!important;width:0;border-radius:19px;background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.075) 58%,rgba(255,108,171,.13))!important;border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 5px 18px rgba(0,0,0,.2),0 0 18px rgba(255,108,171,.12);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);pointer-events:none;opacity:0;transform:translate3d(0,0,0) scale(.96);transition:left .42s cubic-bezier(.2,.85,.2,1),width .42s cubic-bezier(.2,.85,.2,1),transform .42s cubic-bezier(.2,.85,.2,1),opacity .18s ease;will-change:left,width,transform}
+.confess-global-nav.stash-nav-ready .stash-nav-indicator{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.confess-global-nav.stash-nav-dragging .stash-nav-indicator{transition:none!important;transform:translate3d(0,0,0) scale(1.035)!important;background:linear-gradient(145deg,rgba(255,255,255,.29),rgba(255,255,255,.09) 58%,rgba(255,108,171,.18))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 8px 24px rgba(0,0,0,.25),0 0 23px rgba(255,108,171,.2)!important}
+.confess-global-nav a{position:relative!important;z-index:1!important;background:transparent!important;transition:color .2s ease,transform .24s cubic-bezier(.2,.8,.2,1)!important;-webkit-tap-highlight-color:transparent}
+.confess-global-nav a[aria-current="page"]:not(.nav-publish-center){background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:#fff!important}
+.confess-global-nav a.nav-publish-center{z-index:2!important}
+.confess-global-nav a.stash-nav-hover{color:#fff!important;transform:scale(1.045)!important}
+@media(prefers-reduced-motion:reduce){.confess-global-nav .stash-nav-indicator{transition:none!important}}
+
+/* STASH — bulles de verre indépendantes, effet détachement / rattachement */
+.confess-global-nav .stash-nav-indicator{display:none!important}
+.confess-global-nav{touch-action:pan-y!important}
+.confess-global-nav a:not(.nav-publish-center){isolation:isolate!important;overflow:visible!important;border-color:transparent!important;background:transparent!important;box-shadow:none!important}
+.confess-global-nav a:not(.nav-publish-center)::before{
+ content:"";position:absolute;z-index:-1;left:50%;top:50%;width:47px;height:47px;
+ transform:translate(-50%,-50%) scale(.72);border-radius:50%;
+ opacity:.34;border:1px solid rgba(255,255,255,.12);
+ background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.16),rgba(255,255,255,.035) 52%,rgba(255,108,171,.035));
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.12),0 3px 12px rgba(0,0,0,.12);
+ -webkit-backdrop-filter:blur(13px) saturate(155%);backdrop-filter:blur(13px) saturate(155%);
+ transition:transform .34s cubic-bezier(.2,.9,.25,1.25),opacity .22s ease,background .25s ease,border-color .25s ease,box-shadow .28s ease;
+ pointer-events:none;
+}
+.confess-global-nav a:not(.nav-publish-center).stash-bubble-active::before{
+ transform:translate(-50%,-50%) scale(1.08);opacity:1;border-color:rgba(255,255,255,.36);
+ background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.34),rgba(255,255,255,.13) 43%,rgba(255,108,171,.19) 78%,rgba(255,173,114,.14));
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.34),inset 0 -5px 10px rgba(255,108,171,.08),0 5px 19px rgba(0,0,0,.22),0 0 19px rgba(255,108,171,.2);
+ animation:stash-bubble-attach .48s cubic-bezier(.2,.85,.25,1.35) both;
+}
+.confess-global-nav a:not(.nav-publish-center):active::before{transform:translate(-50%,-50%) scale(.9)}
+.confess-global-nav a:not(.nav-publish-center) b,.confess-global-nav a:not(.nav-publish-center) span{position:relative;z-index:1}
+.confess-global-nav a.nav-publish-center{transition:transform .34s cubic-bezier(.2,.9,.25,1.25),filter .25s ease!important}
+.confess-global-nav a.nav-publish-center.stash-bubble-active{transform:translateY(-2px) scale(1.055)!important;filter:drop-shadow(0 0 12px rgba(255,108,171,.34))}
+@keyframes stash-bubble-attach{0%{transform:translate(-50%,-50%) scale(.58,.72)}48%{transform:translate(-50%,-50%) scale(1.19,.91)}72%{transform:translate(-50%,-50%) scale(.96,1.08)}100%{transform:translate(-50%,-50%) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.confess-global-nav a::before,.confess-global-nav a{animation:none!important;transition:none!important}}
+
+</style>
+<style id="stash-capsule-navigation">
+/* STASH — navigation capsule inspirée de la référence */
+.confess-global-nav{
+ position:fixed!important;left:50%!important;right:auto!important;
+ bottom:calc(12px + env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;width:min(650px,calc(100% - 24px))!important;
+ min-height:58px!important;padding:7px 9px!important;display:flex!important;
+ flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+ gap:5px!important;overflow:visible!important;border:1.5px solid rgba(255,255,255,.88)!important;
+ border-radius:999px!important;background:#080809!important;
+ box-shadow:0 9px 28px rgba(0,0,0,.48),0 3px 12px rgba(255,255,255,.08)!important;
+ -webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important;
+}
+.confess-global-nav a{
+ position:relative!important;z-index:1!important;flex:1 1 auto!important;min-width:0!important;
+ min-height:40px!important;margin:0!important;padding:0 10px!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;
+ gap:8px!important;border:1px solid transparent!important;border-radius:999px!important;
+ background:transparent!important;color:rgba(255,255,255,.9)!important;
+ font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important;text-decoration:none!important;
+ white-space:nowrap!important;box-shadow:none!important;transform:none!important;
+}
+.confess-global-nav a b{display:none!important}
+.confess-global-nav a span{font:500 12px/1 Poppins,Inter,system-ui,sans-serif!important;color:inherit!important}
+.confess-global-nav a[data-nav="home"]{flex:0 0 auto!important;padding:3px 12px 3px 4px!important;gap:9px!important}
+.confess-global-nav a[data-nav="home"] img{display:block!important;width:34px!important;height:34px!important;object-fit:cover!important;border-radius:50%!important;background:#fff!important;border:2px solid #fff!important}
+.confess-global-nav a.stash-bubble-active:not(.nav-publish-center),
+.confess-global-nav a[aria-current="page"]:not(.nav-publish-center){
+ background:#fff!important;color:#101012!important;border-color:#fff!important;
+ box-shadow:0 2px 9px rgba(255,255,255,.16)!important;
+}
+.confess-global-nav a.nav-publish-center{
+ flex:1 1 auto!important;min-width:0!important;min-height:40px!important;margin:0!important;padding:0 10px!important;
+ border:1px solid transparent!important;border-radius:999px!important;
+ background:transparent!important;color:#fff!important;box-shadow:none!important;
+}
+.confess-global-nav a.nav-publish-center b{display:none!important}
+.confess-global-nav a.nav-publish-center span{font-size:12px!important;color:inherit!important}
+.confess-global-nav a.nav-publish-center.stash-bubble-active{background:#fff!important;color:#101012!important}
+.confess-global-nav a[data-nav="profile"]{flex:0 0 auto!important;min-width:65px!important;padding:0 15px!important;background:#fff!important;color:#111!important;border-color:#fff!important}
+.confess-global-nav a[data-nav="profile"] span{color:#111!important;font-weight:600!important}
+.confess-global-nav a.stash-nav-hover{transform:scale(1.02)!important}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+@media(max-width:430px){
+ .confess-global-nav{width:calc(100% - 18px)!important;min-height:54px!important;padding:5px 6px!important;gap:1px!important}
+ .confess-global-nav a{padding:0 7px!important;gap:5px!important;font-size:10px!important}
+ .confess-global-nav a span{font-size:10px!important}
+ .confess-global-nav a[data-nav="home"]{padding:3px 7px 3px 3px!important;gap:5px!important}
+ .confess-global-nav a[data-nav="home"] img{width:30px!important;height:30px!important}
+ .confess-global-nav a[data-nav="profile"]{min-width:54px!important;padding:0 10px!important}
+ .confess-global-nav a.nav-publish-center{padding:0 7px!important}
+ .confess-global-nav a.nav-publish-center span{font-size:10px!important}
+}
+</style>
+<style id="stash-capsule-cleanup">/* STASH — barre de navigation unique, gris uni, fixée au bas de l'écran */
+.confess-global-nav{
+ position:fixed!important;left:50%!important;right:auto!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
+ top:auto!important;transform:translateX(-50%)!important;
+ width:min(650px,calc(100% - 24px))!important;height:58px!important;min-height:58px!important;
+ padding:6px 9px!important;display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:space-between!important;gap:5px!important;box-sizing:border-box!important;
+ border:0!important;border-radius:999px!important;background:#3b3b3b!important;
+ background-image:none!important;box-shadow:0 5px 18px rgba(0,0,0,.28)!important;
+ opacity:1!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+.confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important;background:none!important}
+.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"],.confess-global-nav a.nav-publish-center{
+ flex:1 1 0!important;min-width:0!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0 8px!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;
+ color:#fff!important;box-shadow:none!important;transform:none!important;text-decoration:none!important;white-space:nowrap!important;
+}
+.confess-global-nav a span,.confess-global-nav a.stash-bubble-active span,.confess-global-nav a[aria-current="page"] span{color:#fff!important}
+.confess-global-nav .nav-icon{display:block!important;width:19px!important;height:19px!important;flex:0 0 19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+@media(max-width:430px){.confess-global-nav{width:calc(100% - 18px)!important;height:56px!important;min-height:56px!important;padding:5px 6px!important;gap:2px!important}.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a[aria-current="page"]{height:44px!important;min-height:44px!important;padding:0 5px!important;gap:4px!important}.confess-global-nav a span{font-size:10px!important}.confess-global-nav .nav-icon{width:18px!important;height:18px!important;flex-basis:18px!important}}</style>
+<style id="stash-nav-active-pill">
+.confess-global-nav a{border-radius:14px!important;transition:background .16s ease,color .16s ease}
+.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{background:#f2f2f2!important;background-image:none!important;color:#111!important;border-radius:14px!important;box-shadow:none!important}
+.confess-global-nav a.stash-nav-current span,.confess-global-nav a[aria-current="page"] span{color:#111!important}
+.confess-global-nav a.stash-nav-current .nav-icon,.confess-global-nav a[aria-current="page"] .nav-icon{stroke:#111!important}
+.confess-global-nav a.nav-publish-center.stash-nav-current{background:#f2f2f2!important;color:#111!important}
+</style>
+<style id="stash-nav-identical-to-actus">
+.confess-global-nav{display:flex!important;position:fixed!important;left:50%!important;right:auto!important;top:auto!important;bottom:0!important;transform:translateX(-50%)!important;width:min(760px,100%)!important;max-width:100%!important;z-index:9999!important;justify-content:space-around!important;align-items:center!important;gap:4px!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;background-image:none!important;backdrop-filter:blur(22px)!important;box-shadow:0 -8px 35px rgba(0,0,0,.25)!important;box-sizing:border-box!important}
+.confess-global-nav a{flex:1 1 0!important;min-width:0!important;min-height:0!important;margin:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;padding:3px 1px!important;border:0!important;border-radius:10px!important;background:transparent!important;background-image:none!important;box-shadow:none!important;text-decoration:none!important;color:#c8c1d9!important;font:500 10px/1.2 Poppins,Inter,system-ui,sans-serif!important}
+.confess-global-nav a span{font:inherit!important;color:inherit!important}
+.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{color:#ff9fc7!important;background:rgba(255,108,171,.12)!important}
+.confess-global-nav .nav-icon{display:block!important;width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.confess-global-nav a.nav-publish-center{flex:0 0 64px!important;min-width:64px!important;min-height:54px!important;margin:-18px 0 0!important;padding:5px 1px!important;border:0!important;border-radius:18px!important;background:linear-gradient(135deg,#ff6cab,#ffad72)!important;color:#170e13!important;box-shadow:0 7px 24px rgba(255,108,171,.28)!important;font-weight:800!important}
+.confess-global-nav a.nav-publish-center span{font-size:9px!important;color:#fff!important}
+.confess-global-nav a.nav-publish-center .nav-icon{width:30px!important;height:30px!important;stroke:#170e13!important;stroke-width:2.2!important}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+@media(max-width:420px){.confess-global-nav{gap:0!important;padding-left:4px!important;padding-right:4px!important}.confess-global-nav a{font-size:9px!important}.confess-global-nav a.nav-publish-center{flex:0 0 60px!important;min-width:60px!important}}
+</style>
 <style id="stash-new-navigation">
 .confess-global-nav{
  position:fixed!important;left:50%!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
@@ -126,9 +335,26 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 </style>
 <style id="stash-navigation-no-glass">
 /* Navigation sans effet verre : conservation de la disposition et des libellés */
-.confess-global-nav{background:#171717!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
-.confess-global-nav a:not(.nav-publish-center)::before{content:none!important;display:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;background:none!important;border:0!important}
-.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"],.confess-global-nav a.nav-publish-center{background:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;border-color:transparent!important}
+.confess-global-nav{
+ background:#171717!important;background-image:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ border:1px solid rgba(255,255,255,.12)!important;
+ box-shadow:none!important;
+}
+.confess-global-nav a:not(.nav-publish-center)::before{
+ content:none!important;display:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ box-shadow:none!important;background:none!important;border:0!important;
+}
+.confess-global-nav a,
+.confess-global-nav a.stash-bubble-active,
+.confess-global-nav a.stash-nav-current,
+.confess-global-nav a[aria-current="page"],
+.confess-global-nav a.nav-publish-center{
+ background:transparent!important;background-image:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ box-shadow:none!important;border-color:transparent!important;
+}
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
 </head>
@@ -226,6 +452,7 @@ init();
 <a href="./notifications.html" data-nav="notifications"><span>Actus</span></a>
 <a href="./profile.html" data-nav="profile"><span>Profil</span></a>
 </nav>
+
 <script id="stash-nav-current-page">
 (()=>{const nav=document.querySelector('.confess-global-nav');if(!nav)return;
 const file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
