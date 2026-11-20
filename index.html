@@ -776,8 +776,39 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
+<style id="stash-launch-screen-styles">
+#stash-launch-screen{position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;overflow:hidden;background:#000;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease;isolation:isolate}
+#stash-launch-screen.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+#stash-launch-screen *{box-sizing:border-box}
+#stash-launch-screen .stash-splash-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#stash-launch-screen .stash-splash-glow{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(38% 28% at 50% 50%,rgba(190,225,255,.16),rgba(255,255,255,.04) 45%,transparent 72%)}
+#stash-launch-screen .stash-splash-stage{position:relative;perspective:900px;transition:transform .35s ease-out}
+#stash-launch-screen .stash-splash-logo{position:relative;display:flex;font-family:"Syne","Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:clamp(72px,21vw,260px);line-height:1;letter-spacing:-.045em;padding:.1em .45em .1em .05em}
+#stash-launch-screen .stash-splash-letter{display:inline-block;padding:0 .02em;transform-origin:50% 100%;opacity:0;background:linear-gradient(105deg,#fff 0 40%,#bfe3ff 45%,#fff 50%,#f0cfff 55%,#fff 60% 100%);background-size:300% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+#stash-launch-screen .stash-splash-star-wrap{position:absolute;width:.36em;height:.36em;right:.02em;top:-.04em}
+#stash-launch-screen .stash-splash-star{position:absolute;inset:0;width:100%;height:100%;opacity:0;filter:drop-shadow(0 0 .1em rgba(255,255,255,.8))}
+#stash-launch-screen .stash-splash-star path{fill:#fff}
+#stash-launch-screen .stash-splash-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.8);opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){#stash-launch-screen{transition:none}}
+</style>
 </head>
 <body>
+
+<div id="stash-launch-screen" role="status" aria-label="Ouverture de STASH" aria-live="polite">
+ <canvas class="stash-splash-fx"></canvas><div class="stash-splash-glow"></div>
+ <div class="stash-splash-stage">
+  <div class="stash-splash-logo" aria-label="STASH">
+   <span class="stash-splash-letter">s</span><span class="stash-splash-letter">t</span><span class="stash-splash-letter">a</span><span class="stash-splash-letter">s</span><span class="stash-splash-letter">h</span>
+   <div class="stash-splash-star-wrap"><div class="stash-splash-ring"></div><div class="stash-splash-ring"></div>
+    <svg class="stash-splash-star" viewBox="-50 -50 100 100" aria-hidden="true"><path d="M0 -50 Q4 -4 50 0 Q4 4 0 50 Q-4 4 -50 0 Q-4 -4 0 -50Z"/></svg>
+   </div>
+  </div>
+ </div>
+</div>
 
 <header class="top stash-feed-top">
  <div class="feed-header-label">Feed</div>
@@ -1476,6 +1507,48 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   if(event.target.matches('input,textarea,select,[contenteditable="true"],[contenteditable=""]'))requestAnimationFrame(update);
  });
  document.addEventListener('focusout',()=>setTimeout(update,180));
+})();
+</script>
+
+<script id="stash-launch-screen-script">
+(()=>{
+ const root=document.getElementById('stash-launch-screen');if(!root)return;
+ const $=s=>root.querySelector(s),star=$('.stash-splash-star'),logo=$('.stash-splash-logo'),glow=$('.stash-splash-glow'),stage=$('.stash-splash-stage');
+ const letters=[...root.querySelectorAll('.stash-splash-letter')],rings=[...root.querySelectorAll('.stash-splash-ring')],canvas=$('.stash-splash-fx'),ctx=canvas.getContext('2d');
+ let W=1,H=1,particles=[],animations=[],timers=[],flying=false,ambientAlpha=0,raf=0;
+ const resize=()=>{const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*d);canvas.height=Math.round(H*d);ctx.setTransform(d,0,0,d,0,0)};
+ const ambient=Array.from({length:80},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,vx:(Math.random()-.5)*.1,vy:-Math.random()*.15-.03,a:Math.random()*.5+.1,p:Math.random()*6}));
+ function burst(x,y,n,speed,life){for(let i=0;i<n;i++){const a=Math.random()*6.283,s=(Math.random()*.7+.3)*speed;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1,d:1/(life*(.6+Math.random()*.8)),r:Math.random()*1.7+.4})}}
+ const center=el=>{const b=el.getBoundingClientRect();return[b.left+b.width/2,b.top+b.height/2]};
+ let last=performance.now();
+ function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ambientAlpha+=(1-ambientAlpha)*dt*.7;
+  for(const a of ambient){a.x+=a.vx;a.y+=a.vy;a.p+=dt*1.5;if(a.y< -5){a.y=H+5;a.x=Math.random()*W}ctx.globalAlpha=a.a*(.6+.4*Math.sin(a.p))*ambientAlpha;ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,6.283);ctx.fill()}
+  if(flying){const p=center(star);burst(p[0],p[1],3,45,.9)}
+  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.l-=p.d*dt;if(p.l<=0){particles.splice(i,1);continue}ctx.globalAlpha=p.l;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.l+.2,0,6.283);ctx.fill()}
+  if(!root.classList.contains('is-leaving'))raf=requestAnimationFrame(frame);
+ }
+ function play(){
+  const animate=(el,frames,opts)=>{const a=el.animate(frames,{fill:'both',...opts});animations.push(a);return a};
+  const pos=center(star),dx=W/2-pos[0],dy=H/2-pos[1],impact=2400;
+  animate(star,[{opacity:0,transform:'translate('+dx+'px,'+dy+'px) scale(5) rotate(-270deg)',easing:'cubic-bezier(.2,.8,.2,1)'},{opacity:1,transform:'translate('+dx+'px,'+dy+'px) scale(4.2) rotate(-120deg)',offset:.2,easing:'ease-in-out'},{opacity:1,transform:'translate('+dx+'px,'+dy+'px) scale(4.7) rotate(-40deg)',offset:.55,easing:'cubic-bezier(.7,0,.15,1)'},{opacity:1,transform:'translate(0,0) scale(1) rotate(0deg)'}],{duration:impact});
+  animate(glow,[{opacity:0},{opacity:.45,offset:.25},{opacity:1,offset:.53},{opacity:.35}],{duration:4500});
+  timers.push(setTimeout(()=>flying=true,impact*.55));
+  timers.push(setTimeout(()=>{flying=false;const p=center(star);burst(p[0],p[1],90,300,1.3);animate(logo,[{transform:'scale(1)'},{transform:'scale(1.018)',offset:.25},{transform:'scale(1)'}],{duration:900,easing:'ease-out'})},impact));
+  rings.forEach((r,i)=>animate(r,[{transform:'scale(0)',opacity:.9},{opacity:.35,offset:.35},{transform:'scale(13)',opacity:0}],{duration:1700,delay:impact+i*180,easing:'cubic-bezier(.2,.7,.2,1)',fill:'backwards'}));
+  letters.forEach((letter,i)=>{animate(letter,[{opacity:0,transform:'translateY(45%) rotateX(-85deg) scale(.92)',filter:'blur(18px)'},{opacity:1,transform:'translateY(0) rotateX(0deg) scale(1)',filter:'blur(0px)'}],{duration:1100,delay:impact+80+(4-i)*90,easing:'cubic-bezier(.16,1,.3,1)'});
+   animate(letter,[{backgroundPosition:'100% 0'},{backgroundPosition:'0% 0'}],{duration:1000,delay:impact+1100+i*130,iterations:2,easing:'ease-in-out',fill:'none'})});
+  animate(star,[{transform:'scale(1) rotate(0deg)'},{transform:'scale(1.22) rotate(45deg)',offset:.5},{transform:'scale(1) rotate(90deg)'}],{delay:impact+500,duration:3400,iterations:2,easing:'ease-in-out',fill:'none'});
+ }
+ function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
+ resize();addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
+ // Le lancement reste visible au moins le temps de l'animation et jusqu'à ce que le Feed ait fini son premier rendu.
+ const started=performance.now(),feed=document.getElementById('feed');let feedReady=false;
+ const check=()=>{if(!feed)return false;const loading=feed.querySelector('.loading');const text=feed.textContent||'';return !loading&&!/Chargement du fil|Chargement…|Chargement\.\.\./i.test(text)};
+ const maybeClose=()=>{if(feedReady&&performance.now()-started>=4700)close()};
+ if(feed){const observer=new MutationObserver(()=>{if(check()){feedReady=true;observer.disconnect();maybeClose()}});observer.observe(feed,{childList:true,subtree:true,characterData:true});if(check()){feedReady=true;observer.disconnect()}}
+ const minWait=Math.max(0,4700-(performance.now()-started));setTimeout(maybeClose,minWait);
+ // Évite de laisser l'écran bloqué si le réseau ne répond pas.
+ setTimeout(close,12000);
 })();
 </script>
 </body></html>
