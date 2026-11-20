@@ -398,4 +398,24 @@ const current=map[file]||'home';
 nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===current;a.classList.toggle('stash-nav-current',active);a.classList.toggle('stash-bubble-active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 })();
 </script>
+
+<script id="stash-keyboard-nav">
+(()=>{
+ const nav=document.querySelector('.confess-global-nav');
+ if(!nav||nav.dataset.keyboardAware==='1')return;
+ nav.dataset.keyboardAware='1';
+ const vv=window.visualViewport;
+ const update=()=>{
+  const gap=vv?Math.max(0,window.innerHeight-(vv.height+vv.offsetTop)):0;
+  nav.style.setProperty('bottom',gap+'px','important');
+ };
+ update();
+ if(vv){vv.addEventListener('resize',update);vv.addEventListener('scroll',update)}
+ window.addEventListener('resize',update);
+ document.addEventListener('focusin',event=>{
+  if(event.target.matches('input,textarea,select,[contenteditable="true"],[contenteditable=""]'))requestAnimationFrame(update);
+ });
+ document.addEventListener('focusout',()=>setTimeout(update,180));
+})();
+</script>
 </body></html>
