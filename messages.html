@@ -138,6 +138,7 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .confess-global-nav a.stash-bubble-active,.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{color:#fff!important;background:transparent!important}
 .confess-global-nav a.nav-publish-center{background:transparent!important;color:#fff!important;box-shadow:none!important}
 body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
+body.chat-conversation-open .confess-global-nav{display:none!important}
 @media(max-width:420px){
  .confess-global-nav{min-height:76px!important;padding-left:4px!important;padding-right:4px!important;gap:0!important}
  .confess-global-nav a{font-size:11px!important;min-height:54px!important}
@@ -243,14 +244,16 @@ $('inboxList').querySelector('[data-demo-thread]')?.addEventListener('click',ope
 applyThreadSearch();
 }
 function openDemoConversation(){
+ document.body.classList.add('chat-conversation-open');
  activeId=null;activePeer={username:'@lune.noire',group:false};$('shell').classList.add('chat-open');
  $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button><span class="avatar">L</span><div><strong>@lune.noire</strong><small>En ligne · aperçu de conversation</small></div>';
- $('backInbox').onclick=()=>$('shell').classList.remove('chat-open');
+ $('backInbox').onclick=()=>{$('shell').classList.remove('chat-open');document.body.classList.remove('chat-conversation-open')};
  $('messageBody').disabled=true;$('sendBtn').disabled=true;
  $('chatScroll').innerHTML='<div class="demo-date">AUJOURD’HUI</div><div class="bubble">Hey ! Alors, tu avances sur ton projet STASH ? 👀<time>20:48</time></div><div class="bubble mine">Oui, justement ! Je reprends toute la partie messages pour que ce soit plus fluide sur téléphone.</div><div class="bubble">Ah trop bien. J’ai vu la nouvelle interface, elle est beaucoup plus propre.</div><div class="bubble mine">Merci ! Je voulais quelque chose de simple, sans mille couleurs ni éléments partout.</div><div class="bubble">Franchement ça fonctionne. On comprend directement où sont les conversations et comment répondre.</div><div class="bubble mine">C’est le but 😅 Il me reste quelques détails à régler, surtout l’affichage des discussions.</div><div class="bubble">Tu comptes ajouter les messages de groupe aussi ?</div><div class="bubble mine">Oui, c’est déjà prévu ! On pourra créer un groupe, choisir les membres et lui donner un nom.</div><div class="bubble">Trop cool. Et les notifications quand on reçoit un message ?</div><div class="bubble mine">Elles sont aussi prévues. Je veux que tout reste simple, mais que les fonctions importantes soient là.</div><div class="bubble">J’aime bien cette ambiance, ça change vraiment des autres applis ✨</div><div class="bubble mine">C’est exactement ce que je voulais. Merci pour ton avis !</div><div class="bubble">Avec plaisir ! Hâte de voir la suite 😊<time>21:16</time></div><div class="demo-note">Aperçu fictif — aucun message n’est enregistré ni envoyé.</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
 async function openConversation(id){
+ document.body.classList.add('chat-conversation-open');
  if(!threads.some(t=>t.id===id)){
   const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
   if(!membership){toast('Cette conversation est introuvable.');return}
