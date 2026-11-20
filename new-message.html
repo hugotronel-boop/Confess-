@@ -674,10 +674,10 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 </style>
 </head>
 <body>
-<header class="top"><button class="back" id="back" type="button" aria-label="Annuler">×</button><strong class="new-message-title">Nouveau message</strong><button class="back" id="back" aria-label="Retour">‹</button><img class="logo" src="./assets/stash-logo.png" alt="STASH"></header>
+<header class="top"><button class="back" id="back" type="button" aria-label="Annuler">×</button><strong class="new-message-title">Nouveau message</strong></header>
 <main class="page">
-<h1>Nouveau message</h1><p class="sub">Choisis une ou plusieurs personnes pour démarrer une discussion.</p>
-<div class="search-wrap"><span>⌕</span><input class="search" id="search" type="search" placeholder="Rechercher un pseudo…" autocomplete="off"></div>
+<div class="recipient-search"><strong>À :</strong><input class="search" id="search" type="search" placeholder="Rechercher" autocomplete="off"></div>
+<p class="sub" id="sub">Suggestions</p>
 <div class="tabs" id="tabs">
 <button class="tab active" data-tab="followers">Abonnés</button>
 <button class="tab" data-tab="following">Abonnements</button>
