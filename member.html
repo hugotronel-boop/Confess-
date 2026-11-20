@@ -325,6 +325,55 @@ html,body{background:#000!important;background-image:none!important}body{backgro
 .confess-global-nav a[aria-current="page"] span{color:#fff!important;font-weight:750!important;opacity:1!important}
 @media(min-width:700px){.confess-global-nav{bottom:18px!important}}
 </style>
+<style id="stash-navigation-feed-identical">
+/* Navigation unique — même rendu que le Feed */
+.confess-global-nav{
+ display:flex!important;position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;
+ transform:none!important;width:100%!important;max-width:760px!important;min-height:76px!important;height:auto!important;
+ margin:0 auto!important;z-index:9999!important;box-sizing:border-box!important;
+ justify-content:space-around!important;align-items:center!important;gap:4px!important;
+ padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;
+ border:1px solid rgba(255,255,255,.14)!important;border-bottom:0!important;
+ border-radius:18px 18px 0 0!important;background:rgba(5,5,6,.92)!important;background-image:none!important;
+ -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
+ box-shadow:0 -8px 35px rgba(0,0,0,.25)!important;overflow:visible!important;
+}
+.confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
+.confess-global-nav a,.confess-global-nav a.stash-bubble-active,.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"],.confess-global-nav a.nav-publish-center{
+ position:relative!important;z-index:1!important;flex:1 1 0!important;min-width:0!important;min-height:54px!important;height:54px!important;
+ margin:0!important;padding:5px 2px!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;gap:3px!important;
+ border:0!important;border-radius:14px!important;background:transparent!important;background-image:none!important;
+ color:#c8c1d9!important;box-shadow:none!important;transform:none!important;text-decoration:none!important;
+ font:600 12px/1.2 Poppins,Inter,system-ui,sans-serif!important;white-space:nowrap!important;
+}
+.confess-global-nav a span{position:relative!important;z-index:1!important;display:block!important;color:inherit!important;font:inherit!important}
+.confess-global-nav a svg,.confess-global-nav a img,.confess-global-nav a b{display:none!important}
+.confess-global-nav a:not(.nav-publish-center)::before{
+ content:""!important;position:absolute!important;z-index:0!important;left:50%!important;top:50%!important;
+ width:48px!important;height:48px!important;transform:translate(-50%,-50%) scale(.82)!important;border-radius:50%!important;
+ opacity:.42!important;border:1px solid rgba(255,255,255,.1)!important;
+ background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.12),rgba(255,255,255,.025) 58%,rgba(255,108,171,.025))!important;
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.1),0 3px 12px rgba(0,0,0,.12)!important;
+ -webkit-backdrop-filter:blur(13px) saturate(155%)!important;backdrop-filter:blur(13px) saturate(155%)!important;
+ transition:transform .34s cubic-bezier(.2,.9,.25,1.25),opacity .22s ease,background .25s ease,border-color .25s ease,box-shadow .28s ease!important;
+ pointer-events:none!important;
+}
+.confess-global-nav a:not(.nav-publish-center).stash-bubble-active::before,
+.confess-global-nav a:not(.nav-publish-center).stash-nav-current::before,
+.confess-global-nav a:not(.nav-publish-center)[aria-current="page"]::before{
+ transform:translate(-50%,-50%) scale(1.08)!important;opacity:1!important;border-color:rgba(255,255,255,.36)!important;
+ background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.34),rgba(255,255,255,.13) 43%,rgba(255,108,171,.19) 78%,rgba(255,173,114,.14))!important;
+ box-shadow:inset 0 1px 2px rgba(255,255,255,.34),inset 0 -5px 10px rgba(255,108,171,.08),0 5px 19px rgba(0,0,0,.22),0 0 19px rgba(255,108,171,.2)!important;
+}
+.confess-global-nav a.stash-bubble-active,.confess-global-nav a.stash-nav-current,.confess-global-nav a[aria-current="page"]{color:#fff!important;background:transparent!important}
+.confess-global-nav a.nav-publish-center{background:transparent!important;color:#fff!important;box-shadow:none!important}
+body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
+@media(max-width:420px){
+ .confess-global-nav{min-height:76px!important;padding-left:4px!important;padding-right:4px!important;gap:0!important}
+ .confess-global-nav a{font-size:11px!important;min-height:54px!important}
+}
+</style>
 </head><body><header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header><main><section class="hero"><div class="cover" id="cover"></div><div class="profile"><div class="avatar" id="avatar">?</div><div class="info"><h1 id="name">Profil membre</h1><p class="handle" id="handle"></p><p class="since" id="since"></p><button class="follow" id="followBtn" hidden>S'abonner</button><button class="message-btn" id="messageBtn" hidden>💬 Message</button><div class="moderation-actions" id="moderationActions" hidden><button id="blockBtn">🚫 Bloquer</button><button id="muteBtn">🙈 Masquer</button><button id="reportMemberBtn">⚑ Signaler</button></div></div></div><p class="bio" id="bio"></p><div class="stats"><div class="stat"><strong id="postsCount">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="followersCount">—</strong><span>Abonnés · Voir</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="followingCount">—</strong><span>Abonnements · Voir</span></button></div></section><div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">📝 Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">👤 À propos</button><button class="tab-btn" data-tab="wall" role="tab" aria-selected="false">💬 Mur</button></div><div id="postsTab"><div class="section-head"><h2>Publications publiques</h2></div><div id="posts"><div class="loading">Chargement du profil…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent"></div></div><div id="wallTab" hidden><div class="section-head"><h2>Le mur du profil</h2><span class="count" id="wallCount">0 message</span></div><div id="wallComposer"></div><div id="wallComments"><div class="loading">Chargement du mur…</div></div></div></main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>(()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),memberId=new URLSearchParams(location.search).get('id');let me=null,following=false;
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
