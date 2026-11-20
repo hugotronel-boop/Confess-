@@ -28,7 +28,7 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .inbox{min-width:0;border-right:1px solid #242424;display:flex;flex-direction:column;background:#080808}
 .inbox-head{padding:17px 16px 13px;border-bottom:1px solid #202020}
 .inbox-search{width:100%;height:42px;padding:0 14px;border-radius:11px;border:1px solid #2b2b2b;background:#131313;color:#fff;outline:none;font-size:13px}
-.inbox-search:focus{border-color:#777}
+.inbox-search:focus{border-color:#777}.inbox-head-row{display:flex;gap:9px;align-items:center}.inbox-head-row .inbox-search{min-width:0;flex:1}.open-group{width:42px;height:42px;flex:none;border:1px solid #2b2b2b;border-radius:11px;background:#141414;color:#fff;font-size:19px}
 .inbox-list{overflow:auto;min-height:0;padding:5px 0 18px}
 .thread{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:13px 15px;min-height:76px;border:0;border-bottom:1px solid #181818;background:transparent;color:#fff}
 .thread:hover,.thread.active{background:#151515}
@@ -103,7 +103,7 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 <main>
 <section class="shell" id="shell">
 <aside class="inbox">
-<div class="inbox-head"><input class="inbox-search" id="inboxSearch" type="search" maxlength="60" placeholder="Rechercher une conversation"></div>
+<div class="inbox-head"><div class="inbox-head-row"><input class="inbox-search" id="inboxSearch" type="search" maxlength="60" placeholder="Rechercher une conversation"><button class="open-group" id="openGroup" type="button" aria-label="Créer un groupe" title="Créer un groupe">＋</button></div></div>
 <div class="inbox-list" id="inboxList"><div class="loading">Chargement de tes conversations…</div></div>
 </aside>
 <section class="chat">
