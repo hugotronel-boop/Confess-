@@ -203,9 +203,11 @@ body.chat-conversation-open .confess-global-nav{display:none!important}
   padding:18px 14px 22px!important;
  }
  body.chat-conversation-open .composer{
-  flex:0 0 auto!important;position:relative!important;
+  flex:0 0 auto!important;position:relative!important;z-index:5!important;
+  width:100%!important;min-height:76px!important;
   padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;
   background:#080808!important;border-top:1px solid #1c1c1c!important;
+  box-shadow:0 -8px 24px rgba(0,0,0,.22)!important;
  }
  body.chat-conversation-open .composer textarea{
   min-height:44px!important;max-height:112px!important;resize:none!important;
