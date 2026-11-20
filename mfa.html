@@ -142,6 +142,30 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
  .confess-global-nav a{font-size:11px!important;min-height:54px!important}
 }
 </style>
+<style id="stash-navigation-no-glass">
+/* Navigation sans effet verre : conservation de la disposition et des libellés */
+.confess-global-nav{
+ background:#171717!important;background-image:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ border:1px solid rgba(255,255,255,.12)!important;
+ box-shadow:none!important;
+}
+.confess-global-nav a:not(.nav-publish-center)::before{
+ content:none!important;display:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ box-shadow:none!important;background:none!important;border:0!important;
+}
+.confess-global-nav a,
+.confess-global-nav a.stash-bubble-active,
+.confess-global-nav a.stash-nav-current,
+.confess-global-nav a[aria-current="page"],
+.confess-global-nav a.nav-publish-center{
+ background:transparent!important;background-image:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ box-shadow:none!important;border-color:transparent!important;
+}
+.confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
+</style>
 </head><body><main class="card"><h1>Encore une petite vérification 🔐</h1><p class="muted">Saisis le code à 6 chiffres affiché dans ton application d’authentification pour accéder à STASH.</p><div id="factorText" class="muted">Préparation de la vérification…</div><form id="form"><input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" aria-label="Code à 6 chiffres" required><button class="primary" id="verify" type="submit">Vérifier et continuer</button></form><button class="secondary" id="logout" type="button">Ce n’est pas mon compte — me déconnecter</button><div class="status" id="status" role="status"></div></main>
 <script>
 (()=>{const db=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');const $=id=>document.getElementById(id);const params=new URLSearchParams(location.search);const raw=params.get('next')||'index.html';const next=/^(index|member|messages|explore|notifications|settings|appeals)\.html(?:[?#].*)?$/.test(raw)?raw:'index.html';let factorId=null,challengeId=null;
