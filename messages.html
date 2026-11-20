@@ -222,6 +222,18 @@ body.chat-conversation-open .confess-global-nav{display:none!important}
   font-size:20px!important;
  }
  body.chat-conversation-open .chat-head .avatar{width:40px!important;height:40px!important;min-width:40px!important}
+ body.chat-conversation-open .chat-head{min-height:72px!important}
+ body.chat-conversation-open .recipient-area{position:relative;flex:1;min-width:0;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;padding:8px 0}
+ body.chat-conversation-open .recipient-area>strong{font-size:14px;color:#aaa;padding-top:7px}
+ body.chat-conversation-open .recipient-entry{display:flex;flex:1;min-width:120px;align-items:center;gap:6px;flex-wrap:wrap}
+ body.chat-conversation-open .recipient-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:18px;background:#202020;border:1px solid #363636;font-size:12px;white-space:nowrap}
+ body.chat-conversation-open .recipient-chip button{border:0;background:transparent;color:#aaa;font-size:16px;padding:0;line-height:1}
+ body.chat-conversation-open #recipientSearch{flex:1;min-width:110px;height:34px;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:16px!important;padding:4px!important}
+ body.chat-conversation-open .recipient-suggestions{position:absolute;left:0;right:0;top:100%;z-index:50;max-height:45dvh;overflow:auto;background:#151515;border:1px solid #333;border-radius:13px;box-shadow:0 12px 30px #000b}
+ body.chat-conversation-open .recipient-suggestions[hidden]{display:none}
+ body.chat-conversation-open .recipient-suggestions button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;background:transparent;border:0;color:#fff;text-align:left}
+ body.chat-conversation-open .recipient-suggestions .avatar{width:34px;height:34px;min-width:34px}
+
  body.chat-conversation-open .chat-title-copy{flex:1;min-width:0}
  body.chat-conversation-open .draft-add-people{flex:0 0 38px;width:38px;height:38px;border:1px solid #333;border-radius:50%;background:#171717;color:#fff;font-size:22px;line-height:1}
 
@@ -253,7 +265,7 @@ body.chat-conversation-open .confess-global-nav{display:none!important}
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false;
+let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,recipientDirectory=[];
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
@@ -282,25 +294,51 @@ $('openGroup').onclick=openGroupModal;$('cancelGroup').onclick=()=>$('groupOverl
 $('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))$('groupOverlay').hidden=true});
 $('groupSearch').addEventListener('input',renderGroupDirectory);$('groupName').addEventListener('input',updateGroupSelection);$('createGroup').onclick=createGroup;
 async function openDraft(ids){
- draftMode=true;draftRecipientIds=[...new Set(ids)].filter(id=>id&&id!==me.id);
+ draftRecipientIds=[...new Set(ids)].filter(id=>id&&id!==me.id);
  if(!draftRecipientIds.length){toast('Choisis au moins une personne.');return}
  const {data,error}=await db.from('profiles').select('id,username,avatar_path').in('id',draftRecipientIds);
  if(error||!data||data.length!==draftRecipientIds.length){toast('Impossible de charger les participants.');return}
- draftProfiles=data;
+ draftProfiles=data;draftMode=true;activeId=null;
+ // Reuse an existing direct conversation when the selected recipient already has one.
+ if(draftRecipientIds.length===1){
+  const existing=threads.find(t=>!t.isGroup&&t.peerId===draftRecipientIds[0]);
+  if(existing){await openConversation(existing.id);return}
+ }else{
+  const ids=threads.map(t=>t.id);
+  if(ids.length){
+   const {data:members}=await db.from('conversation_members').select('conversation_id,user_id').in('conversation_id',ids);
+   const wanted=[me.id,...draftRecipientIds].sort().join('|');
+   const exact=(members||[]).reduce((acc,row)=>{(acc[row.conversation_id]??=[]).push(row.user_id);return acc},{});
+   const match=Object.entries(exact).find(([id,users])=>[...users].sort().join('|')===wanted);
+   if(match){await openConversation(match[0]);return}
+  }
+ }
  const isGroup=draftRecipientIds.length>1;
- activeId=null;
  activePeer=isGroup?{username:draftProfiles.map(p=>p.username).join(', '),group:true,memberCount:draftRecipientIds.length+1}: {...draftProfiles[0],group:false};
- document.body.classList.add('chat-conversation-open');
- $('shell').classList.add('chat-open');
- $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(activePeer)+'<div class="chat-title-copy"><strong>'+esc(activePeer.username)+'</strong><small>'+(isGroup?'Nouveau groupe · '+(draftRecipientIds.length+1)+' participants':'Nouvelle conversation')+'</small></div><button class="draft-add-people" id="addDraftPeople" aria-label="Ajouter des participants" title="Ajouter des participants">＋</button>';
- $('backInbox').onclick=()=>{location.href='messages.html'};
- $('addDraftPeople').onclick=()=>{location.href='new-message.html?mode=add&draft='+encodeURIComponent(draftRecipientIds.join(','))};
- $('chatScroll').innerHTML='<div class="placeholder">Écris le premier message pour démarrer '+(isGroup?'ce groupe':'cette conversation')+' ✨</div>';
+ document.body.classList.add('chat-conversation-open');$('shell').classList.add('chat-open');
+ renderRecipientHeader();
+ $('chatScroll').innerHTML='<div class="placeholder">Votre conversation apparaîtra ici.</div>';
  $('messageBody').disabled=false;$('sendBtn').disabled=false;
- $('typingStatus')?.remove();
+}
+function renderRecipientHeader(){
+ const names=draftProfiles.map(p=>'<span class="recipient-chip">'+esc(p.username)+' <button type="button" data-remove-recipient="'+p.id+'" aria-label="Retirer '+esc(p.username)+'">×</button></span>').join('');
+ $('chatHead').innerHTML='<button class="mobile-back" id="backInbox" aria-label="Annuler">×</button><div class="recipient-area"><strong>À :</strong><div class="recipient-entry">'+names+'<input id="recipientSearch" type="search" placeholder="Rechercher ou ajouter" autocomplete="off"></div><div class="recipient-suggestions" id="recipientSuggestions" hidden></div></div>';
+ $('backInbox').onclick=()=>{location.href='messages.html'};
+ $('chatHead').querySelectorAll('[data-remove-recipient]').forEach(b=>b.onclick=()=>{draftRecipientIds=draftRecipientIds.filter(id=>id!==b.dataset.removeRecipient);draftProfiles=draftProfiles.filter(p=>p.id!==b.dataset.removeRecipient);if(!draftRecipientIds.length){location.href='new-message.html';return}openDraft(draftRecipientIds)});
+ const input=$('recipientSearch');
+ input.oninput=()=>renderRecipientSuggestions(input.value);
+ input.onfocus=()=>renderRecipientSuggestions(input.value);
+}
+function renderRecipientSuggestions(query){
+ const box=$('recipientSuggestions');if(!box)return;
+ const q=(query||'').trim().toLowerCase();
+ const rows=recipientDirectory.filter(p=>!draftRecipientIds.includes(p.id)&&p.username.toLowerCase().includes(q)).slice(0,8);
+ box.hidden=!q||!rows.length;
+ box.innerHTML=rows.map(p=>'<button type="button" data-add-recipient="'+p.id+'">'+avatar(p)+'<span>'+esc(p.username)+'</span></button>').join('');
+ box.querySelectorAll('[data-add-recipient]').forEach(b=>b.onclick=async()=>{const id=b.dataset.addRecipient;if(draftRecipientIds.length>=20){toast('Maximum 20 participants.');return}draftRecipientIds.push(id);const p=recipientDirectory.find(x=>x.id===id);if(p)draftProfiles.push(p);renderRecipientHeader();$('recipientSearch').focus();});
 }
 async function init(){const {data:{session}}=await db.auth.getSession();me=session?.user||null;if(!me){$('openGroup').hidden=true;$('inboxList').innerHTML='<div class="empty">Connecte-toi pour accéder à tes messages.<br><br><button class="action" onclick="location.href=\'auth.html\'">Se connecter</button></div>';return}
-await loadThreads();const params=new URLSearchParams(location.search);const target=params.get('conversation');const draft=params.get('draft');if(target)await openConversation(target);else if(draft)await openDraft(draft.split(','))}
+await loadThreads();const {data:directory}=await db.from('profiles').select('id,username,avatar_path').neq('id',me.id).order('username').limit(500);recipientDirectory=directory||[];const params=new URLSearchParams(location.search);const target=params.get('conversation');const draft=params.get('draft');if(target)await openConversation(target);else if(draft)await openDraft(draft.split(','))}
 async function loadThreads(){const {data:members,error}=await db.from('conversation_members').select('conversation_id').eq('user_id',me.id);if(error){$('inboxList').innerHTML='<div class="empty">Impossible de charger les conversations.</div>';console.error(error);return}
 const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){threads=[];$('inboxList').innerHTML='<div class="empty">Tu n’as pas encore de conversation.<br><br><a href="new-message.html" style="color:#fff;text-decoration:underline">Écrire ton premier message</a></div>';applyThreadSearch();return}
 const [{data:allMembers},{data:allMessages},{data:conversationRows}]=await Promise.all([
