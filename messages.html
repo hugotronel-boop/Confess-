@@ -371,6 +371,8 @@ $('inboxList').innerHTML=threads.map(t=>'<button class="thread '+(t.id===activeI
 if(!threads.length){$('inboxList').innerHTML='<div class="empty">Aucune conversation dans ta liste.<br><br><a href="new-message.html" style="color:#fff;text-decoration:underline">Écrire un message</a></div>';return}
 bindThreadActions();
 applyThreadSearch();
+}
+
 async function openConversation(id,fromInitialUrl=false){
  if(!threads.some(t=>t.id===id)){
   const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
