@@ -35,7 +35,7 @@ h1{font-size:24px;letter-spacing:-.7px;margin:0 0 5px;font-weight:800}.sub{font-
 .start:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
 body:not(.stash-add-mode):not(.stash-group-mode) .selection{display:none}body.stash-add-mode .selection,body.stash-group-mode .selection{display:block}
 body.stash-group-mode .selection-top,body.stash-group-mode .selected-chips{display:none!important}
-body.stash-group-mode .start{display:block;width:100%;margin:0 auto;padding:10px 0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;border-radius:0;color:#fff;font-size:14px;font-weight:700;text-align:center}
+body.stash-group-mode .start{display:block;width:100%;margin:0 auto;padding:10px 0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;-webkit-appearance:none;appearance:none;color:#fff;font-size:14px;font-weight:700;text-align:center}
 body.stash-group-mode .start:focus,body.stash-group-mode .start:focus-visible,body.stash-group-mode .start:active{border:0!important;outline:0!important;box-shadow:none!important}
 body.stash-group-mode .start:disabled{border:0!important;background:transparent!important;box-shadow:none!important;opacity:.35}
 @media(min-width:700px){.page{padding-top:30px}.person{padding:12px 10px}.selection{bottom:16px}}
@@ -736,7 +736,7 @@ html body{
 <div class="selection">
  <div class="selection-top"><strong>Destinataires sélectionnés</strong><small id="selectionCount">0 personne</small></div>
  <div class="selected-chips" id="selectedChips"><span class="hint">Sélectionne au moins une personne.</span></div>
- <button class="start" id="start" disabled>Continuer <span aria-hidden="true">→</span></button>
+ <button class="start" id="start" disabled>Continuer</button>
 </div>
 </main>
 <script>
@@ -798,7 +798,7 @@ async function init(){
  addMode=params.get('mode')==='add';groupMode=params.get('mode')==='group';
  if(addMode)document.body.classList.add('stash-add-mode');
  if(groupMode)document.body.classList.add('stash-group-mode');
-  if(groupMode){$('pageTitle').textContent='Nouveau groupe';$('start').textContent='Continuer →';$('sub').textContent='Choisis au moins 2 personnes pour ton groupe.';$('sectionLabel').textContent='Membres STASH';}
+  if(groupMode){$('pageTitle').textContent='Nouveau groupe';$('start').textContent='Continuer';$('sub').textContent='Choisis au moins 2 personnes pour ton groupe.';$('sectionLabel').textContent='Membres STASH';}
  initialDraftIds=(params.get('draft')||'').split(',').filter(Boolean);
  initialDraftIds.forEach(id=>selected.add(id));
  if(addMode){$('start').textContent='Valider les participants →';$('selectionCount').textContent='Participants de la conversation';}
