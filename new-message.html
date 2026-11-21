@@ -674,6 +674,36 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
+
+<style id="stash-new-conversation-total-black">
+html,body{
+ background:#000!important;
+ background-color:#000!important;
+ background-image:none!important;
+}
+body,body>header.top,body>main.page,
+body>main.page .recipient-search,
+body>main.page .people,
+body>main.page .section-label,
+body>main.page .tabs,
+body>main.page .empty,
+body>main.page .loading{
+ background:#000!important;
+ background-color:#000!important;
+ background-image:none!important;
+ box-shadow:none!important;
+}
+body>main.page .selection{
+ background:#000!important;
+ background-color:#000!important;
+ background-image:none!important;
+ box-shadow:none!important;
+}
+body::before,body::after,main::before,main::after,.page::before,.page::after{
+ content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+}
+</style>
+
 </head>
 <body>
 <header class="top"><button class="back" id="back" type="button" aria-label="Annuler">×</button><strong class="new-message-title">Nouveau message</strong></header>
