@@ -709,13 +709,25 @@ let pushRegistration=null;
 function b64ToBytes(value){const pad='='.repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,c=>c.charCodeAt(0))}
 async function registerPushWorker(){if(!('serviceWorker'in navigator))return;try{pushRegistration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});await navigator.serviceWorker.ready}catch(e){console.warn('STASH service worker:',e)}}
 async function loadPushStatus(){const status=$('pushStatus'),btn=$('pushToggle');if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)){status.textContent='Ce navigateur ne prend pas en charge les notifications push.';btn.disabled=true;return}if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.matchMedia('(display-mode: standalone)').matches&&!navigator.standalone){status.textContent='Sur iPhone : partage Safari → Sur l’écran d’accueil, puis ouvre STASH depuis son icône.';btn.textContent='Comment installer STASH';btn.onclick=()=>toast('Dans Safari, touche Partager puis « Sur l’écran d’accueil ».');return}pushRegistration=pushRegistration||await navigator.serviceWorker.ready;const sub=await pushRegistration.pushManager.getSubscription();if(sub){status.textContent='Notifications activées sur cet appareil ✅';btn.textContent='Désactiver sur cet appareil';btn.dataset.enabled='true'}else{status.textContent=Notification.permission==='denied'?'Les notifications sont bloquées dans les réglages de ton appareil.':'Tu n’as pas encore activé les notifications sur cet appareil.';btn.textContent='Activer les notifications';btn.dataset.enabled='false'}}
-async function togglePush(){const btn=$('pushToggle'),status=$('pushStatus');btn.disabled=true;try{pushRegistration=pushRegistration||await navigator.serviceWorker.ready;let sub=await pushRegistration.pushManager.getSubscription();if(sub){const endpoint=sub.endpoint;await sub.unsubscribe();const {error}=await db.from('push_subscriptions').delete().eq('user_id',user.id).eq('endpoint',endpoint);if(error)throw error;status.textContent='Notifications désactivées sur cet appareil.';btn.textContent='Activer les notifications';btn.dataset.enabled='false';toast('Notifications désactivées.');return}
-if(Notification.permission==='denied')throw new Error('Autorisation refusée. Modifie les réglages de notifications de ton appareil.');
-const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Tu n’as pas autorisé les notifications.');
-sub=await pushRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(PUSH_PUBLIC_KEY)});
-const json=sub.toJSON(),keys=json.keys||{};const {error}=await db.from('push_subscriptions').upsert({user_id:user.id,endpoint:json.endpoint,p256dh:keys.p256dh,auth:keys.auth,expiration_time:json.expirationTime||null,updated_at:new Date().toISOString()},{onConflict:'endpoint'});if(error){await sub.unsubscribe();throw error}
-status.textContent='Notifications activées sur cet appareil ✅';btn.textContent='Désactiver sur cet appareil';btn.dataset.enabled='true';toast('Parfait ! Cet appareil est abonné aux notifications STASH.')}
-catch(e){console.error(e);status.textContent=e.message||'Impossible d’activer les notifications.';toast(e.message||'Activation impossible.')}finally{btn.disabled=false}}
+async function togglePush(){const btn=$('pushToggle'),status=$('pushStatus');btn.disabled=true;let sub=null;try{
+ const {data:{user:authUser},error:authError}=await db.auth.getUser();
+ if(authError)throw authError;
+ if(!authUser?.id)throw new Error('Ta session STASH n’est plus active. Reconnecte-toi puis réessaie.');
+ user=authUser;
+ pushRegistration=pushRegistration||await navigator.serviceWorker.ready;
+ sub=await pushRegistration.pushManager.getSubscription();
+ if(sub){const endpoint=sub.endpoint;await sub.unsubscribe();const {error}=await db.from('push_subscriptions').delete().eq('user_id',authUser.id).eq('endpoint',endpoint);if(error)throw error;status.textContent='Notifications désactivées sur cet appareil.';btn.textContent='Activer les notifications';btn.dataset.enabled='false';toast('Notifications désactivées.');return}
+ if(Notification.permission==='denied')throw new Error('Autorisation refusée. Modifie les réglages de notifications de ton appareil.');
+ const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Tu n’as pas autorisé les notifications.');
+ sub=await pushRegistration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(PUSH_PUBLIC_KEY)});
+ const {data:{user:confirmedUser},error:confirmError}=await db.auth.getUser();
+ if(confirmError||!confirmedUser?.id){await sub.unsubscribe();sub=null;throw new Error('Ta session STASH a expiré pendant l’autorisation. Reconnecte-toi puis réessaie.')}
+ user=confirmedUser;
+ const json=sub.toJSON(),keys=json.keys||{};
+ const {error}=await db.from('push_subscriptions').upsert({user_id:confirmedUser.id,endpoint:json.endpoint,p256dh:keys.p256dh,auth:keys.auth,expiration_time:json.expirationTime||null,updated_at:new Date().toISOString()},{onConflict:'endpoint'});
+ if(error){await sub.unsubscribe();sub=null;throw error}
+ status.textContent='Notifications activées sur cet appareil ✅';btn.textContent='Désactiver sur cet appareil';btn.dataset.enabled='true';toast('Parfait ! Cet appareil est abonné aux notifications STASH.')}
+ catch(e){console.error(e);status.textContent=e.message||'Impossible d’activer les notifications.';toast(e.message||'Activation impossible.')}finally{btn.disabled=false}}
 $('pushToggle').onclick=togglePush;
 $('saveNotificationPrefs').onclick=async()=>{const btn=$('saveNotificationPrefs');btn.disabled=true;$('notificationPrefsStatus').textContent='Enregistrement…';const payload={user_id:user.id,follows:$('prefFollows').checked,messages:$('prefMessages').checked,reactions:$('prefReactions').checked,comments:$('prefComments').checked,moderation:$('prefModeration').checked,system:$('prefSystem').checked,updated_at:new Date().toISOString()};const {error}=await db.from('notification_preferences').upsert(payload,{onConflict:'user_id'});btn.disabled=false;if(error){console.error(error);$('notificationPrefsStatus').textContent='Impossible d’enregistrer les préférences.';toast('Enregistrement impossible.');return}$('notificationPrefsStatus').textContent='Préférences enregistrées ✅';toast('Tes préférences de notifications sont enregistrées.')}
 
