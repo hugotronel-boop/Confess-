@@ -138,6 +138,9 @@ body>.confess-global-nav{
 .confess-global-nav a.nav-publish-center span{font-size:10px!important;color:#fff!important}
 body{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
 
+/* Masquer la navigation pendant toute expérience de conversation ou création de groupe */
+body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confess-global-nav{display:none!important}
+
 /* Mode conversation immersive : toute la hauteur de l'écran sur mobile */
 @media(max-width:700px){
  body.chat-conversation-open{
@@ -243,7 +246,7 @@ function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setT
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 function avatar(p){if(p?.group)return '<span class="avatar">👥</span>';return p?.avatar_path?'<span class="avatar"><img src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'" alt=""></span>':'<span class="avatar">'+esc((p?.username||'?')[0].toUpperCase())+'</span>'}
 async function openGroupModal(){
- $('groupOverlay').hidden=false;$('groupName').value='';$('groupSearch').value='';selectedGroupMembers.clear();$('groupMembers').innerHTML='<div class="loading">Chargement des membres…</div>';
+ document.body.classList.add('group-creation-open');$('groupOverlay').hidden=false;$('groupName').value='';$('groupSearch').value='';selectedGroupMembers.clear();$('groupMembers').innerHTML='<div class="loading">Chargement des membres…</div>';
  const {data,error}=await db.from('profiles').select('id,username').neq('id',me.id).order('username').limit(100);
  if(error){$('groupMembers').innerHTML='<div class="empty">Impossible de charger les membres.</div>';toast(error.message);return}
  groupDirectory=data||[];renderGroupDirectory();updateGroupSelection();
@@ -260,10 +263,12 @@ async function createGroup(){
  const {data,error}=await db.rpc('create_group_conversation',{p_title:title,p_member_ids:[...selectedGroupMembers]});
  btn.textContent='Créer le groupe';
  if(error){toast(error.message||'Création impossible.');updateGroupSelection();return}
- $('groupOverlay').hidden=true;await loadThreads();await openConversation(data);toast('Groupe créé ! 👥');
+ $('groupOverlay').hidden=true;document.body.classList.remove('group-creation-open');await loadThreads();await openConversation(data);toast('Groupe créé ! 👥');
 }
-$('openGroup').onclick=openGroupModal;$('cancelGroup').onclick=()=>$('groupOverlay').hidden=true;
-$('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))$('groupOverlay').hidden=true});
+$('openGroup').onclick=openGroupModal;
+function closeGroupModal(){$('groupOverlay').hidden=true;document.body.classList.remove('group-creation-open')}
+$('cancelGroup').onclick=closeGroupModal;
+$('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))closeGroupModal()});
 $('groupSearch').addEventListener('input',renderGroupDirectory);$('groupName').addEventListener('input',updateGroupSelection);$('createGroup').onclick=createGroup;
 async function openDraft(ids){
  draftRecipientIds=[...new Set(ids)].filter(id=>id&&id!==me.id);
