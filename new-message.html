@@ -704,6 +704,17 @@ body::before,body::after,main::before,main::after,.page::before,.page::after{
 }
 </style>
 
+
+<style id="stash-final-hide-nav-new-message">
+html body>.confess-global-nav{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html body{
+  padding-bottom:0!important;
+}
+</style>
 </head>
 <body>
 <header class="top"><button class="back" id="back" type="button" aria-label="Annuler">×</button><strong class="new-message-title">Nouveau message</strong></header>
