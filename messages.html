@@ -291,7 +291,7 @@ async function createGroup(){
  if(error){toast(error.message||'Création impossible.');updateGroupSelection();return}
  $('groupOverlay').hidden=true;document.body.classList.remove('group-creation-open');await loadThreads();await openConversation(data);toast('Groupe créé ! 👥');
 }
-$('openGroup').onclick=openGroupModal;
+$('openGroup').onclick=()=>{location.href='new-message.html?mode=group'};
 function closeGroupModal(){$('groupOverlay').hidden=true;document.body.classList.remove('group-creation-open')}
 $('cancelGroup').onclick=closeGroupModal;
 $('groupOverlay').addEventListener('click',e=>{if(e.target===$('groupOverlay'))closeGroupModal()});
