@@ -720,7 +720,6 @@ html body{
 <header class="top"><button class="back" id="back" type="button" aria-label="Annuler">×</button><strong class="new-message-title" id="pageTitle">Nouveau message</strong></header>
 <main class="page">
 <div class="recipient-search"><strong>À :</strong><input class="search" id="search" type="search" placeholder="Rechercher" autocomplete="off"></div>
-<div id="groupTitleWrap" hidden style="margin:0 0 16px"><input class="search" id="groupTitle" type="text" maxlength="60" placeholder="Nom du groupe" style="width:100%;height:48px;padding:0 14px;border:1px solid rgba(255,255,255,.15);border-radius:14px;background:#111;color:#fff;font-size:16px"></div>
 <p class="sub" id="sub">Suggestions</p>
 <div class="tabs" id="tabs">
 <button class="tab active" data-tab="followers">Abonnés</button>
@@ -771,19 +770,14 @@ function renderSelection(){
  $('selectionCount').textContent=chosen.length+' personne'+(chosen.length>1?'s':'');
  $('selectedChips').innerHTML=chosen.length?chosen.map(p=>'<button class="chip" data-remove="'+p.id+'">× '+esc(p.username)+'</button>').join(''):'<span class="hint">Sélectionne au moins une personne.</span>';
  $('selectedChips').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{selected.delete(b.dataset.remove);render()});
- $('start').disabled=(groupMode?(chosen.length<2||$('groupTitle').value.trim().length<2):!chosen.length)||busy;
+ $('start').disabled=(groupMode?chosen.length<2:!chosen.length)||busy;
 }
 async function startConversation(){
  if(!selected.size||busy)return;
  const ids=[...selected];
  if(groupMode){
   if(ids.length<2){alert('Sélectionne au moins 2 personnes.');return}
-  const title=$('groupTitle').value.trim();
-  if(title.length<2){alert('Donne un nom au groupe (2 caractères minimum).');$('groupTitle').focus();return}
-  busy=true;$('start').disabled=true;$('start').textContent='Création du groupe…';
-  const {data,error}=await db.rpc('create_group_conversation',{p_title:title,p_member_ids:ids});
-  if(error||!data){busy=false;$('start').textContent='Créer le groupe →';renderSelection();alert(error?.message||'Impossible de créer le groupe.');return}
-  location.replace('messages.html?conversation='+encodeURIComponent(data));
+  location.replace('messages.html?draft='+encodeURIComponent(ids.join(','))+'&group=1');
   return;
  }
  if(addMode){location.replace('messages.html?draft='+encodeURIComponent(ids.join(',')));return}
@@ -799,7 +793,7 @@ async function init(){
  const params=new URLSearchParams(location.search);
  addMode=params.get('mode')==='add';groupMode=params.get('mode')==='group';
  if(addMode)document.body.classList.add('stash-add-mode');
-  if(groupMode){$('pageTitle').textContent='Nouveau groupe';$('groupTitleWrap').hidden=false;$('start').textContent='Créer le groupe →';$('sub').textContent='Choisis de 2 à 19 personnes pour ton groupe.';$('sectionLabel').textContent='Membres STASH';}
+  if(groupMode){$('pageTitle').textContent='Nouveau groupe';$('start').textContent='Continuer →';$('sub').textContent='Choisis au moins 2 personnes pour ton groupe.';$('sectionLabel').textContent='Membres STASH';}
  initialDraftIds=(params.get('draft')||'').split(',').filter(Boolean);
  initialDraftIds.forEach(id=>selected.add(id));
  if(addMode){$('start').textContent='Valider les participants →';$('selectionCount').textContent='Participants de la conversation';}
@@ -814,7 +808,7 @@ async function init(){
  profiles=p.data||[];
  render();
  if(!addMode){tab='all';render()}
-  if(groupMode){$('start').textContent='Créer le groupe →';$('groupTitle').addEventListener('input',renderSelection)}
+  if(groupMode){$('start').textContent='Continuer →';renderSelection()}
  if(addMode){
   $('selectedChips').insertAdjacentHTML('afterbegin','');
   $('sub')?.replaceChildren(document.createTextNode('Ajoute ou retire des participants avant le premier message.'));
