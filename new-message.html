@@ -714,7 +714,7 @@ function render(){
  $('people').innerHTML=rows.length?rows.map(p=>'<button class="person '+(selected.has(p.id)?'selected':'')+'" data-user="'+p.id+'">'+avatar(p)+'<span class="person-info"><span class="username">'+esc(p.username)+'</span><span class="hint">'+(followers.has(p.id)&&following.has(p.id)?'Vous vous suivez mutuellement':following.has(p.id)?'Tu suis cette personne':followers.has(p.id)?'Cette personne te suit':'Membre STASH')+'</span></span><span class="check">'+(selected.has(p.id)?'✓':'')+'</span></button>').join(''):'<div class="empty">'+(q?'Aucun membre ne correspond à ta recherche.':'Aucune personne dans cette liste pour le moment.')+'</div>';
  $('people').querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>{
   const id=b.dataset.user;
-  if(!addMode){location.href='messages.html?draft='+encodeURIComponent(id);return}
+  if(!addMode){location.replace('messages.html?draft='+encodeURIComponent(id));return}
   toggle(id);
  });
  $('tabs').querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
@@ -734,8 +734,8 @@ function renderSelection(){
 async function startConversation(){
  if(!selected.size||busy)return;
  const ids=[...selected];
- if(addMode){location.href='messages.html?draft='+encodeURIComponent(ids.join(','));return}
- location.href='messages.html?draft='+encodeURIComponent(ids.join(','));
+ if(addMode){location.replace('messages.html?draft='+encodeURIComponent(ids.join(',')));return}
+ location.replace('messages.html?draft='+encodeURIComponent(ids.join(',')));
 }
 $('start').onclick=startConversation;
 $('search').addEventListener('input',render);
