@@ -771,12 +771,13 @@ function renderSelection(){
  $('selectionCount').textContent=chosen.length+' personne'+(chosen.length>1?'s':'');
  $('selectedChips').innerHTML=chosen.length?chosen.map(p=>'<button class="chip" data-remove="'+p.id+'">× '+esc(p.username)+'</button>').join(''):'<span class="hint">Sélectionne au moins une personne.</span>';
  $('selectedChips').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{selected.delete(b.dataset.remove);render()});
- $('start').disabled=!chosen.length||busy;
+ $('start').disabled=(groupMode?(chosen.length<2||$('groupTitle').value.trim().length<2):!chosen.length)||busy;
 }
 async function startConversation(){
  if(!selected.size||busy)return;
  const ids=[...selected];
  if(groupMode){
+  if(ids.length<2){alert('Sélectionne au moins 2 personnes.');return}
   const title=$('groupTitle').value.trim();
   if(title.length<2){alert('Donne un nom au groupe (2 caractères minimum).');$('groupTitle').focus();return}
   busy=true;$('start').disabled=true;$('start').textContent='Création du groupe…';
