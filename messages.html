@@ -33,6 +33,16 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .thread{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:13px 15px;min-height:76px;border:0;background:transparent;color:#fff}
 .thread:hover,.thread.active{background:#151515}
 .thread[hidden]{display:none!important}
+.thread-status{display:flex;align-items:center;gap:7px;flex:none;color:#aaa}
+.thread-status svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.thread.is-pinned .thread-top strong{color:#fff}
+#threadActionMenu{position:fixed;z-index:1000;width:min(270px,calc(100vw - 28px));padding:6px;background:#171717;border:1px solid #383838;border-radius:14px;box-shadow:0 14px 38px #000c;display:flex;flex-direction:column;gap:2px}
+#threadActionMenu[hidden]{display:none!important}
+#threadActionMenu button{width:100%;min-height:43px;display:flex;align-items:center;gap:11px;padding:0 11px;border:0;border-radius:9px;background:transparent;color:#f5f5f5;text-align:left;font-size:13px}
+#threadActionMenu button:active{background:#303030}
+#threadActionMenu button.danger{color:#ff7777}
+#threadActionMenu button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#threadActionMenu .menu-divider{height:1px;background:#333;margin:4px 5px}
 .search-empty{padding:22px 16px;color:#888;font-size:13px;text-align:center}
 .avatar{width:48px;height:48px;min-width:48px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#242424;color:#fff;font-weight:700;border:1px solid #333}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -251,12 +261,12 @@ body.chat-conversation-open .chat-scroll{
 </section>
 </section>
 </main>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div><div id="threadActionMenu" hidden></div>
 <div class="group-overlay" id="groupOverlay" hidden><section class="group-dialog" role="dialog" aria-modal="true"><h2>Créer une discussion de groupe</h2><p>Choisis un nom et invite entre 2 et 19 personnes.</p><input class="group-field" id="groupName" maxlength="60" placeholder="Nom du groupe"><input class="group-field" id="groupSearch" maxlength="50" placeholder="Rechercher un membre…"><div class="group-members" id="groupMembers"></div><div id="groupSelectionCount">0 membre sélectionné</div><div class="group-footer"><button class="group-cancel" id="cancelGroup">Annuler</button><button class="group-submit" id="createGroup" disabled>Créer le groupe</button></div></section></div>
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
-let me=null,threads=[],activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,recipientDirectory=[];
+let me=null,threads=[],threadSettings={},activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,recipientDirectory=[],threadPressTimer=null,suppressThreadClick=false;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
@@ -353,13 +363,13 @@ const messageIds=(allMessages||[]).map(m=>m.id);let readSet=new Set();
 if(messageIds.length){const {data:reads}=await db.from('message_reads').select('message_id').eq('user_id',me.id).in('message_id',messageIds);(reads||[]).forEach(r=>readSet.add(r.message_id))}
 const memberIds=[...new Set((allMembers||[]).map(x=>x.user_id))];let profiles={};
 if(memberIds.length){const {data}=await db.from('profiles').select('id,username,avatar_path').in('id',memberIds);(data||[]).forEach(p=>profiles[p.id]=p)}
+const {data:settingsRows}=await db.from('conversation_user_settings').select('conversation_id,is_muted,is_pinned,manual_unread,is_hidden').eq('user_id',me.id).in('conversation_id',ids);
+threadSettings={};(settingsRows||[]).forEach(s=>threadSettings[s.conversation_id]=s);
 const titles={};(conversationRows||[]).forEach(c=>titles[c.id]=c.title);
-threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==me.id);const msgs=(allMessages||[]).filter(m=>m.conversation_id===id);const last=msgs[0];const isGroup=people.length>1;const unread=msgs.filter(m=>m.sender_id!==me.id&&(isGroup?!readSet.has(m.id):!m.read_at)).length;const names=people.map(x=>profiles[x.user_id]?.username||'Membre');const peer=isGroup?{username:titles[id]||names.join(', '),group:true,memberCount:people.length+1}:{...(profiles[people[0]?.user_id]||{username:'Membre'}),group:false};return {id,peerId:people[0]?.user_id,peer,isGroup,memberCount:people.length+1,last,unread}}).sort((a,b)=>new Date(b.last?.created_at||0)-new Date(a.last?.created_at||0));
-
-$('inboxList').innerHTML=threads.map(t=>`<button class="thread ${t.id===activeId?'active':''}" data-thread="${t.id}">${avatar(t.peer)}<span class="thread-copy"><span class="thread-top"><strong>${esc(t.peer.username)}</strong><small>${esc(t.last?ago(t.last.created_at):'')}</small></span><span class="preview">${t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation'}</span></span>${t.unread?'<span class="unread-count">'+t.unread+'</span>':''}</button>`).join('');
-$('inboxList').querySelectorAll('[data-thread]').forEach(b=>b.onclick=()=>openConversation(b.dataset.thread));
+threads=ids.map(id=>{const people=(allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==me.id);const msgs=(allMessages||[]).filter(m=>m.conversation_id===id);const last=msgs[0];const isGroup=people.length>1;const unread=msgs.filter(m=>m.sender_id!==me.id&&(isGroup?!readSet.has(m.id):!m.read_at)).length;const names=people.map(x=>profiles[x.user_id]?.username||'Membre');const peer=isGroup?{username:titles[id]||names.join(', '),group:true,memberCount:people.length+1}:{...(profiles[people[0]?.user_id]||{username:'Membre'}),group:false};const setting=threadSettings[id]||{};return {id,peerId:people[0]?.user_id,peer,isGroup,memberCount:people.length+1,last,unread:setting.manual_unread?Math.max(1,unread):unread,manualUnread:!!setting.manual_unread,isMuted:!!setting.is_muted,isPinned:!!setting.is_pinned,isHidden:!!setting.is_hidden}}).filter(t=>!t.isHidden).sort((a,b)=>(Number(b.isPinned)-Number(a.isPinned))||new Date(b.last?.created_at||0)-new Date(a.last?.created_at||0));
+$('inboxList').innerHTML=threads.map(t=>'<button class="thread '+(t.id===activeId?'active ':'')+(t.isPinned?'is-pinned':'')+'" data-thread="'+t.id+'">'+avatar(t.peer)+'<span class="thread-copy"><span class="thread-top"><strong>'+esc(t.peer.username)+'</strong><small>'+esc(t.last?ago(t.last.created_at):'')+'</small></span><span class="preview">'+(t.last?(t.last.sender_id===me.id?'Toi : ':'')+esc(t.last.body):'Nouvelle conversation')+'</span></span><span class="thread-status">'+(t.isPinned?'<svg viewBox="0 0 24 24" aria-label="Épinglée"><path d="m16 3 5 5-4 1-4 4 3 3-1 1-4-2-5 5-1-1 5-5-2-4 1-1 3 3 4-4z"/></svg>':'')+(t.isMuted?'<svg viewBox="0 0 24 24" aria-label="Notifications en sourdine"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="m9 21 6-6"/></svg>':'')+(t.unread?'<span class="unread-count">'+t.unread+'</span>':'')+'</span></button>').join('');
+bindThreadActions();
 applyThreadSearch();
-}
 async function openConversation(id,fromInitialUrl=false){
  if(!threads.some(t=>t.id===id)){
   const {data:membership}=await db.from('conversation_members').select('user_id').eq('conversation_id',id).eq('user_id',me.id).maybeSingle();
@@ -373,7 +383,7 @@ async function openConversation(id,fromInitialUrl=false){
  $('chatHead').innerHTML='<button class="mobile-back" id="backInbox">←</button>'+avatar(t.peer)+'<div class="chat-title-copy"><strong>'+esc(t.peer.username)+'</strong><small id="typingStatus">'+(t.isGroup?'Groupe · '+t.memberCount+' membres':'Conversation privée')+'</small></div>';
  $('backInbox').onclick=()=>history.back();
  $('messageBody').disabled=false;$('sendBtn').disabled=false;
- await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await loadThreads();subscribe(id);
+ await loadMessages();await db.rpc('mark_conversation_read',{p_conversation_id:id});await saveThreadSetting(id,{manual_unread:false});await loadThreads();subscribe(id);
 }
 
 async function loadMessages(){
@@ -400,6 +410,48 @@ async function loadMessages(){
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
 
+async function saveThreadSetting(id,patch){
+ const current=threadSettings[id]||{conversation_id:id,user_id:me.id,is_muted:false,is_pinned:false,manual_unread:false,is_hidden:false};
+ const next={...current,...patch,conversation_id:id,user_id:me.id,updated_at:new Date().toISOString()};
+ const {error}=await db.from('conversation_user_settings').upsert(next,{onConflict:'user_id,conversation_id'});
+ if(error){toast('Impossible d’enregistrer cette action.');console.error(error);return false}
+ threadSettings[id]=next;return true
+}
+function closeThreadMenu(){$('threadActionMenu').hidden=true;$('threadActionMenu').innerHTML=''}
+function showThreadMenu(id,button){
+ const t=threads.find(x=>x.id===id);if(!t)return;
+ const menu=$('threadActionMenu');
+ const readAction=t.unread>0?'<button data-thread-action="read"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>Marquer comme lu</button>':'<button data-thread-action="unread"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M4 7l8 6 8-6"/></svg>Marquer comme non lu</button>';
+ menu.innerHTML='<button data-thread-action="mute"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M9 21h6"/></svg>'+(t.isMuted?'Réactiver les notifications':'Mettre en sourdine')+'</button>'+readAction+'<button data-thread-action="pin"><svg viewBox="0 0 24 24"><path d="m16 3 5 5-4 1-4 4 3 3-1 1-4-2-5 5-1-1 5-5-2-4 1-1 3 3 4-4z"/></svg>'+(t.isPinned?'Désépingler':'Épingler')+'</button><div class="menu-divider"></div><button class="danger" data-thread-action="delete"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>Supprimer la conversation</button>';
+ const rect=button.getBoundingClientRect(),w=Math.min(270,window.innerWidth-28);
+ menu.style.width=w+'px';menu.style.left=Math.max(14,Math.min(rect.left,window.innerWidth-w-14))+'px';
+ menu.style.top=Math.max(12,Math.min(rect.bottom+4,window.innerHeight-205))+'px';menu.hidden=false;
+ menu.querySelectorAll('[data-thread-action]').forEach(b=>b.onclick=async()=>{
+  const action=b.dataset.threadAction;closeThreadMenu();
+  if(action==='mute'){if(await saveThreadSetting(id,{is_muted:!t.isMuted})){await loadThreads();toast(t.isMuted?'Notifications réactivées.':'Conversation mise en sourdine.')}return}
+  if(action==='pin'){
+   if(!t.isPinned&&threads.filter(x=>x.isPinned).length>=5){toast('Tu peux épingler 5 conversations maximum.');return}
+   if(await saveThreadSetting(id,{is_pinned:!t.isPinned})){await loadThreads();toast(t.isPinned?'Conversation désépinglée.':'Conversation épinglée en haut.')}return
+  }
+  if(action==='read'){await db.rpc('mark_conversation_read',{p_conversation_id:id});await saveThreadSetting(id,{manual_unread:false});await loadThreads();toast('Conversation marquée comme lue.');return}
+  if(action==='unread'){if(await saveThreadSetting(id,{manual_unread:true})){await loadThreads();toast('Conversation marquée comme non lue.')}return}
+  if(action==='delete'){
+   if(!confirm('Supprimer cette conversation de ta liste ? Elle restera visible pour les autres participants.'))return;
+   if(await saveThreadSetting(id,{is_hidden:true})){await loadThreads();toast('Conversation supprimée de ta liste.')}
+  }
+ })
+}
+function bindThreadActions(){
+ $('inboxList').querySelectorAll('[data-thread]').forEach(b=>{
+  const id=b.dataset.thread;
+  b.onclick=()=>{if(suppressThreadClick){suppressThreadClick=false;return}closeThreadMenu();openConversation(id)};
+  b.onpointerdown=e=>{if(e.pointerType==='mouse'&&e.button!==0)return;clearTimeout(threadPressTimer);threadPressTimer=setTimeout(()=>{suppressThreadClick=true;showThreadMenu(id,b)},520)};
+  ['pointerup','pointerleave','pointercancel'].forEach(name=>b.addEventListener(name,()=>clearTimeout(threadPressTimer)));
+  b.oncontextmenu=e=>{e.preventDefault();suppressThreadClick=true;showThreadMenu(id,b)}
+ })
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#threadActionMenu')&&!e.target.closest('[data-thread]'))closeThreadMenu()});
+window.addEventListener('resize',closeThreadMenu);window.addEventListener('scroll',closeThreadMenu,true);
 function applyThreadSearch(){
  const q=($('inboxSearch')?.value||'').trim().toLowerCase();
  const list=$('inboxList');
