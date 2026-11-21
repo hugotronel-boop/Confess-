@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#100e1b"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icon.svg"><title>STASH — Feed</title>
+<script>window.__stashShowLaunch=false;try{if(sessionStorage.getItem("stashLaunchShownThisSession")!=="1"){sessionStorage.setItem("stashLaunchShownThisSession","1");window.__stashShowLaunch=true;if(window.__stashShowLaunch)document.documentElement.classList.add("stash-launch-active")}}catch(e){window.__stashShowLaunch=true;document.documentElement.classList.add("stash-launch-active")}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script><script src="./mfa-guard.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#100e1b;--panel:#1b1830;--panel2:#24203b;--muted:#aaa5c0;--pink:#ff5ba7;--orange:#ff9b5b;--line:#39334f;--white:#fff}
@@ -781,7 +782,8 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
 <style id="stash-launch-screen-styles">
-body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important}
+html.stash-launch-active body> :not(#stash-launch-screen){visibility:hidden!important}
+html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 #stash-launch-screen{position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;overflow:hidden;background:#000;color:#fff;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease;isolation:isolate}
 #stash-launch-screen.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 #stash-launch-screen *{box-sizing:border-box}
@@ -797,7 +799,7 @@ body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important
 @media(prefers-reduced-motion:reduce){#stash-launch-screen{transition:none}}
 </style>
 </head>
-<body class="stash-launch-active">
+<body>
 
 <div id="stash-launch-screen" role="status" aria-label="Ouverture de STASH" aria-live="polite">
  <canvas class="stash-splash-fx"></canvas><div class="stash-splash-glow"></div>
@@ -813,7 +815,7 @@ body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important
 
 <script id="stash-launch-screen-script">
 (()=>{
- const root=document.getElementById('stash-launch-screen');if(!root)return;
+ const root=document.getElementById('stash-launch-screen');if(!root)return;if(!window.__stashShowLaunch){root.remove();return;}
  const $=s=>root.querySelector(s),star=$('.stash-splash-star'),logo=$('.stash-splash-logo'),glow=$('.stash-splash-glow'),stage=$('.stash-splash-stage');
  const letters=[...root.querySelectorAll('.stash-splash-letter')],rings=[...root.querySelectorAll('.stash-splash-ring')],canvas=$('.stash-splash-fx'),ctx=canvas.getContext('2d');
  let W=1,H=1,particles=[],animations=[],timers=[],flying=false,ambientAlpha=0,raf=0;
@@ -840,7 +842,7 @@ body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important
    animate(letter,[{backgroundPosition:'100% 0'},{backgroundPosition:'0% 0'}],{duration:700,delay:impact+850+i*70,iterations:1,easing:'ease-in-out',fill:'none'})});
   animate(star,[{transform:'scale(1) rotate(0deg)'},{transform:'scale(1.22) rotate(45deg)',offset:.5},{transform:'scale(1) rotate(90deg)'}],{delay:impact+250,duration:1300,iterations:1,easing:'ease-in-out',fill:'none'});
  }
- function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');document.body.classList.remove('stash-launch-active');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
+ function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');document.documentElement.classList.remove('stash-launch-active');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
  resize();ambient.forEach(a=>{a.x=Math.random()*W;a.y=Math.random()*H});addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
  // Le lancement reste visible au moins 2,7 secondes et jusqu'à ce que le Feed ait fini son premier rendu.
  const started=performance.now();
