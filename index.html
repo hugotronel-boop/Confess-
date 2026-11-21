@@ -842,15 +842,15 @@ body.stash-launch-active> :not(#stash-launch-screen){visibility:hidden!important
  }
  function close(){if(root.classList.contains('is-leaving'))return;root.classList.add('is-leaving');root.setAttribute('aria-hidden','true');document.body.classList.remove('stash-launch-active');timers.forEach(clearTimeout);animations.forEach(a=>{try{a.cancel()}catch(e){}});cancelAnimationFrame(raf);setTimeout(()=>root.remove(),750)}
  resize();ambient.forEach(a=>{a.x=Math.random()*W;a.y=Math.random()*H});addEventListener('resize',resize,{passive:true});raf=requestAnimationFrame(frame);play();
- // Le lancement reste visible au moins 3 secondes et jusqu'à ce que le Feed ait fini son premier rendu.
+ // Le lancement reste visible au moins 2,7 secondes et jusqu'à ce que le Feed ait fini son premier rendu.
  const started=performance.now();
- const minWait=Math.max(0,3000-(performance.now()-started));
+ const minWait=Math.max(0,2700-(performance.now()-started));
  document.addEventListener('DOMContentLoaded',()=>{
   const feed=document.getElementById('feed');let feedReady=false;
   const check=()=>{if(!feed)return false;const loading=feed.querySelector('.loading');const text=feed.textContent||'';return !loading&&!/Chargement du fil|Chargement…|Chargement\.\.\./i.test(text)};
-  const maybeClose=()=>{if(feedReady&&performance.now()-started>=3000)close()};
+  const maybeClose=()=>{if(feedReady&&performance.now()-started>=2700)close()};
   if(feed){const observer=new MutationObserver(()=>{if(check()){feedReady=true;observer.disconnect();maybeClose()}});observer.observe(feed,{childList:true,subtree:true,characterData:true});if(check()){feedReady=true;observer.disconnect();maybeClose()}}
-  setTimeout(maybeClose,Math.max(0,4700-(performance.now()-started)));
+  setTimeout(maybeClose,Math.max(0,2700-(performance.now()-started)));
  });
 
 })();
