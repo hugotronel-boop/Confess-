@@ -215,6 +215,22 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
  body.chat-conversation-open .toast{bottom:calc(78px + env(safe-area-inset-bottom))!important}
 }
 </style>
+<style id="stash-pure-black-message-background">
+html,body,main,#shell,.shell,.inbox,.chat,.chat-scroll{
+ background-color:#000!important;
+ background-image:none!important;
+}
+body::before,body::after,main::before,main::after{
+ content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+}
+body.chat-conversation-open,
+body.chat-conversation-open main,
+body.chat-conversation-open .shell,
+body.chat-conversation-open .chat,
+body.chat-conversation-open .chat-scroll{
+ background:#000!important;background-image:none!important;
+}
+</style>
 </head>
 <body>
 <header class="messages-header">
