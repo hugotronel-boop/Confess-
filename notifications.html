@@ -765,7 +765,7 @@ $('list').querySelectorAll('[data-notif]').forEach(b=>{
  const cancelHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null}};
  b.addEventListener('pointerdown',()=>{
   longPressed=false;cancelHold();
-  holdTimer=setTimeout(()=>{longPressed=true;showDeleteDialog(b.dataset.notif)},2000);
+  holdTimer=setTimeout(()=>{longPressed=true;showDeleteDialog(b.dataset.notif)},1000);
  });
  ['pointerup','pointercancel','pointerleave'].forEach(evt=>b.addEventListener(evt,cancelHold));
  b.addEventListener('contextmenu',e=>e.preventDefault());
