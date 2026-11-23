@@ -731,7 +731,7 @@ async function load(){if(loading)return;loading=true;const {data:{session}}=awai
 startNotificationRealtime();
 const {data,error}=await db.from('notifications').select('id,user_id,actor_id,kind,post_id,comment_id,conversation_id,sanction_id,appeal_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
 if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';loading=false;return}
-items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
+items=(data||[]).filter(n=>n.kind!=='message');const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
 if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
 if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';loading=false;return}
 const groups=new Map();
