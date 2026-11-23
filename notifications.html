@@ -688,20 +688,20 @@ case 'new_post':return {icon:'📝',title:who+' a publié une nouvelle confessio
 case 'mention':return {icon:'@',title:'Quelqu’un t’a mentionné',sub:'Tu as été identifié dans une publication ou un commentaire'};
 case 'group_invite':return {icon:'👥',title:who+' t’invite dans un groupe',sub:'Ouvre la conversation pour retrouver l’invitation'};
 case 'poll_vote':return {icon:'📊',title:who+' a voté à ton sondage',sub:'Ton sondage vient de recevoir un vote'};
-case 'poll_ended':return {icon:'📊',title:'Ton sondage est terminé',sub:'Découvre les résultats définitifs'};
-case 'badge_earned':return {icon:'🏅',title:'Tu as débloqué un badge',sub:'Une nouvelle récompense rejoint ton profil'};
+
+
 case 'announcement':return {icon:'📢',title:'Une annonce STASH',sub:'Une information importante de la plateforme'};
 case 'security_alert':return {icon:'🔐',title:'Alerte de sécurité',sub:'Une activité liée à la sécurité de ton compte a été détectée'};
 case 'follow':return {icon:'👋',title:who+' a commencé à te suivre',sub:'Découvre son profil'};
 case 'message':return {icon:'💬',title:who+' t’a envoyé un message',sub:'Ouvre ta conversation privée'};
 case 'reaction':return {icon:'❤️',title:who+' a aimé ta publication',sub:'Une réaction à ta confession'};
-case 'reaction_anonymous':return {icon:'❤️',title:'Quelqu’un a aimé ta publication',sub:'La personne a choisi de rester anonyme'};
+
 case 'comment':return {icon:'💬',title:who+' a commenté ta publication',sub:'Une nouvelle réponse à lire'};
-case 'comment_anonymous':return {icon:'🎭',title:'Quelqu’un a commenté ta publication',sub:'La personne a répondu anonymement'};
+
 case 'reply':return {icon:'↩️',title:who+' a répondu à ton commentaire',sub:'La discussion continue'};
-case 'reply_anonymous':return {icon:'🎭',title:'Quelqu’un a répondu à ton commentaire',sub:'La personne a répondu anonymement'};
+
 case 'comment_reaction':return {icon:'✨',title:who+' a réagi à ton commentaire',sub:'Ton commentaire a reçu une réaction'};
-case 'comment_reaction_anonymous':return {icon:'✨',title:'Quelqu’un a réagi à ton commentaire',sub:'La réaction est anonyme'};
+
 case 'profile_comment':return {icon:'📝',title:who+' a laissé un message sur ton profil',sub:'Un nouveau message sur ton mur'};
 case 'profile_reply':return {icon:'↩️',title:who+' a répondu à un message sur ton profil',sub:'La discussion continue sur le mur'};
 case 'sanction_issued':return {icon:'⚖️',title:'Une décision de modération te concerne',sub:'Consulte le motif et les détails dans tes sanctions'};
@@ -723,7 +723,7 @@ loading=false;
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
 else if(n.kind==='group_invite'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
-else if(n.kind==='badge_earned')location.href='profile.html';
+
 else if(n.kind==='security_alert')location.href='settings.html#accountSecurity';
 else if(n.kind==='message'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
 else if(['sanction_issued','appeal_received','appeal_decision'].includes(n.kind))location.href='appeals.html'+(n.appeal_id?'?appeal='+encodeURIComponent(n.appeal_id):'');
