@@ -654,7 +654,7 @@ body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 .publish-compose-header>strong{font-size:15px;font-weight:700;white-space:nowrap}
 .publish-cancel,.publish-header-submit{border:0!important;background:transparent!important;color:#fff!important;padding:8px 0!important;font-size:14px!important;font-weight:500!important;box-shadow:none!important}
 .publish-cancel{justify-self:start;color:#aaa!important}
-.publish-header-submit{justify-self:end;color:#ff9fc7!important;font-weight:750!important}
+.publish-header-submit{display:none!important}
 .publish-page-top{display:none!important}
 .layout{display:block!important;width:min(680px,100%)!important;margin:0 auto!important;padding:0!important}
 .layout>.side,.layout>.rightside,.center>.welcome,.center>.feed-head,.center>#feedSearch,.center>#feedSearchBtn,.center>#feedTabs,.center>#visibilityFilters,#feed,.center>div:has(#feedSearch){display:none!important}
@@ -674,7 +674,9 @@ body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 #composer>.compose-bottom:last-child{display:none!important}
 #publishBtn{display:inline-flex!important;position:fixed!important;right:18px!important;bottom:calc(91px + env(safe-area-inset-bottom))!important;z-index:1100!important;align-items:center!important;justify-content:center!important;min-width:105px!important;padding:11px 20px!important;border:0!important;border-radius:999px!important;background:#fff!important;color:#050506!important;font-size:14px!important;font-weight:750!important;box-shadow:0 5px 22px rgba(255,255,255,.13)!important}
 #publishBtn:disabled{opacity:.45!important}
-.confess-global-nav{z-index:1000!important}
+.confess-global-nav{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body{padding-bottom:0!important}
+#publishBtn{bottom:calc(18px + env(safe-area-inset-bottom))!important}
 @media(max-width:620px){#composer{padding:19px 17px 130px!important}#postBody{min-height:45vh!important;height:45vh!important}#publishBtn{right:17px!important}}
 </style>
 </head>
@@ -682,7 +684,6 @@ body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 <header class="publish-compose-header">
  <button type="button" class="publish-cancel" id="cancelPublish">Annuler</button>
  <strong>Nouvelle publication</strong>
- <button type="button" class="publish-header-submit" id="publishTopAction" aria-label="Publier">Publier</button>
  <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
 </header>
 <div class="layout">
@@ -1041,7 +1042,7 @@ $('togglePoll').onclick=()=>{$('pollComposer').hidden=!$('pollComposer').hidden;
 $('addPollOption').onclick=()=>{const inputs=document.querySelectorAll('.poll-option-input');if(inputs.length>=6)return toast('Maximum 6 choix.');const input=document.createElement('input');input.className='field poll-option-input';input.maxLength=160;input.placeholder='Choix '+(inputs.length+1);$('pollOptionInputs').appendChild(input);input.addEventListener('input',saveDraft)};
 $('removePoll').onclick=()=>{$('pollComposer').hidden=true;$('pollOptionInputs').innerHTML='<input class="field poll-option-input" maxlength="160" placeholder="Choix 1"><input class="field poll-option-input" maxlength="160" placeholder="Choix 2">';saveDraft()};
 $('pollOptionInputs').addEventListener('input',saveDraft);$('postBody').addEventListener('input',saveDraft);$('postCategory').addEventListener('change',saveDraft);$('anonymous').addEventListener('change',saveDraft);$('clearDraft').onclick=clearDraft;
-$('publishTopAction').onclick=()=>$('publishBtn').click();$('cancelPublish').onclick=()=>location.href='index.html';
+$('cancelPublish').onclick=()=>location.href='index.html';
 $('publishBtn').onclick=async()=>{
  // Revalide la session au clic si le chargement initial n'est pas terminé.
  if(!session){try{await loadSession()}catch(error){console.error('Vérification de session impossible:',error)}}
