@@ -674,6 +674,16 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:0 0 24px!im
 .notification-day .copy p{margin:4px 0 0;color:#96939d;font-size:10px;line-height:1.45}
 .notification-day .dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#ff75b1}
 #list>.empty,#list>.loading{padding:55px 22px;color:#aaa;text-align:center;font-size:13px;background:transparent!important;border:0!important;box-shadow:none!important}
+.notification-delete-overlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+.notification-delete-overlay.show{display:flex}
+.notification-delete-card{width:min(100%,340px);padding:22px;border:1px solid rgba(255,255,255,.17);border-radius:22px;background:#191919;box-shadow:0 18px 60px #0009;text-align:center}
+.notification-delete-card h3{margin:0 0 8px;font-size:17px}
+.notification-delete-card p{margin:0 0 20px;color:#aaa;font-size:12px;line-height:1.5}
+.notification-delete-actions{display:flex;gap:9px}
+.notification-delete-actions button{flex:1;border:1px solid #ffffff25;border-radius:12px;padding:11px;background:#ffffff0d;color:#fff;font-size:12px}
+.notification-delete-actions .danger{background:#ff5b75;color:#210b10;border:0;font-weight:750}
+.notification-day .item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+
 @media(max-width:620px){.notifications-heading{padding-left:16px;padding-right:16px}.notifications-heading h1{font-size:27px}.notification-day h2{padding-left:16px}.notification-day .item{padding:13px 16px}}
 </style>
 </head>
@@ -684,6 +694,16 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:0 0 24px!im
  <div class="list" id="list"><div class="loading">On récupère tes notifications…</div></div>
 </main>
 <div class="toast" id="toast"></div>
+<div class="notification-delete-overlay" id="deleteOverlay" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+ <div class="notification-delete-card">
+  <h3 id="deleteTitle">Supprimer cette notification ?</h3>
+  <p>Cette action est définitive. La notification sera supprimée de ton compte.</p>
+  <div class="notification-delete-actions">
+   <button type="button" id="cancelDelete">Annuler</button>
+   <button type="button" class="danger" id="confirmDelete">Supprimer</button>
+  </div>
+ </div>
+</div>
 <script>
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
@@ -739,9 +759,38 @@ items.forEach(n=>{const d=new Date(n.created_at);const key=d.getFullYear()+'-'+S
 const today=new Date();today.setHours(0,0,0,0);const yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);
 const dateTitle=key=>{const [y,m,d]=key.split('-').map(Number);const date=new Date(y,m-1,d);if(date.getTime()===today.getTime())return "Aujourd’hui";if(date.getTime()===yesterday.getTime())return "Hier";return date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:date.getFullYear()===today.getFullYear()?undefined:'numeric'})};
 $('list').innerHTML=[...groups.entries()].map(([day,rows])=>'<section class="notification-day"><h2>'+esc(dateTitle(day))+'</h2>'+rows.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('')+'</section>').join('');
-$('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotification(b.dataset.notif));
+
+$('list').querySelectorAll('[data-notif]').forEach(b=>{
+ let holdTimer=null,longPressed=false;
+ const cancelHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null}};
+ b.addEventListener('pointerdown',()=>{
+  longPressed=false;cancelHold();
+  holdTimer=setTimeout(()=>{longPressed=true;showDeleteDialog(b.dataset.notif)},2000);
+ });
+ ['pointerup','pointercancel','pointerleave'].forEach(evt=>b.addEventListener(evt,cancelHold));
+ b.addEventListener('contextmenu',e=>e.preventDefault());
+ b.addEventListener('click',e=>{
+  if(longPressed){e.preventDefault();e.stopPropagation();longPressed=false;return}
+  openNotification(b.dataset.notif);
+ });
+});
+
 loading=false;
 }
+
+let pendingDeleteId=null;
+function showDeleteDialog(id){pendingDeleteId=id;$('deleteOverlay').classList.add('show')}
+function closeDeleteDialog(){pendingDeleteId=null;$('deleteOverlay').classList.remove('show')}
+$('cancelDelete').onclick=closeDeleteDialog;
+$('deleteOverlay').addEventListener('click',e=>{if(e.target===$('deleteOverlay'))closeDeleteDialog()});
+$('confirmDelete').onclick=async()=>{
+ if(!currentUser||!pendingDeleteId)return;
+ const id=pendingDeleteId;$('confirmDelete').disabled=true;
+ const {error}=await db.from('notifications').delete().eq('id',id).eq('user_id',currentUser.id);
+ $('confirmDelete').disabled=false;
+ if(error){toast('Impossible de supprimer cette notification.');return}
+ items=items.filter(n=>n.id!==id);closeDeleteDialog();toast('Notification supprimée.');load();
+};
 async function openNotification(id){const n=items.find(x=>x.id===id);if(!n)return;if(!n.is_read){const {error}=await db.from('notifications').update({is_read:true}).eq('id',id).eq('user_id',currentUser.id);if(error){toast('Impossible de marquer comme lu.');return}}
 if(n.kind==='follow'&&n.actor_id)location.href='member.html?id='+encodeURIComponent(n.actor_id);
 else if(n.kind==='group_invite'&&n.conversation_id)location.href='messages.html?conversation='+encodeURIComponent(n.conversation_id);
