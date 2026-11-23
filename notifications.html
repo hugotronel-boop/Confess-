@@ -685,6 +685,19 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:0 0 24px!im
 .notification-day .item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
 
 @media(max-width:620px){.notifications-heading{padding-left:16px;padding-right:16px}.notifications-heading h1{font-size:27px}.notification-day h2{padding-left:16px}.notification-day .item{padding:13px 16px}}
+
+/* Notifications: fond noir uni, sans dégradés décoratifs */
+html, body {
+  background: #000 !important;
+  background-color: #000 !important;
+  background-image: none !important;
+}
+body::before, body::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
 </style>
 </head>
 <body>
