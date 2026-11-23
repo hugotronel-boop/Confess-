@@ -656,11 +656,31 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
+
+<style id="stash-notifications-redesign">
+body{padding-top:0!important}
+main{width:min(680px,100%)!important;margin:0 auto!important;padding:0 0 24px!important}
+.notifications-heading{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(17px + env(safe-area-inset-top)) 18px 16px;background:rgba(5,5,6,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1)}
+.notifications-heading h1{margin:0;font-size:27px;line-height:1.2;font-weight:800;letter-spacing:-.7px}
+.notifications-heading .markall{flex:0 0 auto;border:1px solid rgba(255,255,255,.17);border-radius:999px;background:rgba(255,255,255,.07);color:#fff;padding:9px 13px;font-size:11px}
+#list{padding:4px 0 18px}
+.notification-day{margin:0}
+.notification-day h2{margin:0;padding:19px 18px 9px;color:#aaa7b0;font-size:12px;font-weight:700;letter-spacing:.35px;text-transform:uppercase}
+.notification-day .item{width:100%;display:flex;align-items:center;gap:13px;text-align:left;padding:14px 18px;border:0;border-bottom:1px solid rgba(255,255,255,.075);border-radius:0;background:transparent!important;color:#fff}
+.notification-day .item.unread{background:rgba(255,108,171,.055)!important}
+.notification-day .symbol{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.09);font-size:19px}
+.notification-day .copy{min-width:0;flex:1}
+.notification-day .copy strong{display:block;font-size:12px;font-weight:650;line-height:1.45}
+.notification-day .copy p{margin:4px 0 0;color:#96939d;font-size:10px;line-height:1.45}
+.notification-day .dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#ff75b1}
+#list>.empty,#list>.loading{padding:55px 22px;color:#aaa;text-align:center;font-size:13px;background:transparent!important;border:0!important;box-shadow:none!important}
+@media(max-width:620px){.notifications-heading{padding-left:16px;padding-right:16px}.notifications-heading h1{font-size:27px}.notification-day h2{padding-left:16px}.notification-day .item{padding:13px 16px}}
+</style>
 </head>
 <body>
-<header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'">← Retour au fil</button></header>
+
 <main>
- <div class="heading"><div><h1>Notifications 🔔</h1><p>Tout ce qui se passe autour de ton compte et de tes publications.</p></div><button class="markall" id="markAll">Tout lire</button></div>
+ <div class="notifications-heading"><h1>Notifications</h1><button class="markall" id="markAll">Tout lire</button></div>
  <div class="list" id="list"><div class="loading">On récupère tes notifications…</div></div>
 </main>
 <div class="toast" id="toast"></div>
@@ -714,7 +734,11 @@ if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossibl
 items=data||[];const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
 if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
 if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';loading=false;return}
-$('list').innerHTML=items.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('');
+const groups=new Map();
+items.forEach(n=>{const d=new Date(n.created_at);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)});
+const today=new Date();today.setHours(0,0,0,0);const yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);
+const dateTitle=key=>{const [y,m,d]=key.split('-').map(Number);const date=new Date(y,m-1,d);if(date.getTime()===today.getTime())return "Aujourd’hui";if(date.getTime()===yesterday.getTime())return "Hier";return date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:date.getFullYear()===today.getFullYear()?undefined:'numeric'})};
+$('list').innerHTML=[...groups.entries()].map(([day,rows])=>'<section class="notification-day"><h2>'+esc(dateTitle(day))+'</h2>'+rows.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('')+'</section>').join('');
 $('list').querySelectorAll('[data-notif]').forEach(b=>b.onclick=()=>openNotification(b.dataset.notif));
 loading=false;
 }
