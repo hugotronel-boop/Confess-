@@ -791,8 +791,6 @@ async function exportMyData(){
   await Promise.all([
    get('profile',db.from('profiles').select('id,username,avatar_path,bio,created_at,updated_at,cover_path').eq('id',user.id)),
    get('my_comments',db.from('comments').select('id,post_id,parent_comment_id,body,is_anonymous,author_label,status,created_at,updated_at').eq('author_profile_id',user.id)),
-   get('profile_messages_written',db.from('profile_comments').select('id,profile_id,parent_id,body,created_at,updated_at').eq('author_id',user.id)),
-   get('profile_messages_received',db.from('profile_comments').select('id,author_id,parent_id,body,created_at,updated_at').eq('profile_id',user.id)),
    get('my_post_reactions',db.from('post_reactions').select('post_id,reaction,created_at').eq('user_id',user.id)),
    get('my_comment_reactions',db.from('comment_reactions').select('comment_id,reaction,created_at').eq('user_id',user.id)),
    get('my_bookmarks',db.from('post_bookmarks').select('post_id,created_at').eq('user_id',user.id)),
@@ -800,7 +798,7 @@ async function exportMyData(){
    get('following_me',db.from('user_follows').select('follower_id,created_at').eq('followed_id',user.id)),
    get('blocked_accounts',db.from('user_blocks').select('blocked_id,created_at').eq('blocker_id',user.id)),
    get('muted_accounts',db.from('user_mutes').select('muted_user_id,created_at').eq('user_id',user.id)),
-   get('my_notifications',db.from('notifications').select('id,actor_id,kind,post_id,comment_id,is_read,created_at,conversation_id,sanction_id,appeal_id,profile_id,profile_comment_id').eq('user_id',user.id)),
+   get('my_notifications',db.from('notifications').select('id,actor_id,kind,post_id,comment_id,is_read,created_at,conversation_id,sanction_id,appeal_id').eq('user_id',user.id)),
    get('my_reports',db.from('reports').select('id,post_id,comment_id,reported_user_id,reason,details,status,created_at').eq('reporter_id',user.id)),
    get('my_sanctions',db.from('user_sanctions').select('id,sanction_type,reason,expires_at,created_at,revoked_at,revoke_note').eq('target_user_id',user.id)),
    get('my_appeals',db.from('confess_sanction_appeals').select('id,sanction_id,message,status,moderator_reply,reviewed_at,created_at,updated_at').eq('user_id',user.id)),
