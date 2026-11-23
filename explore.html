@@ -60,15 +60,8 @@ h1{font-size:23px;letter-spacing:-.5px;margin:0 0 17px;font-weight:750}
 </style>
 </head>
 <body>
-<header class="top">
- <div class="brand"><img src="./assets/stash-logo.png" alt="STASH"><span>STASH</span></div>
- <div class="top-actions">
-  <button class="back" type="button" onclick="location.href='index.html'" aria-label="Retour au fil">←</button>
-  <button class="bell" id="confessBell" type="button" aria-label="Notifications">🔔<span class="bell-count" id="confessBellCount" hidden>0</span></button>
- </div>
-</header>
+<header class="top"><div class="top-title">Rechercher</div></header>
 <main>
- <h1>Rechercher</h1>
  <div class="search-wrap">
   <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
   <input id="searchInput" type="search" maxlength="40" placeholder="Rechercher un membre…" autocomplete="off" autocapitalize="none" spellcheck="false">
@@ -147,19 +140,6 @@ async function init(){
  readHistory();renderHistory();
 }
 init();
-})();
-</script>
-<script>
-(()=>{
-if(!window.supabase?.createClient)return;
-const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
-const badge=document.getElementById('confessBellCount');let channel=null,userId=null;
-async function countUnread(){const {data:{session}}=await client.auth.getSession();const id=session?.user?.id||null;if(!id){badge.hidden=true;return}const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);if(error)return;badge.textContent=(count||0)>99?'99+':String(count||0);badge.hidden=!count}
-async function connect(id){if(id===userId&&channel)return;if(channel){await client.removeChannel(channel);channel=null}userId=id;if(!id){badge.hidden=true;return}channel=client.channel('stash-search-notifications-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread).on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread).subscribe();countUnread()}
-async function init(){const {data:{session}}=await client.auth.getSession();connect(session?.user?.id||null)}
-document.getElementById('confessBell').addEventListener('click',()=>location.href='notifications.html');
-client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){connect(null);return}if(session?.user?.id)setTimeout(()=>connect(session.user.id),0)});
-init();window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
 })();
 </script>
 <script id="stash-nav-current-page">
