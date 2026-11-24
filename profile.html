@@ -703,23 +703,92 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
+
+<style id="stash-profile-threads-redesign">
+/* Profil STASH — présentation inspirée de Threads */
+html,body{background:#000!important;background-image:none!important;color:#f5f5f5!important}
+body::before,body::after{content:none!important;display:none!important}
+header.top{height:58px!important;min-height:58px!important;padding:0 18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;background:#000!important;border-bottom:1px solid #242424!important;backdrop-filter:none!important;box-shadow:none!important}
+header.top .brand{display:none!important}
+header.top>div:nth-child(2){margin-right:auto!important;gap:8px!important}
+header.top .back{border:0!important;background:transparent!important;color:#eee!important;border-radius:8px!important;padding:8px 10px!important;font-size:12px!important}
+header.top .confess-bell{border:0!important;background:transparent!important;color:#fff!important;font-size:19px!important}
+main{width:min(680px,100%)!important;margin:0 auto!important;padding:18px 18px 36px!important}
+main>.card{display:flex!important;flex-direction:column!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important}
+main>.card>.cover-wrap{height:88px!important;min-height:88px!important;margin:0 0 0!important;border:0!important;border-radius:12px!important;background:#151515!important;overflow:hidden!important}
+.cover-placeholder{font-size:10px!important;letter-spacing:1.8px!important;color:#777!important}
+.cover-change{right:10px!important;bottom:9px!important;border:1px solid #454545!important;background:#090909!important;color:#eee!important;border-radius:999px!important;padding:7px 10px!important;font-size:10px!important}
+.profile-head{display:flex!important;flex-direction:row-reverse!important;justify-content:space-between!important;align-items:flex-start!important;gap:15px!important;margin:-1px 0 12px!important;padding:0 2px!important}
+.avatar-wrap{flex:0 0 auto!important;margin-top:-3px!important}
+.avatar{width:86px!important;height:86px!important;border-radius:50%!important;background:#292929!important;border:4px solid #000!important;font-size:27px!important}
+.avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+.change{right:0!important;bottom:0!important;width:27px!important;height:27px!important;border:2px solid #000!important;background:#fff!important;color:#111!important;border-radius:50%!important}
+.identity{min-width:0!important;padding:8px 0 0!important;margin-right:auto!important}
+.identity h2{font-size:21px!important;line-height:1.2!important;font-weight:750!important;letter-spacing:-.5px!important;margin:0 0 4px!important}
+.identity p{font-size:13px!important;color:#999!important;margin:0!important}
+.profile-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important;margin:8px 0 17px!important}
+.profile-actions>.secondary,.edit-profile-details>summary{min-height:39px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:8px 12px!important;border:1px solid #3a3a3a!important;border-radius:10px!important;background:#000!important;color:#f5f5f5!important;font-size:12px!important;font-weight:650!important;list-style:none!important;cursor:pointer!important}
+.edit-profile-details>summary::-webkit-details-marker{display:none!important}
+.edit-profile-details[open]{grid-column:1/-1!important}
+.edit-profile-details>summary{width:100%!important}
+.edit-profile-details[open]>summary{margin-bottom:12px!important}
+#profileForm{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;padding:15px!important;border:1px solid #292929!important;border-radius:14px!important;background:#0b0b0b!important}
+.field-label{font-size:12px!important;color:#e5e5e5!important;font-weight:600!important;margin-top:4px!important}
+.field{width:100%!important;min-height:42px!important;background:#111!important;border:1px solid #303030!important;border-radius:9px!important;color:#fff!important;font-size:16px!important;padding:11px 12px!important}
+textarea.field{min-height:88px!important;resize:vertical!important}
+.hint{font-size:10px!important;color:#777!important;margin:0 0 4px!important}
+.actions{display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important;margin-top:8px!important}
+.actions button{min-height:39px!important;border-radius:9px!important;font-size:12px!important}
+.primary{background:#f4f4f4!important;color:#111!important;border:0!important}
+.secondary{background:#080808!important;border:1px solid #383838!important;color:#eee!important}
+.stats{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:0!important;margin:0 0 17px!important;padding:13px 0!important;border-top:1px solid #242424!important;border-bottom:1px solid #242424!important}
+.stat,.stat-action{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:4px 5px!important;background:transparent!important;border:0!important;color:#fff!important}
+.stat+ .stat{border-left:1px solid #242424!important}
+.stat strong{font-size:15px!important;font-weight:750!important}
+.stat span{font-size:11px!important;color:#999!important}
+.tabbar{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;margin:0!important;padding:0!important;border:0!important;border-bottom:1px solid #252525!important;background:transparent!important;border-radius:0!important}
+.tab-btn{position:relative!important;border:0!important;border-radius:0!important;background:transparent!important;color:#888!important;padding:15px 8px!important;font-size:12px!important;font-weight:650!important}
+.tab-btn.active{color:#fff!important;background:transparent!important;border:0!important}
+.tab-btn.active:after{content:""!important;position:absolute!important;left:20%!important;right:20%!important;bottom:-1px!important;height:2px!important;background:#fff!important;border-radius:2px!important}
+.section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;margin:18px 2px 4px!important}
+.section-head h2{font-size:15px!important;font-weight:700!important}
+.count{font-size:11px!important;color:#888!important}
+#myPosts{min-height:90px!important}
+.post{padding:17px 2px!important;margin:0!important;border:0!important;border-bottom:1px solid #222!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.post-meta{font-size:11px!important;color:#858585!important}
+.post-body{font-size:14px!important;line-height:1.6!important;color:#f1f1f1!important;margin:10px 0!important;overflow-wrap:anywhere!important}
+.pinned-tag{font-size:10px!important;color:#aaa!important;margin-bottom:8px!important}
+.pin-btn{padding:7px 11px!important;border:1px solid #383838!important;border-radius:999px!important;background:#080808!important;color:#ddd!important;font-size:10px!important}
+.about-panel{white-space:pre-wrap!important;padding:17px 2px!important;border:0!important;border-bottom:1px solid #222!important;border-radius:0!important;background:transparent!important;color:#ddd!important;font-size:13px!important;line-height:1.7!important}
+.empty,.loading{padding:32px 10px!important;color:#888!important;background:transparent!important;border:0!important;box-shadow:none!important;text-align:center!important;font-size:12px!important}
+.follow-dialog{background:#0b0b0b!important;border:1px solid #303030!important;border-radius:16px!important}
+.follow-dialog-head,.follow-list,.follow-person{background:transparent!important}
+@media(max-width:520px){
+ main{padding:14px 16px 28px!important}
+ main>.card>.cover-wrap{height:78px!important;min-height:78px!important}
+ .avatar{width:82px!important;height:82px!important}
+ .profile-head{margin-bottom:10px!important}
+ .stat{flex-direction:column!important;gap:3px!important}
+ .stat span{font-size:10px!important}
+}
+</style>
 </head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
-<section class="hero"><h1>Ton espace, tes mots. ✨</h1><p>Personnalise ton profil et retrouve tes publications publiques.</p></section>
+
 <section class="card">
  <div class="cover-wrap" id="cover"><div class="cover-placeholder">TON UNIVERS STASH ✨</div><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button></div><input id="coverFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="profile-head"><div class="avatar-wrap"><div class="avatar" id="avatar">?</div><button class="change" id="pickAvatar" aria-label="Changer la photo">＋</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></div><div class="identity"><h2 id="displayName">Mon profil</h2><p id="memberSince">Membre STASH</p></div></div>
- <form id="profileForm">
+ <div class="profile-actions"><button class="secondary" id="publicProfileBtn" type="button">Voir le profil public</button><details class="edit-profile-details" id="editProfileDetails"><summary>Modifier le profil</summary><form id="profileForm">
   <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
   <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
   <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
-  <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer les modifications</button><button class="secondary" id="publicProfileBtn" type="button">👀 Voir mon profil public</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
- </form>
+  <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
+ </form></details>
  <div class="stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="myFollowersStat">—</strong><span>Abonnés · Voir</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="myFollowingStat">—</strong><span>Abonnements · Voir</span></button></div>
 </section>
 
-<div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">📝 Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">👤 À propos</button></div><div id="postsTab"><div class="section-head"><h2>Mes publications</h2><span class="count" id="postCount">—</span></div><div id="myPosts"><div class="loading">Chargement de ton espace…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent">Chargement de ta présentation…</div></div>
+<div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">À propos</button></div><div id="postsTab"><div class="section-head"><h2>Mes publications</h2><span class="count" id="postCount">—</span></div><div id="myPosts"><div class="loading">Chargement de ton espace…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent">Chargement de ta présentation…</div></div>
 </main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>
 (() => {
