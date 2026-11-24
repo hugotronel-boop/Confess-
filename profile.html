@@ -964,12 +964,31 @@ $('avatarFile').addEventListener('change',async()=>{
  const file=$('avatarFile').files?.[0];if(!file)return;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Format accepté : JPG, PNG ou WebP.');
  if(file.size>2*1024*1024)return toast('La photo doit faire 2 Mo maximum.');
- const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=user.id+'/avatar.'+ext;
- const {data,error}=await db.storage.from('confess-avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const oldPath=profile?.avatar_path||null;
+ // Un chemin unique évite que le navigateur/CDN affiche encore l'ancienne image en cache.
+ const path=user.id+'/avatar-'+Date.now()+'.'+ext;
+ const bucket=db.storage.from('confess-avatars');
+ const {data,error}=await bucket.upload(path,file,{upsert:false,contentType:file.type,cacheControl:'0'});
  if(error){toast("Envoi de la photo impossible : "+error.message);return}
  const {error:saveError}=await db.from('profiles').update({avatar_path:data.path}).eq('id',user.id);
- if(saveError){toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return}
- profile.avatar_path=data.path;showAvatar(data.path);toast('Photo de profil mise à jour !');
+ if(saveError){
+  const {error:cleanupError}=await bucket.remove([data.path]);
+  if(cleanupError)console.warn('Nettoyage de la nouvelle photo impossible:',cleanupError);
+  toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return;
+ }
+ profile.avatar_path=data.path;
+ showAvatar(data.path);
+ if(oldPath&&oldPath!==data.path){
+  const {error:removeError}=await bucket.remove([oldPath]);
+  if(removeError){
+   console.error('Suppression de l’ancienne photo impossible:',removeError);
+   toast('Nouvelle photo enregistrée, mais ancienne photo non supprimée.');
+   return;
+  }
+ }
+ toast('Photo de profil mise à jour ! Ancienne photo supprimée.');
+
 });
 $('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')location.href='auth.html'});
