@@ -803,7 +803,14 @@ html,body{background:#000!important;background-image:none!important}
 .profile-posts-heading h2{font-size:15px!important;font-weight:700!important;margin:0!important}
 .profile-posts-heading .count{font-size:10px!important;color:#888!important}
 @media(max-width:520px){.profile-head{gap:14px!important}.avatar-wrap{flex-basis:78px!important}.avatar{width:78px!important;height:78px!important;flex-basis:78px!important}.identity h2{font-size:19px!important}}
-</style></head>
+</style><style id="stash-username-availability">
+.username-status{min-height:16px;margin:5px 2px 13px;font-size:11px;color:#999}
+.username-status.available{color:#55d98b}
+.username-status.invalid{color:#ff6b78}
+.username-status.checking{color:#b9b9c2}
+#saveBtn:disabled{opacity:.35;cursor:not-allowed}
+</style>
+</head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
@@ -831,6 +838,7 @@ html,body{background:#000!important;background-image:none!important}
   <form id="profileForm">
    <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
    <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
+   <p class="username-status" id="usernameStatus" aria-live="polite"></p>
    <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
    <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
   </form>
@@ -845,7 +853,7 @@ html,body{background:#000!important;background-image:none!important}
 const URL='https://hhntssweslmmqskhoaje.supabase.co';
 const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
 const db=window.supabase.createClient(URL,KEY);const $=id=>document.getElementById(id);
-let user=null,profile=null;
+let user=null,profile=null,originalUsername='',usernameCheckTimer=null,usernameCheckVersion=0,usernameAvailable=true;
 function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.innerHTML='<img alt="Photo de profil" src="'+esc(data.publicUrl)+'">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
@@ -854,7 +862,7 @@ async function load(){
  if(!user){location.href='auth.html';return}
  const {data,error}=await db.from('profiles').select('id,username,bio,avatar_path,profile_emoji,created_at').eq('id',user.id).maybeSingle();
  if(error||!data){toast("Impossible de charger ton profil.");console.error(error);return}
- profile=data;$('username').value=data.username||'';$('bio').value=data.bio||'';$('displayName').textContent='@'+(data.username||'membre');$('memberSince').textContent='Membre depuis le '+new Date(data.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});$('profileBio').textContent=data.bio||'';showAvatar(data.avatar_path);paintProfileEmoji(data.profile_emoji);await loadPosts();
+ profile=data;$('username').value=data.username||'';originalUsername=data.username||'';usernameAvailable=true;setUsernameStatus('', '');$('bio').value=data.bio||'';$('displayName').textContent='@'+(data.username||'membre');$('memberSince').textContent='Membre depuis le '+new Date(data.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});$('profileBio').textContent=data.bio||'';showAvatar(data.avatar_path);paintProfileEmoji(data.profile_emoji);await loadPosts();
 }
 async function loadPosts(){
  const {data,error}=await db.from('posts').select('id,body,created_at,is_pinned,categories(label)').eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(50);
@@ -913,14 +921,41 @@ $('pickEmoji').onclick=()=>{$('emojiPicker').hidden=!$('emojiPicker').hidden};
 document.querySelectorAll('[data-profile-emoji]').forEach(b=>b.addEventListener('click',async()=>{const emoji=b.dataset.profileEmoji;const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !')}));
 $('clearProfileEmoji').onclick=async()=>{const {error}=await db.from('profiles').update({profile_emoji:null}).eq('id',user.id);if(error){toast('Impossible de retirer cet emoji.');return}profile.profile_emoji=null;paintProfileEmoji(null);closeEmojiPicker();toast('Emoji retiré.')};
 document.addEventListener('click',e=>{if(!$('emojiPicker').hidden&&!e.target.closest('.avatar-wrap'))closeEmojiPicker()});
+function setUsernameStatus(message,state){
+ const el=$('usernameStatus');if(!el)return;
+ el.textContent=message;el.className='username-status'+(state?' '+state:'');
+}
+async function checkUsernameAvailability(){
+ const value=$('username').value.trim();
+ const version=++usernameCheckVersion;
+ clearTimeout(usernameCheckTimer);
+ if(!/^[A-Za-z0-9_]{3,20}$/.test(value)){
+  usernameAvailable=false;setUsernameStatus('3 à 20 caractères : lettres, chiffres et _ uniquement.','invalid');$('saveBtn').disabled=true;return;
+ }
+ if(value.toLowerCase()===originalUsername.toLowerCase()){
+  usernameAvailable=true;setUsernameStatus('Tu conserves ton pseudo actuel.','available');$('saveBtn').disabled=false;return;
+ }
+ usernameAvailable=false;setUsernameStatus('Vérification de la disponibilité…','checking');$('saveBtn').disabled=true;
+ usernameCheckTimer=setTimeout(async()=>{
+  const {data,error}=await db.from('profiles').select('id').ilike('username',value).neq('id',user.id).limit(1);
+  if(version!==usernameCheckVersion)return;
+  if(error){usernameAvailable=false;setUsernameStatus('Vérification impossible. Réessaie dans un instant.','invalid');$('saveBtn').disabled=true;console.error(error);return}
+  usernameAvailable=!(data&&data.length);
+  setUsernameStatus(usernameAvailable?'Ce pseudo est disponible !':'Ce pseudo est déjà utilisé.',usernameAvailable?'available':'invalid');
+  $('saveBtn').disabled=!usernameAvailable;
+ },350);
+}
+$('username').addEventListener('input',checkUsernameAvailability);
 $('editProfileBtn').onclick=()=>{const panel=$('editProfilePanel'),opening=panel.hidden;panel.hidden=!opening;$('editProfileBtn').setAttribute('aria-expanded',String(opening));$('editProfileBtn').textContent=opening?'Fermer les modifications':'Modifier le profil';if(opening)panel.scrollIntoView({behavior:'smooth',block:'nearest'})};
 $('profileForm').addEventListener('submit',async e=>{
  e.preventDefault();const username=$('username').value.trim(),bio=$('bio').value.trim();
  if(!/^[A-Za-z0-9_]{3,20}$/.test(username))return toast('Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.');
+ if(username.toLowerCase()!==originalUsername.toLowerCase()&&!usernameAvailable){await checkUsernameAvailability();return toast('Vérifie la disponibilité du pseudo avant de continuer.')}
  $('saveBtn').disabled=true;
  const {error}=await db.from('profiles').update({username,bio}).eq('id',user.id);
  $('saveBtn').disabled=false;
- if(error){toast(error.code==='23505'?'Ce pseudonyme est déjà utilisé.':"Enregistrement impossible : "+error.message);return}
+ if(error){if(error.code==='23505'){usernameAvailable=false;setUsernameStatus('Ce pseudo vient d’être pris. Choisis-en un autre.','invalid');$('saveBtn').disabled=true;toast('Ce pseudo est déjà utilisé.')}else toast("Enregistrement impossible : "+error.message);return}
+ originalUsername=username;usernameAvailable=true;setUsernameStatus('Pseudo enregistré.','available');
  profile={...profile,username,bio};$('displayName').textContent='@'+username;$('profileBio').textContent=bio;toast('Profil mis à jour ✨');$('editProfilePanel').hidden=true;$('editProfileBtn').setAttribute('aria-expanded','false');$('editProfileBtn').textContent='Modifier le profil';
 });
 $('avatar').onclick=()=>$('avatarFile').click();$('avatar').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('avatarFile').click()}};
