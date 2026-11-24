@@ -978,34 +978,49 @@ $('profileForm').addEventListener('submit',async e=>{
 $('avatar').onclick=()=>$('avatarFile').click();$('avatar').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('avatarFile').click()}};
 
 $('avatarFile').addEventListener('change',async()=>{
- const file=$('avatarFile').files?.[0];if(!file)return;
+ const input=$('avatarFile');
+ const file=input.files?.[0];
+ input.value=''; // Autorise de sélectionner à nouveau exactement le même fichier.
+ if(!file)return;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Format accepté : JPG, PNG ou WebP.');
  if(file.size>2*1024*1024)return toast('La photo doit faire 2 Mo maximum.');
  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const oldPath=profile?.avatar_path||null;
- // Un chemin unique évite que le navigateur/CDN affiche encore l'ancienne image en cache.
- const path=user.id+'/avatar-'+Date.now()+'.'+ext;
+ const path=user.id+'/avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
  const bucket=db.storage.from('confess-avatars');
- const {data,error}=await bucket.upload(path,file,{upsert:false,contentType:file.type,cacheControl:'0'});
- if(error){toast("Envoi de la photo impossible : "+error.message);return}
- const {error:saveError}=await db.from('profiles').update({avatar_path:data.path}).eq('id',user.id);
- if(saveError){
-  const {error:cleanupError}=await bucket.remove([data.path]);
-  if(cleanupError)console.warn('Nettoyage de la nouvelle photo impossible:',cleanupError);
-  toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return;
- }
- profile.avatar_path=data.path;
- showAvatar(data.path);
- if(oldPath&&oldPath!==data.path){
-  const {error:removeError}=await bucket.remove([oldPath]);
-  if(removeError){
-   console.error('Suppression de l’ancienne photo impossible:',removeError);
-   toast('Nouvelle photo enregistrée, mais ancienne photo non supprimée.');
+ const trigger=$('avatar');
+ trigger.setAttribute('aria-busy','true');
+ trigger.style.opacity='.55';
+ try{
+  const {data,error}=await bucket.upload(path,file,{upsert:false,contentType:file.type,cacheControl:'0'});
+  if(error){toast("Envoi de la photo impossible : "+error.message);return}
+  // Confirme que la ligne du profil a bien été mise à jour avant d'annoncer le succès.
+  const {data:saved,error:saveError}=await db.from('profiles').update({avatar_path:data.path}).eq('id',user.id).select('avatar_path').single();
+  if(saveError||!saved?.avatar_path){
+   const {error:cleanupError}=await bucket.remove([data.path]);
+   if(cleanupError)console.warn('Nettoyage de la nouvelle photo impossible:',cleanupError);
+   toast("La photo a été envoyée, mais son enregistrement dans le profil a échoué.");
+   console.error(saveError||'Aucune ligne de profil mise à jour');
    return;
   }
+  profile.avatar_path=saved.avatar_path;
+  showAvatar(saved.avatar_path);
+  if(oldPath&&oldPath!==saved.avatar_path){
+   const {error:removeError}=await bucket.remove([oldPath]);
+   if(removeError){
+    console.error('Suppression de l’ancienne photo impossible:',removeError);
+    toast('Nouvelle photo enregistrée, mais ancienne photo non supprimée.');
+    return;
+   }
+  }
+  toast('Photo de profil mise à jour !');
+ }catch(error){
+  console.error('Erreur changement photo:',error);
+  toast('Une erreur est survenue pendant le changement de photo.');
+ }finally{
+  trigger.removeAttribute('aria-busy');
+  trigger.style.opacity='';
  }
- toast('Photo de profil mise à jour ! Ancienne photo supprimée.');
-
 });
 $('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')location.href='auth.html'});
