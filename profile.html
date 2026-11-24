@@ -977,46 +977,88 @@ $('profileForm').addEventListener('submit',async e=>{
 });
 $('avatar').onclick=()=>$('avatarFile').click();$('avatar').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('avatarFile').click()}};
 
+// Compresse et convertit les photos directement dans le navigateur avant l'envoi.
+async function prepareAvatarImage(file){
+ let source=null,objectUrl=null;
+ try{
+  if('createImageBitmap' in window){
+   try{source=await createImageBitmap(file)}catch(bitmapError){console.warn('Décodage createImageBitmap indisponible, essai avec Image:',bitmapError)}
+  }
+  if(!source){
+   objectUrl=URL.createObjectURL(file);
+   source=await new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error("Ce format d’image n’est pas lisible par Safari. Essaie de l’enregistrer en JPEG."));
+    img.src=objectUrl;
+   });
+  }
+  const maxBytes=1800*1024;
+  let width=source.width,height=source.height;
+  if(!width||!height)throw new Error("Impossible de lire les dimensions de cette photo.");
+  const maxSide=2400;
+  if(Math.max(width,height)>maxSide){
+   const ratio=maxSide/Math.max(width,height);
+   width=Math.round(width*ratio);height=Math.round(height*ratio);
+  }
+  for(let pass=0;pass<8;pass++){
+   const canvas=document.createElement('canvas');
+   canvas.width=width;canvas.height=height;
+   const ctx=canvas.getContext('2d',{alpha:false});
+   if(!ctx)throw new Error("La compression d’image n’est pas disponible sur cet appareil.");
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
+   ctx.drawImage(source,0,0,width,height);
+   for(const quality of [.88,.82,.76,.70,.64,.58]){
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+    if(blob&&blob.size<=maxBytes){
+     canvas.width=0;canvas.height=0;
+     return new File([blob],'stash-avatar.jpg',{type:'image/jpeg',lastModified:Date.now()});
+    }
+   }
+   canvas.width=0;canvas.height=0;
+   width=Math.round(width*.78);height=Math.round(height*.78);
+   if(width<320||height<320)break;
+  }
+  throw new Error("Cette photo est trop volumineuse pour être compressée correctement.");
+ }finally{
+  if(source&&typeof source.close==='function')source.close();
+  if(objectUrl)URL.revokeObjectURL(objectUrl);
+ }
+}
+$('avatarFile').accept='image/*';
 $('avatarFile').addEventListener('change',async()=>{
  const input=$('avatarFile');
  const file=input.files?.[0];
- input.value=''; // Autorise de sélectionner à nouveau exactement le même fichier.
+ input.value='';
  if(!file)return;
- if(!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Format accepté : JPG, PNG ou WebP.');
- if(file.size>2*1024*1024)return toast('La photo doit faire 2 Mo maximum.');
- const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
  const oldPath=profile?.avatar_path||null;
- const path=user.id+'/avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
  const bucket=db.storage.from('confess-avatars');
  const trigger=$('avatar');
  trigger.setAttribute('aria-busy','true');
  trigger.style.opacity='.55';
  try{
-  const {data,error}=await bucket.upload(path,file,{upsert:false,contentType:file.type,cacheControl:'0'});
-  if(error){toast("Envoi de la photo impossible : "+error.message);return}
-  // Confirme que la ligne du profil a bien été mise à jour avant d'annoncer le succès.
+  toast('Préparation de ta photo…');
+  const compressedFile=await prepareAvatarImage(file);
+  if(compressedFile.size>2*1024*1024)throw new Error("La photo compressée dépasse encore la limite autorisée.");
+  const path=user.id+'/avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
+  const {data,error}=await bucket.upload(path,compressedFile,{upsert:false,contentType:'image/jpeg',cacheControl:'0'});
+  if(error)throw new Error("Envoi de la photo impossible : "+error.message);
   const {data:saved,error:saveError}=await db.from('profiles').update({avatar_path:data.path}).eq('id',user.id).select('avatar_path').single();
   if(saveError||!saved?.avatar_path){
    const {error:cleanupError}=await bucket.remove([data.path]);
    if(cleanupError)console.warn('Nettoyage de la nouvelle photo impossible:',cleanupError);
-   toast("La photo a été envoyée, mais son enregistrement dans le profil a échoué.");
-   console.error(saveError||'Aucune ligne de profil mise à jour');
-   return;
+   throw new Error("La photo a été envoyée, mais son enregistrement dans le profil a échoué.");
   }
   profile.avatar_path=saved.avatar_path;
   showAvatar(saved.avatar_path);
   if(oldPath&&oldPath!==saved.avatar_path){
    const {error:removeError}=await bucket.remove([oldPath]);
-   if(removeError){
-    console.error('Suppression de l’ancienne photo impossible:',removeError);
-    toast('Nouvelle photo enregistrée, mais ancienne photo non supprimée.');
-    return;
-   }
+   if(removeError)console.warn('Ancienne photo non supprimée:',removeError);
   }
   toast('Photo de profil mise à jour !');
  }catch(error){
   console.error('Erreur changement photo:',error);
-  toast('Une erreur est survenue pendant le changement de photo.');
+  toast(error.message||'Une erreur est survenue pendant le changement de photo.');
  }finally{
   trigger.removeAttribute('aria-busy');
   trigger.style.opacity='';
