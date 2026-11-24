@@ -810,9 +810,20 @@ html,body{background:#000!important;background-image:none!important}
 .username-status.checking{color:#b9b9c2}
 #saveBtn:disabled{opacity:.35;cursor:not-allowed}
 </style>
+
+<style id="stash-profile-header-polish">
+.profile-top{min-height:66px!important;gap:12px!important}
+.profile-settings-btn{display:inline-flex;align-items:center;gap:9px;padding:10px 14px;border:1px solid rgba(255,255,255,.17);border-radius:15px;background:linear-gradient(145deg,#202023,#101012);color:#f7f7f8;font:600 12px/1 'Poppins',sans-serif;letter-spacing:.1px;box-shadow:0 5px 18px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.profile-settings-btn:active{transform:scale(.96)}
+.profile-settings-btn:hover{border-color:rgba(255,255,255,.34);background:linear-gradient(145deg,#29292d,#151517)}
+.settings-symbol{width:25px;height:25px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.09);font-size:16px;color:#fff}
+.settings-arrow{font-size:12px;color:#a6a6ad;margin-left:2px}
+@media(max-width:420px){.profile-settings-btn{padding:9px 11px;gap:7px}.profile-settings-btn .settings-arrow{display:none}}
+</style>
+
 </head>
 <body>
-<header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
+<header class="top profile-top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="profile-settings-btn" type="button" onclick="location.href='settings.html'"><span class="settings-symbol" aria-hidden="true">⚙</span><span>Paramètres</span><span class="settings-arrow" aria-hidden="true">↗</span></button></header>
 <main>
 
 <section class="card profile-card">
@@ -1022,7 +1033,7 @@ load();
   countUnread();
  }
  async function init(){const {data:{session}}=await client.auth.getSession();await connect(session?.user?.id||null)}
- document.getElementById('confessBell').addEventListener('click',()=>location.href='notifications.html');
+ const bell=document.getElementById('confessBell');if(bell)bell.addEventListener('click',()=>location.href='notifications.html');
  client.auth.onAuthStateChange((event,session)=>{
   if(event==='SIGNED_OUT'){connect(null);return}
   if(session?.user?.id)setTimeout(()=>connect(session.user.id),0);
