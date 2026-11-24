@@ -772,23 +772,73 @@ textarea.field{min-height:88px!important;resize:vertical!important}
  .stat span{font-size:10px!important}
 }
 </style>
-</head>
+<style id="stash-profile-final-adjustments">
+html,body{background:#000!important;background-image:none!important}
+.profile-card{padding:0!important;margin:0 0 20px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.profile-head{display:flex!important;align-items:flex-start!important;gap:17px!important;margin:0 0 18px!important;padding:0!important}
+.avatar-wrap{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:5px!important;flex:0 0 88px!important;margin:0!important}
+.avatar{width:82px!important;height:82px!important;flex:0 0 82px!important;border:1px solid #333!important;background:#171717!important;cursor:pointer!important}
+.avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+.emoji-add{width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;border-radius:50%!important;border:1px solid #414141!important;background:#111!important;color:#fff!important;font-size:18px!important;line-height:1!important;display:grid!important;place-items:center!important}
+.emoji-add.has-emoji{font-size:19px!important;border-color:transparent!important;background:transparent!important}
+.emoji-picker{position:absolute!important;top:118px!important;left:50%!important;transform:translateX(-50%)!important;z-index:40!important;width:220px!important;padding:12px!important;border:1px solid #333!important;border-radius:14px!important;background:#111!important;box-shadow:0 14px 40px #000!important}
+.emoji-picker[hidden],.edit-profile-panel[hidden]{display:none!important}
+.emoji-picker-title{font-size:11px!important;color:#aaa!important;margin:0 0 9px!important;text-align:center!important}
+.emoji-grid{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:5px!important}
+.emoji-grid button{border:0!important;background:#1c1c1c!important;border-radius:8px!important;padding:7px 0!important;font-size:19px!important}
+.emoji-clear{width:100%!important;margin-top:9px!important;border:1px solid #333!important;border-radius:8px!important;background:transparent!important;color:#bbb!important;padding:7px!important;font-size:10px!important}
+.identity{min-width:0!important;padding:2px 0 0!important;margin:0!important}
+.identity h2{font-size:21px!important;line-height:1.25!important;margin:0 0 5px!important;font-weight:750!important}
+.identity #memberSince{font-size:11px!important;color:#888!important;margin:0 0 8px!important}
+.profile-bio{white-space:pre-wrap!important;overflow-wrap:anywhere!important;font-size:13px!important;line-height:1.5!important;color:#e2e2e2!important;margin:0!important}
+.profile-actions{display:block!important;margin:13px 0 12px!important}
+.edit-profile-button{width:100%!important;min-height:39px!important;border:1px solid #373737!important;border-radius:9px!important;background:#101010!important;color:#f5f5f5!important;font-size:12px!important;font-weight:650!important}
+.edit-profile-panel{padding:14px!important;border:1px solid #292929!important;border-radius:12px!important;background:#090909!important;margin:0 0 15px!important}
+#profileForm{display:grid!important;gap:8px!important;padding:0!important;border:0!important}
+.profile-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;margin:13px 0 0!important;padding:12px 0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.profile-stats .stat,.profile-stats .stat-action{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;min-width:0!important;padding:5px 3px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#fff!important;appearance:none!important}
+.profile-stats .stat strong{font-size:17px!important;line-height:1.2!important;font-weight:750!important}
+.profile-stats .stat span{font-size:10px!important;color:#929292!important;white-space:nowrap!important}
+.profile-posts-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;margin:19px 2px 8px!important;padding:0 0 12px!important;border-bottom:1px solid #242424!important}
+.profile-posts-heading h2{font-size:15px!important;font-weight:700!important;margin:0!important}
+.profile-posts-heading .count{font-size:10px!important;color:#888!important}
+@media(max-width:520px){.profile-head{gap:14px!important}.avatar-wrap{flex-basis:78px!important}.avatar{width:78px!important;height:78px!important;flex-basis:78px!important}.identity h2{font-size:19px!important}}
+</style></head>
 <body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="back" onclick="location.href='settings.html'">⚙️ Paramètres</button><button class="back" onclick="location.href='index.html'">← Retour au fil</button></div><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main>
 
-<section class="card">
- <div class="cover-wrap" id="cover"><div class="cover-placeholder">TON UNIVERS STASH ✨</div><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button></div><input id="coverFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="profile-head"><div class="avatar-wrap"><div class="avatar" id="avatar">?</div><button class="change" id="pickAvatar" aria-label="Changer la photo">＋</button><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></div><div class="identity"><h2 id="displayName">Mon profil</h2><p id="memberSince">Membre STASH</p></div></div>
- <div class="profile-actions"><button class="secondary" id="publicProfileBtn" type="button">Voir le profil public</button><details class="edit-profile-details" id="editProfileDetails"><summary>Modifier le profil</summary><form id="profileForm">
-  <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
-  <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
-  <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
-  <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
- </form></details>
- <div class="stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="myFollowersStat">—</strong><span>Abonnés · Voir</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="myFollowingStat">—</strong><span>Abonnements · Voir</span></button></div>
+<section class="card profile-card">
+ <div class="profile-head">
+  <div class="avatar-wrap">
+   <div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Changer la photo de profil">?</div>
+   <input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+   <button class="emoji-add" id="pickEmoji" type="button" aria-label="Ajouter un emoji au profil">＋</button>
+   <div class="emoji-picker" id="emojiPicker" hidden>
+    <div class="emoji-picker-title">Choisir un emoji</div>
+    <div class="emoji-grid"><button type="button" data-profile-emoji="✨" aria-label="✨">✨</button><button type="button" data-profile-emoji="❤️" aria-label="❤️">❤️</button><button type="button" data-profile-emoji="🔥" aria-label="🔥">🔥</button><button type="button" data-profile-emoji="🌙" aria-label="🌙">🌙</button><button type="button" data-profile-emoji="☀️" aria-label="☀️">☀️</button><button type="button" data-profile-emoji="🌸" aria-label="🌸">🌸</button><button type="button" data-profile-emoji="🦋" aria-label="🦋">🦋</button><button type="button" data-profile-emoji="🌈" aria-label="🌈">🌈</button><button type="button" data-profile-emoji="⭐" aria-label="⭐">⭐</button><button type="button" data-profile-emoji="💫" aria-label="💫">💫</button><button type="button" data-profile-emoji="🍀" aria-label="🍀">🍀</button><button type="button" data-profile-emoji="🌻" aria-label="🌻">🌻</button><button type="button" data-profile-emoji="🐻" aria-label="🐻">🐻</button><button type="button" data-profile-emoji="🐼" aria-label="🐼">🐼</button><button type="button" data-profile-emoji="🐱" aria-label="🐱">🐱</button><button type="button" data-profile-emoji="🐶" aria-label="🐶">🐶</button><button type="button" data-profile-emoji="🎧" aria-label="🎧">🎧</button><button type="button" data-profile-emoji="🎮" aria-label="🎮">🎮</button><button type="button" data-profile-emoji="📸" aria-label="📸">📸</button><button type="button" data-profile-emoji="☕" aria-label="☕">☕</button><button type="button" data-profile-emoji="🥂" aria-label="🥂">🥂</button><button type="button" data-profile-emoji="🖤" aria-label="🖤">🖤</button><button type="button" data-profile-emoji="💜" aria-label="💜">💜</button><button type="button" data-profile-emoji="😎" aria-label="😎">😎</button></div>
+    <button type="button" class="emoji-clear" id="clearProfileEmoji">Retirer l’emoji</button>
+   </div>
+  </div>
+  <div class="identity">
+   <h2 id="displayName">Mon profil</h2>
+   <p id="memberSince">Membre STASH</p>
+   <p class="profile-bio" id="profileBio"></p>
+  </div>
+ </div>
+ <div class="profile-actions"><button class="secondary edit-profile-button" id="editProfileBtn" type="button" aria-expanded="false">Modifier le profil</button></div>
+ <div class="edit-profile-panel" id="editProfilePanel" hidden>
+  <form id="profileForm">
+   <label class="field-label" for="username">Pseudonyme</label><input class="field" id="username" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" required>
+   <p class="hint">3 à 20 caractères : lettres, chiffres et _ uniquement. Il doit être unique.</p>
+   <label class="field-label" for="bio">Ma présentation</label><textarea class="field" id="bio" maxlength="180" placeholder="Quelques mots pour te présenter…"></textarea><p class="hint">180 caractères maximum.</p>
+   <div class="actions"><button class="primary" id="saveBtn" type="submit">Enregistrer</button><button class="secondary" id="logoutBtn" type="button">Me déconnecter</button></div>
+  </form>
+ </div>
+ <div class="stats profile-stats"><div class="stat"><strong id="myPostsStat">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="myFollowersStat">—</strong><span>Abonnés</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="myFollowingStat">—</strong><span>Abonnements</span></button></div>
 </section>
 
-<div class="tabbar" role="tablist"><button class="tab-btn active" data-tab="posts" role="tab" aria-selected="true">Publications</button><button class="tab-btn" data-tab="about" role="tab" aria-selected="false">À propos</button></div><div id="postsTab"><div class="section-head"><h2>Mes publications</h2><span class="count" id="postCount">—</span></div><div id="myPosts"><div class="loading">Chargement de ton espace…</div></div></div><div id="aboutTab" hidden><div class="about-panel" id="aboutContent">Chargement de ta présentation…</div></div>
+<div class="profile-posts-heading"><h2>Publications</h2><span class="count" id="postCount">—</span></div><div id="myPosts"><div class="loading">Chargement de ton espace…</div></div>
 </main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>
 (() => {
@@ -798,13 +848,13 @@ const db=window.supabase.createClient(URL,KEY);const $=id=>document.getElementBy
 let user=null,profile=null;
 function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showCover(path){const el=$('cover');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.style.backgroundImage='url("'+data.publicUrl+'")';el.innerHTML='<img alt="Bannière de profil" src="'+esc(data.publicUrl)+'"><button class="cover-change" id="pickCover" type="button">📷 Modifier la bannière</button>';bindCoverButton()}else{el.style.backgroundImage='';el.innerHTML='<div class="cover-placeholder">TON UNIVERS STASH ✨</div><button class="cover-change" id="pickCover" type="button">📷 Ajouter une bannière</button>';bindCoverButton()}}function bindCoverButton(){$('pickCover').onclick=()=>$('coverFile').click()}function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.innerHTML='<img alt="Photo de profil" src="'+esc(data.publicUrl)+'">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
+function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);el.innerHTML='<img alt="Photo de profil" src="'+esc(data.publicUrl)+'">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
 async function load(){
  const {data:{session}}=await db.auth.getSession();user=session?.user;
  if(!user){location.href='auth.html';return}
- const {data,error}=await db.from('profiles').select('id,username,bio,avatar_path,cover_path,created_at').eq('id',user.id).maybeSingle();
+ const {data,error}=await db.from('profiles').select('id,username,bio,avatar_path,profile_emoji,created_at').eq('id',user.id).maybeSingle();
  if(error||!data){toast("Impossible de charger ton profil.");console.error(error);return}
- profile=data;$('username').value=data.username||'';$('bio').value=data.bio||'';$('displayName').textContent='@'+(data.username||'membre');$('memberSince').textContent='Membre depuis le '+new Date(data.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});showAvatar(data.avatar_path);showCover(data.cover_path);await loadPosts();
+ profile=data;$('username').value=data.username||'';$('bio').value=data.bio||'';$('displayName').textContent='@'+(data.username||'membre');$('memberSince').textContent='Membre depuis le '+new Date(data.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});$('profileBio').textContent=data.bio||'';showAvatar(data.avatar_path);paintProfileEmoji(data.profile_emoji);await loadPosts();
 }
 async function loadPosts(){
  const {data,error}=await db.from('posts').select('id,body,created_at,is_pinned,categories(label)').eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(50);
@@ -856,7 +906,14 @@ document.querySelectorAll('[data-follow-close]').forEach(b=>b.addEventListener('
 document.querySelectorAll('[data-follow-type]').forEach(b=>b.addEventListener('click',()=>loadFollowList(b.dataset.followType)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('followModal').hidden)closeFollowModal()});
 
-document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));function switchTab(tab){const posts=tab==='posts';$('postsTab').hidden=!posts;$('aboutTab').hidden=posts;document.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}async function togglePin(btn){const pin=btn.dataset.pinned!=='true';if(pin){const {count,error}=await db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').eq('is_pinned',true);if(error)return toast('Impossible de vérifier les publications épinglées.');if((count||0)>=3)return toast('Tu peux épingler 3 publications maximum.')}btn.disabled=true;const {error}=await db.from('posts').update({is_pinned:pin}).eq('id',btn.dataset.pin).eq('author_profile_id',user.id);btn.disabled=false;if(error){toast('Impossible de modifier cette épingle.');console.error(error);return}toast(pin?'Publication épinglée en haut du profil !':'Publication désépinglée.');await loadPosts()}
+async function togglePin(btn){const pin=btn.dataset.pinned!=='true';if(pin){const {count,error}=await db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').eq('is_pinned',true);if(error)return toast('Impossible de vérifier les publications épinglées.');if((count||0)>=3)return toast('Tu peux épingler 3 publications maximum.')}btn.disabled=true;const {error}=await db.from('posts').update({is_pinned:pin}).eq('id',btn.dataset.pin).eq('author_profile_id',user.id);btn.disabled=false;if(error){toast('Impossible de modifier cette épingle.');console.error(error);return}toast(pin?'Publication épinglée en haut du profil !':'Publication désépinglée.');await loadPosts()}
+function paintProfileEmoji(emoji){const b=$('pickEmoji');b.textContent=emoji||'＋';b.classList.toggle('has-emoji',!!emoji);b.setAttribute('aria-label',emoji?'Modifier ou retirer l’emoji du profil':'Ajouter un emoji au profil')}
+function closeEmojiPicker(){$('emojiPicker').hidden=true}
+$('pickEmoji').onclick=()=>{$('emojiPicker').hidden=!$('emojiPicker').hidden};
+document.querySelectorAll('[data-profile-emoji]').forEach(b=>b.addEventListener('click',async()=>{const emoji=b.dataset.profileEmoji;const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !')}));
+$('clearProfileEmoji').onclick=async()=>{const {error}=await db.from('profiles').update({profile_emoji:null}).eq('id',user.id);if(error){toast('Impossible de retirer cet emoji.');return}profile.profile_emoji=null;paintProfileEmoji(null);closeEmojiPicker();toast('Emoji retiré.')};
+document.addEventListener('click',e=>{if(!$('emojiPicker').hidden&&!e.target.closest('.avatar-wrap'))closeEmojiPicker()});
+$('editProfileBtn').onclick=()=>{const panel=$('editProfilePanel'),opening=panel.hidden;panel.hidden=!opening;$('editProfileBtn').setAttribute('aria-expanded',String(opening));$('editProfileBtn').textContent=opening?'Fermer les modifications':'Modifier le profil';if(opening)panel.scrollIntoView({behavior:'smooth',block:'nearest'})};
 $('profileForm').addEventListener('submit',async e=>{
  e.preventDefault();const username=$('username').value.trim(),bio=$('bio').value.trim();
  if(!/^[A-Za-z0-9_]{3,20}$/.test(username))return toast('Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.');
@@ -864,9 +921,10 @@ $('profileForm').addEventListener('submit',async e=>{
  const {error}=await db.from('profiles').update({username,bio}).eq('id',user.id);
  $('saveBtn').disabled=false;
  if(error){toast(error.code==='23505'?'Ce pseudonyme est déjà utilisé.':"Enregistrement impossible : "+error.message);return}
- profile={...profile,username,bio};$('displayName').textContent='@'+username;$('aboutContent').textContent=(bio||'Tu n’as pas encore ajouté de présentation.')+'\n\nMembre depuis le '+new Date(profile.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});toast('Profil mis à jour ✨');
+ profile={...profile,username,bio};$('displayName').textContent='@'+username;$('profileBio').textContent=bio;toast('Profil mis à jour ✨');$('editProfilePanel').hidden=true;$('editProfileBtn').setAttribute('aria-expanded','false');$('editProfileBtn').textContent='Modifier le profil';
 });
-$('pickAvatar').onclick=()=>$('avatarFile').click();bindCoverButton();$('coverFile').addEventListener('change',async()=>{const file=$('coverFile').files?.[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Format accepté : JPG, PNG ou WebP.');if(file.size>2*1024*1024)return toast('La bannière doit faire 2 Mo maximum.');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=user.id+'/cover.'+ext;const {data,error}=await db.storage.from('confess-avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});if(error)return toast('Envoi impossible : '+error.message);const {error:saveError}=await db.from('profiles').update({cover_path:data.path}).eq('id',user.id);if(saveError)return toast('Image envoyée mais profil non actualisé.');profile.cover_path=data.path;showCover(data.path);toast('Bannière mise à jour !')});
+$('avatar').onclick=()=>$('avatarFile').click();$('avatar').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('avatarFile').click()}};
+
 $('avatarFile').addEventListener('change',async()=>{
  const file=$('avatarFile').files?.[0];if(!file)return;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Format accepté : JPG, PNG ou WebP.');
