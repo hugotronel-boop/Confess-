@@ -733,7 +733,7 @@ document.querySelectorAll('[data-follow-close]').forEach(b=>b.addEventListener('
 document.querySelectorAll('[data-follow-type]').forEach(b=>b.addEventListener('click',()=>loadFollowList(b.dataset.followType)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('followModal').hidden)closeFollowModal()});
 
-document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{const tab=btn.dataset.tab;$('postsTab').hidden=tab!=='posts';$('aboutTab').hidden=tab!=='about';document.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}));load()})();</script><script>
+load()})();</script><script>
 (()=> {
  if(!window.supabase?.createClient)return;
  const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
