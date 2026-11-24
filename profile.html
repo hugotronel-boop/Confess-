@@ -867,13 +867,13 @@ html,body{background:#000!important;background-image:none!important}
 </main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>
 (() => {
-const URL='https://hhntssweslmmqskhoaje.supabase.co';
+const SUPABASE_URL='https://hhntssweslmmqskhoaje.supabase.co';
 const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
-const db=window.supabase.createClient(URL,KEY);const $=id=>document.getElementById(id);
+const db=window.supabase.createClient(SUPABASE_URL,KEY);const $=id=>document.getElementById(id);
 let user=null,profile=null,originalUsername='',usernameCheckTimer=null,usernameCheckVersion=0,usernameAvailable=true;
 function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);const imageUrl=new URL(data.publicUrl);imageUrl.searchParams.set('v',String(Date.now()));el.innerHTML='<img alt="Photo de profil" src="'+esc(imageUrl.toString())+'" loading="eager">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
+function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);const publicUrl=data.publicUrl||'';const imageUrl=publicUrl+(publicUrl.includes('?')?'&':'?')+'v='+Date.now();el.innerHTML='<img alt="Photo de profil" src="'+esc(imageUrl)+'" loading="eager">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
 async function load(){
  const {data:{session}}=await db.auth.getSession();user=session?.user;
  if(!user){location.href='auth.html';return}
