@@ -859,7 +859,7 @@ async function load(){
 async function loadPosts(){
  const {data,error}=await db.from('posts').select('id,body,created_at,is_pinned,categories(label)').eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(50);
  if(error){$('myPosts').innerHTML='<div class="empty">Impossible de charger tes publications.</div>';console.error(error);return}
- const rows=data||[];const [{count:postTotal},{count:followers},{count:following}]=await Promise.all([db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published'),db.from('user_follows').select('follower_id',{count:'exact',head:true}).eq('followed_id',user.id),db.from('user_follows').select('followed_id',{count:'exact',head:true}).eq('follower_id',user.id)]);$('postCount').textContent=(postTotal??0)+' publication'+((postTotal??0)>1?'s':'');$('myPostsStat').textContent=postTotal??0;$('myFollowersStat').textContent=followers??0;$('myFollowingStat').textContent=following??0;$('aboutContent').textContent=(profile.bio||'Tu n’as pas encore ajouté de présentation.')+'\n\nMembre depuis le '+new Date(profile.created_at).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+ const rows=data||[];const [{count:postTotal},{count:followers},{count:following}]=await Promise.all([db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published'),db.from('user_follows').select('follower_id',{count:'exact',head:true}).eq('followed_id',user.id),db.from('user_follows').select('followed_id',{count:'exact',head:true}).eq('follower_id',user.id)]);$('postCount').textContent=(postTotal??0)+' publication'+((postTotal??0)>1?'s':'');$('myPostsStat').textContent=postTotal??0;$('myFollowersStat').textContent=followers??0;$('myFollowingStat').textContent=following??0;
  $('myPosts').innerHTML=rows.length?rows.map(p=>'<article class="post">'+(p.is_pinned?'<div class="pinned-tag">📌 PUBLICATION ÉPINGLÉE</div>':'')+'<div class="post-meta">'+new Date(p.created_at).toLocaleString('fr-FR',{dateStyle:'medium',timeStyle:'short'})+' · '+esc(p.categories?.label||'Discussion')+'</div><div class="post-body">'+esc(p.body)+'</div><div class="post-actions"><button class="pin-btn" data-pin="'+p.id+'" data-pinned="'+!!p.is_pinned+'">'+(p.is_pinned?'📌 Désépingler':'📌 Épingler')+'</button></div></article>').join('') :'<div class="empty">Tu n’as pas encore de publication publique.<br>Ton prochain post t’attend sur le fil 👀</div>';document.querySelectorAll('[data-pin]').forEach(btn=>btn.addEventListener('click',()=>togglePin(btn)));
 }
 
@@ -936,7 +936,6 @@ $('avatarFile').addEventListener('change',async()=>{
  if(saveError){toast("Photo envoyée mais profil non actualisé.");console.error(saveError);return}
  profile.avatar_path=data.path;showAvatar(data.path);toast('Photo de profil mise à jour !');
 });
-$('publicProfileBtn').onclick=()=>location.href='member.html?id='+encodeURIComponent(user.id);
 $('logoutBtn').onclick=async()=>{await db.auth.signOut();location.href='index.html'};
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')location.href='auth.html'});
 load();
