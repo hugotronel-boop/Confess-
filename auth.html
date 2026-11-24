@@ -131,6 +131,7 @@ input:focus{border-color:#d77da7;box-shadow:0 0 0 3px #ff78ae18}
  .foot{font-size:8px;line-height:1.5}
 }
 
+.reset-card{display:none}.reset-card.show{display:block}
 </style>
 <style id="stash-no-input-zoom">
 /* iOS Safari : 16px minimum pour empêcher le zoom automatique au focus */
@@ -195,6 +196,23 @@ body::before,body::after{content:none!important;display:none!important;backgroun
 <button class="link" id="forgotBtn" type="button">Mot de passe oublié ?</button>
 <div class="message" id="authMessage" role="status"></div>
 </section>
+
+<section class="auth-card reset-card" id="resetCard">
+ <h2 id="resetHeading">Mot de passe oublié ?</h2>
+ <p class="intro" id="resetIntro">Entre ton adresse e-mail. Nous t’enverrons un lien sécurisé.</p>
+ <form id="resetEmailForm">
+  <label for="resetEmail">Adresse e-mail</label><input id="resetEmail" type="email" autocomplete="email" placeholder="toi@exemple.fr" required>
+  <button class="primary" id="resetEmailBtn" type="submit">Envoyer le lien</button>
+ </form>
+ <form id="newPasswordForm" style="display:none">
+  <label for="newPassword">Nouveau mot de passe</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8 caractères minimum" required>
+  <label for="confirmPassword">Confirmer le mot de passe</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Répète ton mot de passe" required>
+  <button class="primary" id="savePasswordBtn" type="submit">Enregistrer mon nouveau mot de passe</button>
+ </form>
+ <div class="message" id="resetMessage" role="status"></div>
+ <button class="link" id="backToLogin" type="button">Retour à la connexion</button>
+</section>
+
 <section class="auth-card profile" id="profileCard">
 <h2>Ton espace commence ici.</h2>
 <p class="intro">Choisis le pseudonyme que les autres membres verront sur ton profil.</p>
@@ -217,7 +235,7 @@ body::before,body::after{content:none!important;display:none!important;backgroun
  const SUPABASE_URL='https://hhntssweslmmqskhoaje.supabase.co';
  const SUPABASE_PUBLISHABLE_KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
  const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
- const $=id=>document.getElementById(id);let mode='login';
+ const $=id=>document.getElementById(id);let mode='login';let recoveryMode=new URLSearchParams(location.search).has('recovery')||new URLSearchParams(location.hash.slice(1)).get('type')==='recovery';
  function message(id,text,kind=''){const el=$(id);el.textContent=text;el.className='message show '+kind}
  function setMode(next){
   mode=next;$('loginTab').classList.toggle('active',mode==='login');$('signupTab').classList.toggle('active',mode==='signup');
@@ -227,6 +245,7 @@ body::before,body::after{content:none!important;display:none!important;backgroun
   $('password').autocomplete=mode==='login'?'current-password':'new-password';$('authMessage').className='message';
  }
  async function showSession(){
+  if(recoveryMode){$('authCard').classList.add('hide');$('profileCard').classList.remove('show');$('resetCard').classList.add('show');$('resetEmailForm').style.display='none';$('newPasswordForm').style.display='block';$('resetHeading').textContent='Choisis un nouveau mot de passe.';$('resetIntro').textContent='Ton lien est validé. Tu peux maintenant sécuriser ton compte.';return}
   const {data:{session}}=await client.auth.getSession();
   if(!session){$('authCard').classList.remove('hide');$('profileCard').classList.remove('show');return}
   const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();if(aalError)throw aalError;
@@ -246,11 +265,29 @@ body::before,body::after{content:none!important;display:none!important;backgroun
    }else{const {error}=await client.auth.signInWithPassword({email,password});if(error)throw error;await showSession()}
   }catch(err){message('authMessage',err.message||"Une erreur est survenue.",'error')}finally{$('submitBtn').disabled=false}
  });
- $('forgotBtn').addEventListener('click',async()=>{
-  const email=$('email').value.trim();if(!email)return message('authMessage',"Entre d'abord ton adresse e-mail.",'error');
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-  message('authMessage',error?error.message:"Si un compte correspond à cette adresse, un e-mail de réinitialisation va être envoyé.",error?'error':'success');
+ $('forgotBtn').addEventListener('click',()=>{
+  $('authCard').classList.add('hide');$('profileCard').classList.remove('show');$('resetCard').classList.add('show');
+  $('resetEmail').value=$('email').value.trim();$('resetEmailForm').style.display='block';$('newPasswordForm').style.display='none';$('resetMessage').className='message';
+  $('resetHeading').textContent='Mot de passe oublié ?';$('resetIntro').textContent='Entre ton adresse e-mail. Nous t’enverrons un lien sécurisé pour choisir un nouveau mot de passe.';
  });
+ $('resetEmailForm').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=$('resetEmailBtn');btn.disabled=true;
+  try{const {error}=await client.auth.resetPasswordForEmail($('resetEmail').value.trim(),{redirectTo:'https://hugotronel-boop.github.io/Confess-/auth.html?recovery=1'});if(error)throw error;
+   message('resetMessage',"Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé. Pense à vérifier tes courriers indésirables.",'success');
+  }catch(err){message('resetMessage',err.message||"Impossible d’envoyer l’e-mail pour le moment.",'error')}
+  finally{btn.disabled=false}
+ });
+ $('newPasswordForm').addEventListener('submit',async e=>{
+  e.preventDefault();const password=$('newPassword').value,confirm=$('confirmPassword').value,btn=$('savePasswordBtn');
+  if(password.length<8)return message('resetMessage',"Ton mot de passe doit contenir au moins 8 caractères.",'error');
+  if(password!==confirm)return message('resetMessage',"Les deux mots de passe ne correspondent pas.",'error');
+  btn.disabled=true;
+  try{const {error}=await client.auth.updateUser({password});if(error)throw error;await client.auth.signOut();location.replace('auth.html?password_updated=1')}
+  catch(err){message('resetMessage',err.message||"Impossible de modifier le mot de passe.",'error')}
+  finally{btn.disabled=false}
+ });
+ $('backToLogin').addEventListener('click',()=>{recoveryMode=false;$('resetCard').classList.remove('show');$('authCard').classList.remove('hide');$('profileCard').classList.remove('show');setMode('login')});
+ if(new URLSearchParams(location.search).has('password_updated'))message('authMessage',"Ton mot de passe a bien été modifié. Tu peux te connecter.",'success');
  $('profileForm').addEventListener('submit',async e=>{
   e.preventDefault();const username=$('username').value.trim();
   if(!/^[A-Za-z0-9_]{3,20}$/.test(username))return message('profileMessage',"Pseudo invalide : 3 à 20 caractères, lettres, chiffres ou _.",'error');
@@ -262,6 +299,8 @@ body::before,body::after{content:none!important;display:none!important;backgroun
  });
  $('logoutBtn').addEventListener('click',async()=>{await client.auth.signOut();await showSession()});
  client.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY'){recoveryMode=true;$('authCard').classList.add('hide');$('profileCard').classList.remove('show');$('resetCard').classList.add('show');$('resetEmailForm').style.display='none';$('newPasswordForm').style.display='block';$('resetHeading').textContent='Choisis un nouveau mot de passe.';$('resetIntro').textContent='Ton lien est validé. Tu peux maintenant sécuriser ton compte.';return}
+  if(recoveryMode)return
   if(event==='SIGNED_OUT'){$('authCard').classList.remove('hide');$('profileCard').classList.remove('show');return}
   if(session){$('authCard').classList.add('hide');$('profileCard').classList.add('show')}
   setTimeout(()=>{showSession().catch(err=>message('profileMessage',err.message||"Impossible de vérifier ta session.",'error'))},0);
