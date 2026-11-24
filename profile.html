@@ -827,6 +827,36 @@ html,body{background:#000!important;background-image:none!important}
 .profile-settings-btn:hover,.profile-settings-btn:active{background:transparent!important;border:0!important;box-shadow:none!important;opacity:.78}
 .settings-logo{display:block;width:23px;height:23px;flex:0 0 23px;color:#fff}
 </style>
+<style id="stash-avatar-circle-fix">
+/* La photo reste strictement découpée dans le cercle de profil. */
+.avatar{
+ width:86px!important;
+ height:86px!important;
+ min-width:86px!important;
+ min-height:86px!important;
+ aspect-ratio:1/1!important;
+ border-radius:50%!important;
+ overflow:hidden!important;
+ clip-path:circle(50%)!important;
+ position:relative!important;
+ isolation:isolate!important;
+ padding:0!important;
+}
+.avatar>img{
+ display:block!important;
+ width:100%!important;
+ height:100%!important;
+ max-width:none!important;
+ max-height:none!important;
+ aspect-ratio:1/1!important;
+ object-fit:cover!important;
+ object-position:center!important;
+ border-radius:50%!important;
+}
+@media(max-width:520px){
+ .avatar{width:80px!important;height:80px!important;min-width:80px!important;min-height:80px!important}
+}
+</style>
 </head>
 <body>
 <header class="top profile-top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="profile-settings-btn" type="button" onclick="location.href='settings.html'" aria-label="Paramètres"><svg class="settings-logo" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z"/><path d="m19.4 13.5 1.1.9-1.5 2.6-1.4-.5a7.8 7.8 0 0 1-1.7 1l-.2 1.5h-3l-.3-1.5a7.8 7.8 0 0 1-1.7-1l-1.4.5-1.5-2.6 1.1-.9a7.4 7.4 0 0 1 0-2l-1.1-.9 1.5-2.6 1.4.5a7.8 7.8 0 0 1 1.7-1l.3-1.5h3l.2 1.5a7.8 7.8 0 0 1 1.7 1l1.4-.5 1.5 2.6-1.1.9a7.4 7.4 0 0 1 0 2Z" transform="translate(-1.4 -1.4) scale(1.12)"/></svg><span>Paramètres</span></button></header>
