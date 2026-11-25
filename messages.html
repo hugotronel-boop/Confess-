@@ -94,9 +94,12 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .reaction-pill.mine-reacted{border-color:#fff;background:#292929}
 .reaction-add{width:27px;height:27px;border:1px solid #333;border-radius:50%;background:#151515;color:#aaa;font-size:17px;line-height:1}
 .reaction-add:active,.reaction-choice:active{background:#383838;transform:scale(.94)}
-.reaction-picker{display:flex;flex-wrap:wrap;gap:5px;max-width:270px;margin-top:5px;padding:8px;border:1px solid #333;border-radius:16px;background:#171717;box-shadow:0 8px 25px #0009}
+.reaction-picker{display:block;width:min(270px,calc(100vw - 42px));margin-top:5px;padding:8px 9px;border:1px solid #333;border-radius:16px;background:#171717;box-shadow:0 8px 25px #0009;overflow:hidden}
 .reaction-picker[hidden]{display:none!important}
-.reaction-choice{width:37px;height:37px;border:0;border-radius:11px;background:transparent;color:#fff;font-size:21px}
+.reaction-wheel{display:flex;flex-wrap:nowrap;align-items:center;gap:7px;width:100%;overflow-x:auto;overflow-y:hidden;padding:9px 5px 12px;margin:0 -1px;scroll-snap-type:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;overflow-anchor:none;contain:paint;transform:translateZ(0);backface-visibility:hidden;touch-action:pan-x}
+.reaction-wheel::-webkit-scrollbar{display:none}
+.reaction-choice{flex:0 0 34px;width:34px;height:38px;display:grid;place-items:center;border:1px solid #303030;border-radius:50%;background:#1c1c1c;color:#fff;padding:0;font-size:19px;transform:scale(.88);opacity:.72;transition:transform .16s ease,opacity .16s ease,border-color .16s ease}
+.reaction-choice.is-center{transform:scale(1.16);opacity:1;border-color:#888;background:#292929}
 
 .composer{display:flex;align-items:flex-end;gap:9px;padding:13px;border-top:0;background:#080808}
 .composer textarea{flex:1;min-height:42px;max-height:120px;resize:vertical;padding:12px 13px;border-radius:13px;border:1px solid #2b2b2b;background:#141414;color:#fff;outline:none;font-size:13px}
@@ -306,6 +309,39 @@ body.chat-conversation-open .chat-scroll{
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
 let me=null,threads=[],threadSettings={},activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,draftGroupMode=false,recipientDirectory=[],threadPressTimer=null,suppressThreadClick=false;
 const REACTION_EMOJIS=['❤️','😂','😱','😢','😮','👍','🔥','👏','😍','🙏'];
+function updateReactionWheel(wheel){
+ const buttons=[...wheel.querySelectorAll('.reaction-choice')];
+ const center=wheel.getBoundingClientRect().left+wheel.clientWidth/2;
+ let nearest=null,distance=Infinity;
+ buttons.forEach(b=>{const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-center);if(d<distance){distance=d;nearest=b}});
+ buttons.forEach(b=>b.classList.toggle('is-center',b===nearest));
+}
+function normalizeReactionWheel(wheel){
+ const width=Number(wheel.dataset.setWidth||0);if(!width)return;
+ const left=wheel.scrollLeft;
+ if(left<width*1.5)wheel.scrollLeft=left+width;
+ else if(left>width*2.5)wheel.scrollLeft=left-width;
+ updateReactionWheel(wheel);
+}
+function initReactionWheel(picker){
+ const wheel=picker.querySelector('.reaction-wheel');
+ if(!wheel||wheel.dataset.wheelReady==='1')return;
+ const originals=[...wheel.querySelectorAll('.reaction-choice')],count=originals.length;
+ if(!count)return;
+ for(let copy=0;copy<4;copy++)originals.forEach(button=>wheel.appendChild(button.cloneNode(true)));
+ const first=wheel.children[0],next=wheel.children[count];
+ const width=next.getBoundingClientRect().left-first.getBoundingClientRect().left;
+ if(!(width>0))return;
+ wheel.dataset.setWidth=String(width);
+ wheel.scrollLeft=width*2;
+ wheel.dataset.wheelReady='1';
+ updateReactionWheel(wheel);
+ let endTimer=0;
+ if('onscrollend' in wheel)wheel.addEventListener('scrollend',()=>normalizeReactionWheel(wheel),{passive:true});
+ else wheel.addEventListener('scroll',()=>{clearTimeout(endTimer);endTimer=setTimeout(()=>normalizeReactionWheel(wheel),420)},{passive:true});
+ wheel.addEventListener('scroll',()=>requestAnimationFrame(()=>updateReactionWheel(wheel)),{passive:true});
+ wheel.addEventListener('wheel',event=>{if(Math.abs(event.deltaY)>Math.abs(event.deltaX)){wheel.scrollLeft+=event.deltaY;event.preventDefault()}},{passive:false});
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function formatMessageBody(value){
  const raw=String(value??'');
@@ -477,9 +513,9 @@ async function loadMessages(){
   const sender=activePeer&&activePeer.group&&!mine?'<div class="bubble-sender"><a class="message-sender-link" href="member.html?id='+encodeURIComponent(m.sender_id)+'">'+avatar({...senderProfiles[m.sender_id],id:m.sender_id})+'<strong>'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong></a></div>':'';
   const groups={};(reactionsByMessage[m.id]||[]).forEach(r=>{groups[r.emoji]??=[];groups[r.emoji].push(r.user_id)});
   const reactionPills=Object.entries(groups).map(([emoji,users])=>'<button class="reaction-pill '+(users.includes(me.id)?'mine-reacted':'')+'" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="'+emoji+' '+users.length+' réactions">'+emoji+' <span>'+users.length+'</span></button>').join('');
-  const picker=mine?'':REACTION_EMOJIS.map(emoji=>'<button class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
+  const picker=mine?'':REACTION_EMOJIS.map(emoji=>'<button type="button" class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
   const reactionAction=mine?'':'<button class="reaction-add" data-reaction-open="'+m.id+'" aria-label="Ajouter une réaction">☺︎</button>';
-  const reactionPicker=mine?'':'<div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden>'+picker+'</div>';
+  const reactionPicker=mine?'':'<div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden><div class="reaction-wheel">'+picker+'</div></div>';
   return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div>'+reactionAction+'</div>'+reactionPicker+receipt+'</div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
@@ -589,6 +625,8 @@ $('chatScroll').addEventListener('click',async event=>{
  if(open){
   const id=open.dataset.reactionOpen;
   $('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>{p.hidden=p.dataset.reactionPicker!==id||!p.hidden});
+  const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
+  if(picker&&!picker.hidden)requestAnimationFrame(()=>{initReactionWheel(picker);const wheel=picker.querySelector('.reaction-wheel');if(wheel)updateReactionWheel(wheel)});
   return;
  }
  const choice=event.target.closest('[data-reaction-message][data-reaction-emoji]');
