@@ -477,8 +477,10 @@ async function loadMessages(){
   const sender=activePeer&&activePeer.group&&!mine?'<div class="bubble-sender"><a class="message-sender-link" href="member.html?id='+encodeURIComponent(m.sender_id)+'">'+avatar({...senderProfiles[m.sender_id],id:m.sender_id})+'<strong>'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong></a></div>':'';
   const groups={};(reactionsByMessage[m.id]||[]).forEach(r=>{groups[r.emoji]??=[];groups[r.emoji].push(r.user_id)});
   const reactionPills=Object.entries(groups).map(([emoji,users])=>'<button class="reaction-pill '+(users.includes(me.id)?'mine-reacted':'')+'" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="'+emoji+' '+users.length+' réactions">'+emoji+' <span>'+users.length+'</span></button>').join('');
-  const picker=REACTION_EMOJIS.map(emoji=>'<button class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
-  return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div><button class="reaction-add" data-reaction-open="'+m.id+'" aria-label="Ajouter une réaction">☺︎</button></div><div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden>'+picker+'</div>'+receipt+'</div>';
+  const picker=mine?'':REACTION_EMOJIS.map(emoji=>'<button class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
+  const reactionAction=mine?'':'<button class="reaction-add" data-reaction-open="'+m.id+'" aria-label="Ajouter une réaction">☺︎</button>';
+  const reactionPicker=mine?'':'<div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden>'+picker+'</div>';
+  return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div>'+reactionAction+'</div>'+reactionPicker+receipt+'</div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
@@ -583,15 +585,6 @@ function subscribe(id){
 }
 
 $('chatScroll').addEventListener('click',async event=>{
- const messageBubble=event.target.closest('.bubble');
- if(messageBubble&&!event.target.closest('a')){
-  const line=messageBubble.closest('[data-message-line]');
-  const id=line?.dataset.messageLine;
-  if(id){
-   const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
-   if(picker){const shouldOpen=picker.hidden;$('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);picker.hidden=!shouldOpen;return}
-  }
- }
  const open=event.target.closest('[data-reaction-open]');
  if(open){
   const id=open.dataset.reactionOpen;
@@ -600,6 +593,7 @@ $('chatScroll').addEventListener('click',async event=>{
  }
  const choice=event.target.closest('[data-reaction-message][data-reaction-emoji]');
  if(choice){
+  if(choice.closest('[data-message-line]')?.classList.contains('mine'))return;
   const messageId=choice.dataset.reactionMessage,emoji=choice.dataset.reactionEmoji;
   $('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);
   const {data:existing,error:findError}=await db.from('message_reactions').select('emoji').eq('message_id',messageId).eq('user_id',me.id).maybeSingle();
