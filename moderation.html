@@ -650,6 +650,11 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 .confess-global-nav::before,.confess-global-nav::after{display:none!important;content:none!important}
 </style>
+<style id="stash-nav-message-badge-style">
+.confess-global-nav a[data-nav="messages"]{position:relative!important}
+.confess-global-nav a[data-nav="messages"] .stash-nav-message-count{position:absolute!important;top:0!important;left:calc(50% + 9px)!important;z-index:6!important;display:flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;font-family:Arial,Helvetica,sans-serif!important;font-size:10px!important;font-weight:900!important;line-height:16px!important;opacity:1!important;visibility:visible!important;white-space:nowrap!important}
+.confess-global-nav a[data-nav="messages"] .stash-nav-message-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+</style>
 </head><body>
 <header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='settings.html'">← Retour</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header>
 <main><section class="hero"><h1>Centre de modération 🛡️</h1><p>Examine les signalements, protège la communauté et garde une trace des décisions prises. Chaque action est vérifiée par la base de données.</p></section>
@@ -742,7 +747,7 @@ db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.ht
 </script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
 <a href="./index.html" data-nav="home"><span>Feed</span></a>
-<a href="./messages.html" data-nav="messages"><span>Message</span></a>
+<a href="./messages.html" data-nav="messages"><span>Message</span><span class="stash-nav-message-count" id="stashNavMessageCount" hidden>0</span></a>
 <a href="./publish.html" data-nav="publish"><span>+</span></a>
 <a href="./notifications.html" data-nav="notifications"><span>Actus</span><span class="stash-nav-notif-count" id="stashNavNotifCount" hidden>0</span></a>
 <a href="./profile.html" data-nav="profile"><span>Profil</span></a>
@@ -788,6 +793,39 @@ const file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
 const map={'index.html':'home','messages.html':'messages','publish.html':'publish','notifications.html':'notifications','explore.html':'home','profile.html':'profile','settings.html':'profile','member.html':'profile','admin.html':'profile','moderation.html':'profile','appeals.html':'profile','sanctions.html':'profile'};
 const current=map[file]||'home';
 nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===current;a.classList.toggle('stash-nav-current',active);a.classList.toggle('stash-bubble-active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+})();
+</script>
+<script id="stash-nav-message-counter">
+(()=>{const badge=document.getElementById('stashNavMessageCount');if(!badge||!window.supabase)return;
+const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
+let activeUser=null,channel=null,busy=false;
+async function refresh(){if(busy)return;busy=true;try{
+ const {data:{session}}=await client.auth.getSession();const uid=session?.user?.id||null;
+ if(!uid){badge.hidden=true;if(channel){client.removeChannel(channel);channel=null}activeUser=null;return}
+ if(activeUser!==uid){if(channel)client.removeChannel(channel);activeUser=uid;channel=client.channel('stash-nav-messages-'+uid)
+ .on('postgres_changes',{event:'*',schema:'public',table:'messages'},refresh)
+ .on('postgres_changes',{event:'*',schema:'public',table:'message_reads',filter:'user_id=eq.'+uid},refresh)
+ .on('postgres_changes',{event:'*',schema:'public',table:'conversation_user_settings',filter:'user_id=eq.'+uid},refresh)
+ .on('postgres_changes',{event:'*',schema:'public',table:'conversation_members',filter:'user_id=eq.'+uid},refresh).subscribe();}
+ const {data:members,error:mErr}=await client.from('conversation_members').select('conversation_id').eq('user_id',uid);
+ if(mErr)throw mErr;const ids=[...new Set((members||[]).map(x=>x.conversation_id))];if(!ids.length){badge.hidden=true;return}
+ const [{data:allMembers,error:aErr},{data:msgs,error:m2Err},{data:settings,error:sErr}]=await Promise.all([
+ client.from('conversation_members').select('conversation_id,user_id').in('conversation_id',ids),
+ client.from('messages').select('id,conversation_id,sender_id,read_at').in('conversation_id',ids).order('created_at',{ascending:false}).limit(300),
+ client.from('conversation_user_settings').select('conversation_id,manual_unread,is_hidden').eq('user_id',uid).in('conversation_id',ids)
+ ]);
+ if(aErr||m2Err||sErr)throw aErr||m2Err||sErr;
+ const groupIds=new Set();for(const id of ids){if((allMembers||[]).filter(x=>x.conversation_id===id&&x.user_id!==uid).length>1)groupIds.add(id)}
+ const incoming=(msgs||[]).filter(m=>m.sender_id!==uid);const incomingIds=incoming.filter(m=>groupIds.has(m.conversation_id)).map(m=>m.id);let readSet=new Set();
+ if(incomingIds.length){const {data:reads,error:rErr}=await client.from('message_reads').select('message_id').eq('user_id',uid).in('message_id',incomingIds);if(rErr)throw rErr;(reads||[]).forEach(r=>readSet.add(r.message_id))}
+ const settingMap={};(settings||[]).forEach(s=>settingMap[s.conversation_id]=s);
+ const hidden=new Set((settings||[]).filter(s=>s.is_hidden).map(s=>s.conversation_id));
+ const counts={};for(const m of incoming){if(hidden.has(m.conversation_id))continue;const unread=groupIds.has(m.conversation_id)?!readSet.has(m.id):!m.read_at;if(unread)counts[m.conversation_id]=(counts[m.conversation_id]||0)+1}
+ let total=Object.values(counts).reduce((a,b)=>a+b,0);
+ for(const id of ids){const setting=settingMap[id];if(setting?.manual_unread&&!hidden.has(id)&&!counts[id])total++}
+ badge.textContent=total>99?'99+':String(total);badge.hidden=total===0;
+ }catch(e){console.warn('STASH message badge:',e.message);badge.hidden=true}finally{busy=false}}
+ client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 })();
 </script>
 </body></html>
