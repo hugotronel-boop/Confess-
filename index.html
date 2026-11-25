@@ -653,7 +653,8 @@ html body header.top.stash-feed-top .feed-search-button{
   flex:0 0 auto;
   margin-top:8px!important;
   padding-top:10px!important;
-  padding-bottom:env(safe-area-inset-bottom);
+  /* Réserve la hauteur de la navigation flottante : saisie et bouton restent au-dessus. */
+  padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;
   background:var(--panel);
  }
  #commentsOverlay #commentBody{max-height:110px;resize:none}
