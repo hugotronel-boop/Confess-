@@ -861,9 +861,26 @@ init();
 <a href="./index.html" data-nav="home"><span>Feed</span></a>
 <a href="./messages.html" data-nav="messages"><span>Message</span></a>
 <a href="./publish.html" data-nav="publish"><span>+</span></a>
-<a href="./notifications.html" data-nav="notifications"><span>Actus</span></a>
+<a href="./notifications.html" data-nav="notifications"><span>Actus</span><span class="stash-nav-notif-count" id="stashNavNotifCount" hidden>0</span></a>
 <a href="./profile.html" data-nav="profile"><span>Profil</span></a>
-</nav>
+</nav><style id="stash-nav-notification-badge">
+.confess-global-nav a[data-nav="notifications"]{position:relative!important}
+.confess-global-nav .stash-nav-notif-count{position:absolute!important;top:0!important;left:calc(50% + 9px)!important;z-index:5!important;display:flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#fff!important;color:#080808!important;font:800 9px/1 Inter,system-ui,sans-serif!important;letter-spacing:-.2px;box-shadow:0 1px 5px #0008}
+.confess-global-nav .stash-nav-notif-count[hidden]{display:none!important}
+</style><script id="stash-nav-notification-counter">
+(()=>{const badge=document.getElementById('stashNavNotifCount');if(!badge||!window.supabase)return;
+const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
+let activeUser=null,channel=null;
+async function refresh(){const {data:{session}}=await client.auth.getSession();const id=session?.user?.id||null;
+if(!id){badge.hidden=true;if(channel){client.removeChannel(channel);channel=null}activeUser=null;return}
+if(activeUser!==id){if(channel)client.removeChannel(channel);activeUser=id;channel=client.channel('stash-nav-count-'+id).on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:'user_id=eq.'+id},()=>refresh()).subscribe();}
+const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
+if(error){console.warn('STASH notification badge:',error.message);badge.hidden=true;return}
+const n=count||0;badge.textContent=n>99?'99+':String(n);badge.hidden=n===0;
+}
+client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
+})();
+</script>
 
 
 <script id="stash-nav-current-page">
