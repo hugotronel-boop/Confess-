@@ -794,7 +794,7 @@ load()})();</script><script>
  z-index:20!important;text-shadow:none!important;white-space:nowrap!important;
 }
 .confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important}
-</style><script id="stash-nav-notification-counter">
+</style><style id="stash-nav-notification-hidden-fix">.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style><script id="stash-nav-notification-counter">
 (()=>{const badge=document.getElementById('stashNavNotifCount');if(!badge||!window.supabase)return;
 const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
 let activeUser=null,channel=null;
