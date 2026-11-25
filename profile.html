@@ -784,7 +784,7 @@ html,body{background:#000!important;background-image:none!important}
 .emoji-picker{position:fixed!important;top:0;left:0;transform:none!important;z-index:9999!important;width:min(220px,calc(100vw - 24px))!important;box-sizing:border-box!important;padding:12px!important;border:1px solid #333!important;border-radius:14px!important;background:#111!important;box-shadow:0 14px 40px #000!important}
 .emoji-picker[hidden],.edit-profile-panel[hidden]{display:none!important}
 .emoji-picker-title{font-size:11px!important;color:#aaa!important;margin:0 0 9px!important;text-align:center!important}
-.emoji-grid{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:9px 5px 12px!important;margin:0 -3px!important;scroll-snap-type:none!important;overscroll-behavior-x:contain!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%)!important}
+.emoji-grid{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:9px 5px 12px!important;margin:0 -3px!important;scroll-snap-type:none!important;overscroll-behavior-x:contain!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;overflow-anchor:none!important;contain:paint!important;transform:translateZ(0)!important;backface-visibility:hidden!important}
 .emoji-grid::-webkit-scrollbar{display:none!important}
 .emoji-grid button{flex:0 0 34px!important;width:34px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #303030!important;background:#1c1c1c!important;border-radius:50%!important;padding:0!important;font-size:19px!important;scroll-snap-align:none!important;transform:scale(.88)!important;opacity:.72!important;transition:transform .16s ease,opacity .16s ease,border-color .16s ease!important}
 .emoji-grid button.is-center{transform:scale(1.16)!important;opacity:1!important;border-color:#888!important;background:#292929!important}
@@ -964,7 +964,7 @@ window.addEventListener('resize',()=>{if(!$('emojiPicker').hidden)positionEmojiP
 const emojiWheel=$('emojiPicker').querySelector('.emoji-grid');
 const originalEmojiButtons=[...emojiWheel.querySelectorAll('button')];
 const emojiCount=originalEmojiButtons.length;
-let emojiSetWidth=0,emojiWheelReady=false,emojiWheelFrame=0;
+let emojiSetWidth=0,emojiWheelReady=false,emojiWheelFrame=0,emojiWheelEndTimer=0;
 for(let copy=0;copy<4;copy++){
  originalEmojiButtons.forEach(b=>emojiWheel.appendChild(b.cloneNode(true)));
 }
@@ -974,6 +974,16 @@ function updateEmojiWheel(){
  let nearest=null,distance=Infinity;
  buttons.forEach(b=>{const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-center);if(d<distance){distance=d;nearest=b}});
  buttons.forEach(b=>b.classList.toggle('is-center',b===nearest));
+}
+function normalizeEmojiWheel(){
+ if(!emojiWheelReady||!emojiSetWidth)return;
+ const left=emojiWheel.scrollLeft;
+ const oneSet=emojiSetWidth;
+ // Recentrage uniquement lorsque le doigt a quitté la roulette et que
+ // l'inertie est terminée : aucun scrollLeft modifié pendant le geste iOS.
+ if(left<oneSet*1.5)emojiWheel.scrollLeft=left+oneSet;
+ else if(left>oneSet*2.5)emojiWheel.scrollLeft=left-oneSet;
+ updateEmojiWheel();
 }
 function initEmojiWheel(){
  if(!emojiWheel.clientWidth)return;
@@ -989,14 +999,19 @@ function initEmojiWheel(){
  updateEmojiWheel();
 }
 function handleEmojiWheelScroll(){
- if(!emojiWheelReady||!emojiSetWidth)return;
- if(emojiWheel.scrollLeft<emojiSetWidth*1.5)emojiWheel.scrollLeft+=emojiSetWidth;
- else if(emojiWheel.scrollLeft>emojiSetWidth*2.5)emojiWheel.scrollLeft-=emojiSetWidth;
- if(!emojiWheelFrame){
-  emojiWheelFrame=requestAnimationFrame(()=>{emojiWheelFrame=0;updateEmojiWheel()});
- }
+ if(!emojiWheelReady)return;
+ if(emojiWheelFrame)return;
+ emojiWheelFrame=requestAnimationFrame(()=>{emojiWheelFrame=0;});
 }
 emojiWheel.addEventListener('scroll',handleEmojiWheelScroll,{passive:true});
+if('onscrollend' in emojiWheel){
+ emojiWheel.addEventListener('scrollend',normalizeEmojiWheel,{passive:true});
+}else{
+ emojiWheel.addEventListener('scroll',()=>{
+  clearTimeout(emojiWheelEndTimer);
+  emojiWheelEndTimer=setTimeout(normalizeEmojiWheel,420);
+ },{passive:true});
+}
 emojiWheel.addEventListener('wheel',e=>{
  if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){emojiWheel.scrollLeft+=e.deltaY;e.preventDefault()}
 },{passive:false});
