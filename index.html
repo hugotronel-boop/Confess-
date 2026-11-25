@@ -798,7 +798,28 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 #stash-launch-screen .stash-splash-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.8);opacity:0;pointer-events:none}
 @media(prefers-reduced-motion:reduce){#stash-launch-screen{transition:none}}
 </style>
-</head>
+<style id="stash-internal-share-style">
+#stashShareOverlay{position:fixed;inset:0;z-index:2147483600;display:none;align-items:flex-end;justify-content:center;padding:16px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+#stashShareOverlay.open{display:flex}
+#stashSharePanel{width:min(100%,480px);max-height:min(78dvh,680px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #303030;border-radius:22px;background:#111;color:#fff;box-shadow:0 20px 70px #000b}
+#stashSharePanel header{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid #292929}
+#stashSharePanel h3{margin:0;font-size:17px;font-weight:750}
+#stashShareClose{width:34px;height:34px;border:1px solid #333;border-radius:50%;background:#1b1b1b;color:#fff;font-size:19px}
+#stashShareSearch{margin:14px 16px 8px;padding:12px 14px;border:1px solid #333;border-radius:12px;background:#1a1a1a;color:#fff;font-size:14px;outline:none}
+#stashShareList{overflow:auto;min-height:90px;padding:0 10px 8px}
+.stash-share-person{display:flex;align-items:center;gap:11px;padding:10px 8px;border-radius:12px;cursor:pointer}
+.stash-share-person:active{background:#242424}
+.stash-share-person input{width:18px;height:18px;accent-color:#fff}
+.stash-share-person .avatar{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#262626;color:#fff;font-weight:700}
+.stash-share-person .avatar img{width:100%;height:100%;object-fit:cover}
+.stash-share-person strong{font-size:13px;font-weight:650}
+#stashShareEmpty{padding:22px 10px;color:#999;text-align:center;font-size:13px}
+#stashShareFooter{display:flex;align-items:center;gap:12px;padding:13px 16px calc(13px + env(safe-area-inset-bottom));border-top:1px solid #292929}
+#stashShareSelected{flex:1;color:#aaa;font-size:12px}
+#stashShareSend{border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#000;font-weight:800}
+#stashShareSend:disabled{opacity:.35}
+@media(min-width:600px){#stashShareOverlay{align-items:center}#stashSharePanel{max-height:80vh}}
+</style></head>
 <body>
 
 <div id="stash-launch-screen" role="status" aria-label="Ouverture de STASH" aria-live="polite">
@@ -942,7 +963,14 @@ client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener
 })();
 </script>
 <div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentSort" style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="action selected" data-comment-sort="recent" style="border:1px solid var(--line);border-radius:10px">🕒 Plus récents</button><button type="button" class="action" data-comment-sort="popular" style="border:1px solid var(--line);border-radius:10px">❤️ Plus aimés</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div><div id="stashShareOverlay" role="dialog" aria-modal="true" aria-labelledby="stashShareTitle">
+ <section id="stashSharePanel">
+  <header><h3 id="stashShareTitle">Envoyer la publication</h3><button type="button" id="stashShareClose" aria-label="Fermer">×</button></header>
+  <input id="stashShareSearch" type="search" placeholder="Rechercher un membre…" autocomplete="off">
+  <div id="stashShareList"><div id="stashShareEmpty">Chargement des membres…</div></div>
+  <footer id="stashShareFooter"><span id="stashShareSelected">Choisis un ou plusieurs membres</span><button type="button" id="stashShareSend" disabled>Envoyer ↗</button></footer>
+ </section>
+</div>
 <script>
 (() => {
 const SUPABASE_URL='https://hhntssweslmmqskhoaje.supabase.co';
@@ -1202,13 +1230,47 @@ async function loadFeed(reset=true){
  renderLoadMoreButton()
  if(linkedPostId){const el=document.querySelector('[data-post=\"'+CSS.escape(linkedPostId)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';el.style.transition='outline .25s';setTimeout(()=>el.style.outline='',2600);history.replaceState({},'',location.pathname+location.hash)}else if(reset){$('feed').innerHTML='<div class=\"empty\">Cette publication est introuvable ou n’est plus disponible.</div>';history.replaceState({},'',location.pathname+location.hash)}}
 }
-async function sharePost(id){
- const post=postsCache.find(p=>p.id===id);if(!post)return;
- const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',id);
- const shareData={title:'Une publication sur STASH',text:post.body.slice(0,180),url:url.toString()};
- if(navigator.share){try{await navigator.share(shareData);return}catch(error){if(error&&error.name==='AbortError')return}}
- try{await navigator.clipboard.writeText(url.toString());toast('Lien de la publication copié 🔗')}catch(error){prompt('Copie le lien de cette publication :',url.toString())}
+let stashSharePostId=null,stashShareDirectory=[],stashShareSelected=new Set();
+function closeStashShare(){const overlay=$('stashShareOverlay');if(overlay)overlay.classList.remove('open');stashSharePostId=null;stashShareSelected.clear()}
+function renderStashSharePeople(){
+ const q=($('stashShareSearch').value||'').trim().toLowerCase();
+ const rows=stashShareDirectory.filter(p=>(p.username||'').toLowerCase().includes(q));
+ $('stashShareList').innerHTML=rows.length?rows.map(p=>'<label class="stash-share-person"><input type="checkbox" data-share-user="'+p.id+'" '+(stashShareSelected.has(p.id)?'checked':'')+'><span class="avatar">'+(p.avatar_path?'<img src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'" alt="">':esc((p.username||'?')[0].toUpperCase()))+'</span><strong>'+esc(p.username||'Membre')+'</strong></label>').join(''):'<div id="stashShareEmpty">Aucun membre trouvé.</div>';
+ $('stashShareList').querySelectorAll('[data-share-user]').forEach(input=>input.onchange=()=>{if(input.checked)stashShareSelected.add(input.dataset.shareUser);else stashShareSelected.delete(input.dataset.shareUser);updateStashShareSelection()});
+ updateStashShareSelection();
 }
+function updateStashShareSelection(){
+ const n=stashShareSelected.size;$('stashShareSelected').textContent=n?n+' destinataire'+(n>1?'s sélectionnés':' sélectionné'):'Choisis un ou plusieurs membres';
+ $('stashShareSend').disabled=!n;
+}
+async function sharePost(id){
+ if(!session){toast('Connecte-toi pour envoyer une publication.');return}
+ const post=postsCache.find(p=>p.id===id);if(!post)return;
+ stashSharePostId=id;stashShareSelected.clear();$('stashShareSearch').value='';$('stashShareList').innerHTML='<div id="stashShareEmpty">Chargement des membres…</div>';updateStashShareSelection();$('stashShareOverlay').classList.add('open');
+ const {data,error}=await db.from('profiles').select('id,username,avatar_path').neq('id',session.user.id).order('username').limit(500);
+ if(error){$('stashShareList').innerHTML='<div id="stashShareEmpty">Impossible de charger les membres.</div>';toast('Impossible de charger les membres.');return}
+ stashShareDirectory=data||[];renderStashSharePeople();
+}
+$('stashShareClose').onclick=closeStashShare;
+$('stashShareOverlay').addEventListener('click',e=>{if(e.target===$('stashShareOverlay'))closeStashShare()});
+$('stashShareSearch').addEventListener('input',renderStashSharePeople);
+$('stashShareSend').onclick=async()=>{
+ if(!stashSharePostId||!stashShareSelected.size||!session)return;
+ const post=postsCache.find(p=>p.id===stashSharePostId);if(!post)return;
+ const btn=$('stashShareSend');btn.disabled=true;btn.textContent='Envoi…';
+ const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',stashSharePostId);
+ const body='📌 Publication partagée sur STASH\\n'+(post.body||'').slice(0,180)+'\\nVoir la publication : '+url.toString();
+ const recipients=[...stashShareSelected];let sent=0,failed=0;
+ for(const recipientId of recipients){
+  const created=await db.rpc('create_direct_conversation',{p_recipient_id:recipientId});
+  if(created.error||!created.data){failed++;continue}
+  const result=await db.rpc('send_direct_message',{p_conversation_id:created.data,p_body:body});
+  if(result.error)failed++;else sent++;
+ }
+ btn.textContent='Envoyer ↗';btn.disabled=false;
+ if(sent){closeStashShare();toast(sent===1?'Publication envoyée en message privé ✓': 'Publication envoyée à '+sent+' membres ✓')}
+ if(failed)toast(failed+' envoi(s) impossible(s).');
+};
 async function toggleLike(id){
  if(!session)return toast('Connecte-toi pour réagir à une publication.');
  const button=document.querySelector('[data-like="'+CSS.escape(id)+'"]');
