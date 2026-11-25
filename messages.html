@@ -82,6 +82,12 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .bubble.mine time{color:#555}
 .message-line{display:flex;flex-direction:column;align-items:flex-start;max-width:100%}.message-line.mine{align-items:flex-end}.message-receipt{margin-top:-5px;padding:0 5px;color:#999;font-size:10px;line-height:1.3}
 .message-reaction-tools{display:flex;align-items:center;gap:6px;max-width:100%;margin-top:5px;flex-wrap:wrap}
+.message-line .message-reaction-tools{align-self:inherit;width:max-content;max-width:100%;position:relative;z-index:2}
+.message-line.mine .message-reaction-tools{align-self:flex-end}
+.message-line .reaction-picker{position:relative;z-index:3;max-width:min(270px,100%);touch-action:manipulation}
+.message-line.mine .reaction-picker{align-self:flex-end}
+.bubble{cursor:pointer;touch-action:manipulation}
+
 .message-reaction-list{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .reaction-pill{height:27px;min-width:37px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid #383838;border-radius:18px;background:#171717;color:#fff;font-size:13px}
 .reaction-pill span{font-size:10px;color:#bbb}
@@ -577,6 +583,15 @@ function subscribe(id){
 }
 
 $('chatScroll').addEventListener('click',async event=>{
+ const messageBubble=event.target.closest('.bubble');
+ if(messageBubble&&!event.target.closest('a')){
+  const line=messageBubble.closest('[data-message-line]');
+  const id=line?.dataset.messageLine;
+  if(id){
+   const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
+   if(picker){const shouldOpen=picker.hidden;$('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);picker.hidden=!shouldOpen;return}
+  }
+ }
  const open=event.target.closest('[data-reaction-open]');
  if(open){
   const id=open.dataset.reactionOpen;
