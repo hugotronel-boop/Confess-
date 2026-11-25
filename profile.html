@@ -784,8 +784,10 @@ html,body{background:#000!important;background-image:none!important}
 .emoji-picker{position:fixed!important;top:0;left:0;transform:none!important;z-index:9999!important;width:min(220px,calc(100vw - 24px))!important;box-sizing:border-box!important;padding:12px!important;border:1px solid #333!important;border-radius:14px!important;background:#111!important;box-shadow:0 14px 40px #000!important}
 .emoji-picker[hidden],.edit-profile-panel[hidden]{display:none!important}
 .emoji-picker-title{font-size:11px!important;color:#aaa!important;margin:0 0 9px!important;text-align:center!important}
-.emoji-grid{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:5px!important}
-.emoji-grid button{border:0!important;background:#1c1c1c!important;border-radius:8px!important;padding:7px 0!important;font-size:19px!important}
+.emoji-grid{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:9px 5px 12px!important;margin:0 -3px!important;scroll-snap-type:x mandatory!important;scroll-padding-inline:50%!important;overscroll-behavior-x:contain!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%)!important}
+.emoji-grid::-webkit-scrollbar{display:none!important}
+.emoji-grid button{flex:0 0 34px!important;width:34px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #303030!important;background:#1c1c1c!important;border-radius:50%!important;padding:0!important;font-size:19px!important;scroll-snap-align:center!important;transform:scale(.88)!important;opacity:.72!important;transition:transform .16s ease,opacity .16s ease,border-color .16s ease!important}
+.emoji-grid button.is-center{transform:scale(1.16)!important;opacity:1!important;border-color:#888!important;background:#292929!important}
 .emoji-clear{width:100%!important;margin-top:9px!important;border:1px solid #333!important;border-radius:8px!important;background:transparent!important;color:#bbb!important;padding:7px!important;font-size:10px!important}
 .identity{min-width:0!important;padding:2px 0 0!important;margin:0!important}
 .identity h2{font-size:21px!important;line-height:1.25!important;margin:0 0 5px!important;font-weight:750!important}
@@ -956,9 +958,20 @@ function positionEmojiPicker(){
 $('pickEmoji').onclick=()=>{
  const picker=$('emojiPicker');
  picker.hidden=!picker.hidden;
- if(!picker.hidden)requestAnimationFrame(positionEmojiPicker);
+ if(!picker.hidden)requestAnimationFrame(()=>{positionEmojiPicker();updateEmojiWheel()});
 };
 window.addEventListener('resize',()=>{if(!$('emojiPicker').hidden)positionEmojiPicker()});
+const emojiWheel=$('emojiPicker').querySelector('.emoji-grid');
+function updateEmojiWheel(){
+ const buttons=[...emojiWheel.querySelectorAll('button')];
+ const center=emojiWheel.getBoundingClientRect().left+emojiWheel.clientWidth/2;
+ let nearest=null,distance=Infinity;
+ buttons.forEach(b=>{const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-center);if(d<distance){distance=d;nearest=b}});
+ buttons.forEach(b=>b.classList.toggle('is-center',b===nearest));
+}
+emojiWheel.addEventListener('scroll',()=>requestAnimationFrame(updateEmojiWheel),{passive:true});
+emojiWheel.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){emojiWheel.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+requestAnimationFrame(updateEmojiWheel);
 document.querySelectorAll('[data-profile-emoji]').forEach(b=>b.addEventListener('click',async()=>{const emoji=b.dataset.profileEmoji;const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !')}));
 $('clearProfileEmoji').onclick=async()=>{const {error}=await db.from('profiles').update({profile_emoji:null}).eq('id',user.id);if(error){toast('Impossible de retirer cet emoji.');return}profile.profile_emoji=null;paintProfileEmoji(null);closeEmojiPicker();toast('Emoji retiré.')};
 document.addEventListener('click',e=>{if(!$('emojiPicker').hidden&&!e.target.closest('.avatar-wrap'))closeEmojiPicker()});
