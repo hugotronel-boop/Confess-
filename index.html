@@ -914,9 +914,9 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-const URL='https://hhntssweslmmqskhoaje.supabase.co';
+const SUPABASE_URL='https://hhntssweslmmqskhoaje.supabase.co';
 const KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3';
-const db=window.supabase.createClient(URL,KEY);
+const db=window.supabase.createClient(SUPABASE_URL,KEY);
 const $=id=>document.getElementById(id);
 let session=null,profile=null,categories=[],currentCategory=null,currentSearch='',currentVisibility='all',currentFeed='all',savedOnly=false,activePost=null,postsCache=[],feedOffset=0,feedHasMore=true;
 function draftKey(){return session?.user?.id?'confess_draft_'+session.user.id:null}
