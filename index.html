@@ -1259,7 +1259,7 @@ $('stashShareSend').onclick=async()=>{
  const post=postsCache.find(p=>p.id===stashSharePostId);if(!post)return;
  const btn=$('stashShareSend');btn.disabled=true;btn.textContent='Envoi…';
  const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',stashSharePostId);
- const body='📌 Publication partagée sur STASH\\n'+(post.body||'').slice(0,180)+'\\nVoir la publication : '+url.toString();
+ const body='📌 Publication partagée sur STASH\n'+(post.body||'').slice(0,180)+'\nVoir la publication : '+url.toString();
  const recipients=[...stashShareSelected];let sent=0,failed=0;
  for(const recipientId of recipients){
   const created=await db.rpc('create_direct_conversation',{p_recipient_id:recipientId});
