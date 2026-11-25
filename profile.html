@@ -962,6 +962,10 @@ $('pickEmoji').onclick=()=>{
 };
 window.addEventListener('resize',()=>{if(!$('emojiPicker').hidden)positionEmojiPicker()});
 const emojiWheel=$('emojiPicker').querySelector('.emoji-grid');
+const originalEmojiButtons=[...emojiWheel.querySelectorAll('button')];
+let emojiSetWidth=0;
+originalEmojiButtons.forEach(b=>emojiWheel.appendChild(b.cloneNode(true)));
+originalEmojiButtons.forEach(b=>emojiWheel.appendChild(b.cloneNode(true)));
 function updateEmojiWheel(){
  const buttons=[...emojiWheel.querySelectorAll('button')];
  const center=emojiWheel.getBoundingClientRect().left+emojiWheel.clientWidth/2;
@@ -969,10 +973,28 @@ function updateEmojiWheel(){
  buttons.forEach(b=>{const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-center);if(d<distance){distance=d;nearest=b}});
  buttons.forEach(b=>b.classList.toggle('is-center',b===nearest));
 }
-emojiWheel.addEventListener('scroll',()=>requestAnimationFrame(updateEmojiWheel),{passive:true});
+emojiWheel.addEventListener('scroll',()=>{
+ if(emojiSetWidth){
+  if(emojiWheel.scrollLeft<emojiSetWidth*.5)emojiWheel.scrollLeft+=emojiSetWidth;
+  else if(emojiWheel.scrollLeft>emojiSetWidth*2.5)emojiWheel.scrollLeft-=emojiSetWidth;
+ }
+ requestAnimationFrame(updateEmojiWheel);
+},{passive:true});
 emojiWheel.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){emojiWheel.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
-requestAnimationFrame(updateEmojiWheel);
-document.querySelectorAll('[data-profile-emoji]').forEach(b=>b.addEventListener('click',async()=>{const emoji=b.dataset.profileEmoji;const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !')}));
+emojiWheel.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-profile-emoji]');
+ if(!b)return;
+ const emoji=b.dataset.profileEmoji;
+ const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);
+ if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}
+ profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !');
+});
+requestAnimationFrame(()=>{
+ const first=emojiWheel.querySelector('button');
+ const secondSetFirst=emojiWheel.children[originalEmojiButtons.length];
+ if(first&&secondSetFirst){emojiSetWidth=secondSetFirst.offsetLeft-first.offsetLeft;emojiWheel.scrollLeft=emojiSetWidth}
+ updateEmojiWheel();
+});
 $('clearProfileEmoji').onclick=async()=>{const {error}=await db.from('profiles').update({profile_emoji:null}).eq('id',user.id);if(error){toast('Impossible de retirer cet emoji.');return}profile.profile_emoji=null;paintProfileEmoji(null);closeEmojiPicker();toast('Emoji retiré.')};
 document.addEventListener('click',e=>{if(!$('emojiPicker').hidden&&!e.target.closest('.avatar-wrap'))closeEmojiPicker()});
 function setUsernameStatus(message,state){
