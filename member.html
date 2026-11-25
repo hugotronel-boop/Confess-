@@ -755,6 +755,30 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:22px 16px 3
  .info h1{font-size:20px!important}
  .info .follow,.info .message-btn{min-height:40px!important;padding:9px 8px!important}
 }
+
+/* STASH — actions placées sous le bloc avatar + emoji */
+.profile{
+ grid-template-rows:minmax(112px,auto) auto auto auto!important;
+ row-gap:0!important;
+ padding-bottom:24px!important;
+}
+.member-avatar-wrap{right:2px!important;top:0!important}
+.info .bio{grid-row:2!important;margin:10px 0 0!important}
+.info .follow,.info .message-btn{
+ grid-row:3!important;
+ grid-column:1/-1!important;
+ width:100%!important;
+ min-height:44px!important;
+ margin:16px 0 0!important;
+}
+.info .message-btn{margin-top:9px!important}
+.info .moderation-actions{
+ grid-row:4!important;
+ grid-column:1/-1!important;
+ margin-top:16px!important;
+}
+.section-head{margin-top:5px!important}
+.confess-global-nav a[data-nav="notifications"]{display:none!important}
 </style>
 </head><body><header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'" aria-label="Retour au fil">&lt;</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header><main><section class="hero"><div class="profile"><div class="member-avatar-wrap"><div class="avatar" id="avatar">?</div><span class="member-profile-emoji" id="profileEmoji" hidden></span></div><div class="info"><h1 id="name">Profil membre</h1><p class="handle" id="handle"></p><p class="since" id="since"></p><p class="bio" id="bio"></p><button class="follow" id="followBtn" hidden>S'abonner</button><button class="message-btn" id="messageBtn" hidden>💬 Message</button><div class="moderation-actions" id="moderationActions" hidden><button id="blockBtn">🚫 Bloquer</button><button id="muteBtn">🙈 Masquer</button><button id="reportMemberBtn">⚑ Signaler</button></div></div></div><div class="stats"><div class="stat"><strong id="postsCount">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="followersCount">—</strong><span>Abonnés</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="followingCount">—</strong><span>Abonnements</span></button></div></section><div class="section-head"><h2>Publications</h2></div><div id="posts"><div class="loading">Chargement du profil…</div></div></main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>(()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),memberId=new URLSearchParams(location.search).get('id');let me=null,following=false,isPrivate=false,requestPending=false;
@@ -862,7 +886,7 @@ load()})();</script><script>
 <a href="./index.html" data-nav="home"><span>Feed</span></a>
 <a href="./messages.html" data-nav="messages"><span>Message</span><span class="stash-nav-message-count" id="stashNavMessageCount" hidden>0</span></a>
 <a href="./publish.html" data-nav="publish"><span>+</span></a>
-<a href="./notifications.html" data-nav="notifications"><span>Actus</span><span class="stash-nav-notif-count" id="stashNavNotifCount" hidden>0</span></a>
+
 <a href="./profile.html" data-nav="profile"><span>Profil</span></a>
 </nav><style id="stash-nav-notification-badge">
 .confess-global-nav a[data-nav="notifications"]{position:relative!important}
