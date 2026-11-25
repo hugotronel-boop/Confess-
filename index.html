@@ -592,6 +592,11 @@ html body header.top.stash-feed-top .feed-search-button{
   transition:fill .18s ease,stroke .18s ease;
 }
 
+/* Fermeture du panneau vers le bas sans faire bouger le fil derrière */
+#commentsOverlay{opacity:0;transition:opacity .28s ease}
+#commentsOverlay.show{opacity:1}
+#commentsOverlay.is-closing{opacity:0;pointer-events:none}
+#commentsOverlay.is-closing .modal{transform:translateY(105%)!important}
 /* STASH — panneau commentaires plein écran avec fermeture par glissement */
 @media(max-width:620px){
  #commentsOverlay{
@@ -1316,9 +1321,43 @@ async function toggleSave(id){
  toast(wasSaved?'Publication retirée des favoris.':'Publication enregistrée.');
 }
 let activeReply=null,activeCommentSort='recent',activeCommentRows=[];
+/* Verrouille réellement la page derrière le panneau de commentaires */
+let commentsPageScrollY=0,commentsPageLocked=false,commentsBodyStyles=null,commentsHtmlOverflow='';
+function lockCommentsPage(){
+ if(commentsPageLocked)return;
+ commentsPageLocked=true;
+ commentsPageScrollY=window.scrollY||window.pageYOffset||0;
+ commentsBodyStyles={position:document.body.style.position,top:document.body.style.top,left:document.body.style.left,right:document.body.style.right,width:document.body.style.width,overflow:document.body.style.overflow};
+ commentsHtmlOverflow=document.documentElement.style.overflow;
+ document.documentElement.style.overflow='hidden';
+ Object.assign(document.body.style,{position:'fixed',top:-commentsPageScrollY+'px',left:'0',right:'0',width:'100%',overflow:'hidden'});
+}
+function unlockCommentsPage(){
+ if(!commentsPageLocked)return;
+ commentsPageLocked=false;
+ document.documentElement.style.overflow=commentsHtmlOverflow;
+ Object.assign(document.body.style,commentsBodyStyles||{});
+ window.scrollTo(0,commentsPageScrollY);
+}
+function closeComments(){
+ const overlay=$('commentsOverlay'),panel=overlay.querySelector('.modal');
+ if(!overlay.classList.contains('show')||overlay.classList.contains('is-closing'))return;
+ $('commentBody').blur();
+ overlay.classList.add('is-closing');
+ panel.style.transform='';
+ const finish=()=>{
+  overlay.classList.remove('show','is-closing');
+  panel.style.transform='';
+  panel.removeEventListener('transitionend',onEnd);
+  unlockCommentsPage();
+ };
+ const onEnd=e=>{if(e.target===panel&&e.propertyName==='transform')finish()};
+ panel.addEventListener('transitionend',onEnd);
+ setTimeout(finish,380);
+}
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
- activePost=id;activeReply=null;$('replyingBar').classList.remove('show');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
+ activePost=id;activeReply=null;$('replyingBar').classList.remove('show');lockCommentsPage();$('commentsOverlay').classList.remove('is-closing');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
  const {data,error}=await db.from('comments').select('id,body,author_label,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
  const rows=data||[];activeCommentRows=rows;
@@ -1430,7 +1469,7 @@ $('publishBtn').onclick=async()=>{
 $('sendComment').onclick=async()=>{if(!session)return toast('Connecte-toi pour répondre.');const body=$('commentBody').value.trim();if(!body)return toast('Écris une réponse.');const {error}=await db.rpc('create_confess_comment',{p_post_id:activePost,p_body:body,p_is_anonymous:$('commentAnonymous').checked,p_parent_comment_id:activeReply});if(error){toast('Réponse impossible : '+error.message);return}$('commentBody').value='';$('commentAnonymous').checked=false;activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…';openComments(activePost);loadFeed()};
 $('cancelReply').onclick=()=>{activeReply=null;$('replyingBar').classList.remove('show');$('commentBody').placeholder='Écris une réponse…'}
 document.querySelectorAll('[data-comment-sort]').forEach(b=>b.onclick=()=>{activeCommentSort=b.dataset.commentSort;updateCommentSortUI();openComments(activePost)});
-$('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
+$('closeComments').onclick=closeComments;
 /* Ajuste le panneau au-dessus du clavier iOS sans déplacer son contenu */
 (()=>{
  const overlay=$('commentsOverlay'),panel=overlay.querySelector('.modal'),input=$('commentBody');
@@ -1467,16 +1506,13 @@ $('closeComments').onclick=()=>$('commentsOverlay').classList.remove('show');
  const finish=()=>{
   if(!dragging)return;dragging=false;
   panel.style.transition='';
-  if(deltaY>125){
-   panel.style.transform='translateY(105%)';
-   setTimeout(()=>{overlay.classList.remove('show');panel.style.transform='';},220);
-  }else panel.style.transform='';
+  if(deltaY>125){closeComments();}else panel.style.transform='';
   deltaY=0;
  };
  head.addEventListener('touchend',finish,{passive:true});
  head.addEventListener('touchcancel',finish,{passive:true});
 })();
-$('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))$('commentsOverlay').classList.remove('show')});
+$('commentsOverlay').addEventListener('click',e=>{if(e.target===$('commentsOverlay'))closeComments()});
 $('authBtn').onclick=()=>location.href=session?'profile.html':'auth.html';
 $('notificationsBtn').onclick=()=>location.href='notifications.html';
 $('feedSearchOpen').onclick=()=>location.href='explore.html';
