@@ -766,12 +766,18 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:22px 16px 3
 .info .bio{grid-row:2!important;margin:10px 0 0!important}
 .info .follow,.info .message-btn{
  grid-row:3!important;
- grid-column:1/-1!important;
+ align-self:stretch!important;
+ justify-self:stretch!important;
  width:100%!important;
- min-height:44px!important;
+ min-width:0!important;
+ min-height:40px!important;
  margin:16px 0 0!important;
+ padding:9px 8px!important;
+ border-radius:999px!important;
+ font-size:12px!important;
 }
-.info .message-btn{margin-top:9px!important}
+.info .follow{grid-column:1!important}
+.info .message-btn{grid-column:2!important;margin-top:16px!important}
 .info .moderation-actions{
  grid-row:4!important;
  grid-column:1/-1!important;
