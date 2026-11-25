@@ -736,7 +736,11 @@ body{padding-bottom:0!important}
 </style><style id="stash-nav-notification-badge-contrast">
 .confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count,.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count:visited{position:absolute!important;top:0!important;left:calc(50% + 9px)!important;display:flex!important;align-items:center!important;justify-content:center!important;min-width:17px!important;width:auto!important;height:17px!important;padding:0 4px!important;border-radius:999px!important;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;font-family:Arial,Helvetica,sans-serif!important;font-size:10px!important;font-weight:900!important;line-height:17px!important;letter-spacing:0!important;text-indent:0!important;opacity:1!important;visibility:inherit!important;z-index:20!important;text-shadow:none!important;white-space:nowrap!important}
 .confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important}
-</style><style id="stash-nav-notification-hidden-fix">.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style><script id="stash-nav-notification-counter">
+</style><style id="stash-nav-notification-hidden-fix">.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+/* STASH — rendu des photos identique au format de la page profil */
+.avatar,.post-avatar,.comment-avatar,.settings-person-avatar,.symbol,.publish-author-avatar,#avatar,#userAvatar,#composeAvatar{border-radius:50%!important;overflow:hidden!important;}
+.avatar img,.post-avatar img,.comment-avatar img,.settings-person-avatar img,.symbol img,.publish-author-avatar img,#avatar img,#userAvatar img,#composeAvatar img{display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border-radius:50%!important;}
+</style><script id="stash-nav-notification-counter">
 (()=>{const badge=document.getElementById('stashNavNotifCount');if(!badge||!window.supabase)return;
 const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
 let activeUser=null,channel=null;
