@@ -309,13 +309,13 @@ function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)
 function avatar(p){if(p?.group)return '<span class="avatar">👥</span>';return p?.avatar_path?'<span class="avatar"><img src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'" alt=""></span>':'<span class="avatar">'+esc((p?.username||'?')[0].toUpperCase())+'</span>'}
 async function openGroupModal(){
  document.body.classList.add('group-creation-open');$('groupOverlay').hidden=false;$('groupName').value='';$('groupSearch').value='';selectedGroupMembers.clear();$('groupMembers').innerHTML='<div class="loading">Chargement des membres…</div>';
- const {data,error}=await db.from('profiles').select('id,username').neq('id',me.id).order('username').limit(100);
+ const {data,error}=await db.from('profiles').select('id,username,avatar_path').neq('id',me.id).order('username').limit(100);
  if(error){$('groupMembers').innerHTML='<div class="empty">Impossible de charger les membres.</div>';toast(error.message);return}
  groupDirectory=data||[];renderGroupDirectory();updateGroupSelection();
 }
 function renderGroupDirectory(){
  const q=$('groupSearch').value.trim().toLowerCase();const rows=groupDirectory.filter(p=>p.username.toLowerCase().includes(q));
- $('groupMembers').innerHTML=rows.length?rows.map(p=>'<label class="group-person"><input type="checkbox" data-group-user="'+p.id+'" '+(selectedGroupMembers.has(p.id)?'checked':'')+'><span>'+esc(p.username)+'</span></label>').join(''):'<div class="empty">Aucun membre trouvé.</div>';
+ $('groupMembers').innerHTML=rows.length?rows.map(p=>'<label class="group-person"><input type="checkbox" data-group-user="'+p.id+'" '+(selectedGroupMembers.has(p.id)?'checked':'')+'>'+avatar(p)+'<span>'+esc(p.username)+'</span></label>').join(''):'<div class="empty">Aucun membre trouvé.</div>';
  $('groupMembers').querySelectorAll('[data-group-user]').forEach(input=>input.onchange=()=>{if(input.checked){if(selectedGroupMembers.size>=19){input.checked=false;toast('Maximum 19 personnes invitées.');return}selectedGroupMembers.add(input.dataset.groupUser)}else selectedGroupMembers.delete(input.dataset.groupUser);updateGroupSelection()});
 }
 function updateGroupSelection(){$('groupSelectionCount').textContent=selectedGroupMembers.size+' membre'+(selectedGroupMembers.size>1?'s':'')+' sélectionné'+(selectedGroupMembers.size>1?'s':'');$('createGroup').disabled=selectedGroupMembers.size<2||$('groupName').value.trim().length<2}
