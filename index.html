@@ -1646,6 +1646,12 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
  nav.dataset.keyboardAware='1';
  const vv=window.visualViewport;
  const update=()=>{
+  const commentTyping=document.getElementById('commentsOverlay')?.classList.contains('show')&&document.activeElement?.id==='commentBody';
+  if(commentTyping){
+   nav.style.setProperty('display','none','important');
+   return;
+  }
+  nav.style.removeProperty('display');
   const gap=vv?Math.max(0,window.innerHeight-(vv.height+vv.offsetTop)):0;
   nav.style.setProperty('bottom',gap+'px','important');
  };
@@ -1656,6 +1662,8 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   if(event.target.matches('input,textarea,select,[contenteditable="true"],[contenteditable=""]'))requestAnimationFrame(update);
  });
  document.addEventListener('focusout',()=>setTimeout(update,180));
+ const overlay=document.getElementById('commentsOverlay');
+ if(overlay){new MutationObserver(update).observe(overlay,{attributes:true,attributeFilter:['class']})}
 })();
 </script>
 
