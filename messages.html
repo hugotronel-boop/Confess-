@@ -442,9 +442,10 @@ async function loadMessages(){
   if(!readError)(reads||[]).forEach(r=>{readCounts[r.message_id]=(readCounts[r.message_id]||0)+1});
  }
  const totalReaders=Math.max(1,(activePeer?.memberCount||2)-1);
+ const lastSentMessage=[...rows].reverse().find(m=>m.sender_id===me.id);
  $('chatScroll').innerHTML=rows.length?rows.map(m=>{
   const mine=m.sender_id===me.id;
-  const seen=mine&&(activePeer?.group?!!readCounts[m.id]:!!m.read_at);
+  const seen=mine&&m.id===lastSentMessage?.id&&(activePeer?.group?!!readCounts[m.id]:!!m.read_at);
   const receipt=seen?'<small class="message-receipt">'+(activePeer?.group?'Vu par '+readCounts[m.id]+'/'+totalReaders:'Vu')+'</small>':'';
   const sender=activePeer&&activePeer.group&&!mine?'<div class="bubble-sender">'+avatar(senderProfiles[m.sender_id]||{username:senders[m.sender_id]||'Membre'})+'<strong>'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong></div>':'';
   return '<div class="message-line '+(mine?'mine':'')+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div>'+receipt+'</div>';
