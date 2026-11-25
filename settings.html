@@ -1019,7 +1019,7 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   document.querySelectorAll('[data-stash-online]').forEach(el=>el.classList.toggle('stash-is-online',online.has(el.dataset.stashOnline)));
  };
  async function track(){if(!channel||!userId||tracked||document.visibilityState==='hidden')return;try{await channel.track({userId,onlineAt:new Date().toISOString()});tracked=true}catch(e){console.warn('STASH presence track:',e.message)}}
- async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online',{config:{presence:{key:id}}}).on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
+ async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online').on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
  client.auth.getSession().then(({data})=>connect(data.session?.user?.id||null));
  client.auth.onAuthStateChange((event,session)=>setTimeout(()=>connect(session?.user?.id||null),0));
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(channel&&tracked){channel.untrack();tracked=false}}else track()});
