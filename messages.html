@@ -81,6 +81,17 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .bubble time{display:block;margin-top:5px;font-size:9px;color:#888;text-align:right}
 .bubble.mine time{color:#555}
 .message-line{display:flex;flex-direction:column;align-items:flex-start;max-width:100%}.message-line.mine{align-items:flex-end}.message-receipt{margin-top:-5px;padding:0 5px;color:#999;font-size:10px;line-height:1.3}
+.message-reaction-tools{display:flex;align-items:center;gap:6px;max-width:100%;margin-top:5px;flex-wrap:wrap}
+.message-reaction-list{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.reaction-pill{height:27px;min-width:37px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid #383838;border-radius:18px;background:#171717;color:#fff;font-size:13px}
+.reaction-pill span{font-size:10px;color:#bbb}
+.reaction-pill.mine-reacted{border-color:#fff;background:#292929}
+.reaction-add{width:27px;height:27px;border:1px solid #333;border-radius:50%;background:#151515;color:#aaa;font-size:17px;line-height:1}
+.reaction-add:active,.reaction-choice:active{background:#383838;transform:scale(.94)}
+.reaction-picker{display:flex;flex-wrap:wrap;gap:5px;max-width:270px;margin-top:5px;padding:8px;border:1px solid #333;border-radius:16px;background:#171717;box-shadow:0 8px 25px #0009}
+.reaction-picker[hidden]{display:none!important}
+.reaction-choice{width:37px;height:37px;border:0;border-radius:11px;background:transparent;color:#fff;font-size:21px}
+
 .composer{display:flex;align-items:flex-end;gap:9px;padding:13px;border-top:0;background:#080808}
 .composer textarea{flex:1;min-height:42px;max-height:120px;resize:vertical;padding:12px 13px;border-radius:13px;border:1px solid #2b2b2b;background:#141414;color:#fff;outline:none;font-size:13px}
 .composer textarea:focus{border-color:#777}
@@ -288,6 +299,7 @@ body.chat-conversation-open .chat-scroll{
 (()=> {
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
 let me=null,threads=[],threadSettings={},activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,draftGroupMode=false,recipientDirectory=[],threadPressTimer=null,suppressThreadClick=false;
+const REACTION_EMOJIS=['❤️','😂','😱','😢','😮','👍','🔥','👏','😍','🙏'];
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function formatMessageBody(value){
  const raw=String(value??'');
@@ -436,6 +448,12 @@ async function loadMessages(){
  loadingMessages=false;
  if(error){toast('Impossible de charger les messages.');console.error(error);return}
  const rows=(data||[]).reverse();activeMessageIds=rows.map(m=>m.id);
+ let reactionsByMessage={};
+ if(activeMessageIds.length){
+  const {data:reactionRows,error:reactionError}=await db.from('message_reactions').select('message_id,user_id,emoji').in('message_id',activeMessageIds);
+  if(!reactionError)(reactionRows||[]).forEach(r=>{(reactionsByMessage[r.message_id]??=[]).push(r)});
+  else console.warn('STASH reactions:',reactionError.message);
+ }
  let senders={},senderProfiles={},readCounts={};
  if(activePeer&&activePeer.group&&rows.length){
   const ids=[...new Set(rows.map(m=>m.sender_id).filter(id=>id&&id!==me.id))];
@@ -451,7 +469,10 @@ async function loadMessages(){
   const seen=mine&&showLastReceipt&&m.id===lastSentMessage?.id&&(activePeer?.group?!!readCounts[m.id]:!!m.read_at);
   const receipt=seen?'<small class="message-receipt">'+(activePeer?.group?'Vu par '+readCounts[m.id]+'/'+totalReaders:'Vu')+'</small>':'';
   const sender=activePeer&&activePeer.group&&!mine?'<div class="bubble-sender"><a class="message-sender-link" href="member.html?id='+encodeURIComponent(m.sender_id)+'">'+avatar({...senderProfiles[m.sender_id],id:m.sender_id})+'<strong>'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong></a></div>':'';
-  return '<div class="message-line '+(mine?'mine':'')+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div>'+receipt+'</div>';
+  const groups={};(reactionsByMessage[m.id]||[]).forEach(r=>{groups[r.emoji]??=[];groups[r.emoji].push(r.user_id)});
+  const reactionPills=Object.entries(groups).map(([emoji,users])=>'<button class="reaction-pill '+(users.includes(me.id)?'mine-reacted':'')+'" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="'+emoji+' '+users.length+' réactions">'+emoji+' <span>'+users.length+'</span></button>').join('');
+  const picker=REACTION_EMOJIS.map(emoji=>'<button class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
+  return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div><button class="reaction-add" data-reaction-open="'+m.id+'" aria-label="Ajouter une réaction">☺︎</button></div><div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden>'+picker+'</div>'+receipt+'</div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
@@ -544,6 +565,10 @@ function subscribe(id){
   .on('postgres_changes',{event:'INSERT',schema:'public',table:'message_reads'},async payload=>{
    if(activeMessageIds.includes(payload.new.message_id))await loadMessages();
   })
+  .on('postgres_changes',{event:'*',schema:'public',table:'message_reactions'},async payload=>{
+   const messageId=payload.new?.message_id||payload.old?.message_id;
+   if(activeMessageIds.includes(messageId))await loadMessages();
+  })
   .subscribe(async status=>{
    if(status==='SUBSCRIBED'){try{await realtime.track({user_id:me.id,typing:false})}catch(err){console.warn(err)}}
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('STASH Realtime:',status);
@@ -551,6 +576,30 @@ function subscribe(id){
  renderTyping();
 }
 
+$('chatScroll').addEventListener('click',async event=>{
+ const open=event.target.closest('[data-reaction-open]');
+ if(open){
+  const id=open.dataset.reactionOpen;
+  $('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>{p.hidden=p.dataset.reactionPicker!==id||!p.hidden});
+  return;
+ }
+ const choice=event.target.closest('[data-reaction-message][data-reaction-emoji]');
+ if(choice){
+  const messageId=choice.dataset.reactionMessage,emoji=choice.dataset.reactionEmoji;
+  $('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);
+  const {data:existing,error:findError}=await db.from('message_reactions').select('emoji').eq('message_id',messageId).eq('user_id',me.id).maybeSingle();
+  if(findError){toast('Impossible de modifier la réaction.');console.error(findError);return}
+  let result;
+  if(existing?.emoji===emoji)result=await db.from('message_reactions').delete().eq('message_id',messageId).eq('user_id',me.id);
+  else result=await db.from('message_reactions').upsert({message_id:messageId,user_id:me.id,emoji},{onConflict:'message_id,user_id'});
+  if(result.error){toast('Réaction non enregistrée.');console.error(result.error);return}
+  await loadMessages();
+ }
+});
+document.addEventListener('click',event=>{
+ if(!event.target.closest('.message-reaction-tools')&&!event.target.closest('.reaction-picker'))
+  document.querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);
+});
 async function send(){
  const body=$('messageBody').value.trim();if(!body)return;
  clearTimeout(typingTimer);await setTyping(false);
