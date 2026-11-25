@@ -781,7 +781,7 @@ html,body{background:#000!important;background-image:none!important}
 .avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
 .emoji-add{width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;border-radius:50%!important;border:1px solid #414141!important;background:#111!important;color:#fff!important;font-size:18px!important;line-height:1!important;display:grid!important;place-items:center!important}
 .emoji-add.has-emoji{font-size:19px!important;border-color:transparent!important;background:transparent!important}
-.emoji-picker{position:absolute!important;top:118px!important;left:50%!important;transform:translateX(-50%)!important;z-index:40!important;width:220px!important;padding:12px!important;border:1px solid #333!important;border-radius:14px!important;background:#111!important;box-shadow:0 14px 40px #000!important}
+.emoji-picker{position:fixed!important;top:0;left:0;transform:none!important;z-index:9999!important;width:min(220px,calc(100vw - 24px))!important;box-sizing:border-box!important;padding:12px!important;border:1px solid #333!important;border-radius:14px!important;background:#111!important;box-shadow:0 14px 40px #000!important}
 .emoji-picker[hidden],.edit-profile-panel[hidden]{display:none!important}
 .emoji-picker-title{font-size:11px!important;color:#aaa!important;margin:0 0 9px!important;text-align:center!important}
 .emoji-grid{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:5px!important}
@@ -941,7 +941,25 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('followModal').h
 async function togglePin(btn){const pin=btn.dataset.pinned!=='true';if(pin){const {count,error}=await db.from('posts').select('id',{count:'exact',head:true}).eq('author_profile_id',user.id).eq('is_anonymous',false).eq('status','published').eq('is_pinned',true);if(error)return toast('Impossible de vérifier les publications épinglées.');if((count||0)>=3)return toast('Tu peux épingler 3 publications maximum.')}btn.disabled=true;const {error}=await db.from('posts').update({is_pinned:pin}).eq('id',btn.dataset.pin).eq('author_profile_id',user.id);btn.disabled=false;if(error){toast('Impossible de modifier cette épingle.');console.error(error);return}toast(pin?'Publication épinglée en haut du profil !':'Publication désépinglée.');await loadPosts()}
 function paintProfileEmoji(emoji){const b=$('pickEmoji');b.textContent=emoji||'＋';b.classList.toggle('has-emoji',!!emoji);b.setAttribute('aria-label',emoji?'Modifier ou retirer l’emoji du profil':'Ajouter un emoji au profil')}
 function closeEmojiPicker(){$('emojiPicker').hidden=true}
-$('pickEmoji').onclick=()=>{$('emojiPicker').hidden=!$('emojiPicker').hidden};
+function positionEmojiPicker(){
+ const picker=$('emojiPicker'),button=$('pickEmoji');
+ const rect=button.getBoundingClientRect();
+ const margin=12,gap=8;
+ const width=Math.min(220,window.innerWidth-margin*2);
+ picker.style.width=width+'px';
+ const left=Math.max(margin,Math.min(window.innerWidth-width-margin,rect.left+rect.width/2-width/2));
+ const height=picker.offsetHeight;
+ let top=rect.bottom+gap;
+ if(top+height>window.innerHeight-margin)top=rect.top-height-gap;
+ top=Math.max(margin,Math.min(window.innerHeight-height-margin,top));
+ picker.style.left=left+'px';picker.style.top=top+'px';
+}
+$('pickEmoji').onclick=()=>{
+ const picker=$('emojiPicker');
+ picker.hidden=!picker.hidden;
+ if(!picker.hidden)requestAnimationFrame(positionEmojiPicker);
+};
+window.addEventListener('resize',()=>{if(!$('emojiPicker').hidden)positionEmojiPicker()});
 document.querySelectorAll('[data-profile-emoji]').forEach(b=>b.addEventListener('click',async()=>{const emoji=b.dataset.profileEmoji;const {error}=await db.from('profiles').update({profile_emoji:emoji}).eq('id',user.id);if(error){toast('Impossible d’enregistrer cet emoji.');console.error(error);return}profile.profile_emoji=emoji;paintProfileEmoji(emoji);closeEmojiPicker();toast('Emoji de profil mis à jour !')}));
 $('clearProfileEmoji').onclick=async()=>{const {error}=await db.from('profiles').update({profile_emoji:null}).eq('id',user.id);if(error){toast('Impossible de retirer cet emoji.');return}profile.profile_emoji=null;paintProfileEmoji(null);closeEmojiPicker();toast('Emoji retiré.')};
 document.addEventListener('click',e=>{if(!$('emojiPicker').hidden&&!e.target.closest('.avatar-wrap'))closeEmojiPicker()});
