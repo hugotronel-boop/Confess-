@@ -769,7 +769,11 @@ db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.href='auth.ht
  z-index:20!important;text-shadow:none!important;white-space:nowrap!important;
 }
 .confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important}
-</style><style id="stash-nav-notification-hidden-fix">.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style><script id="stash-nav-notification-counter">
+</style><style id="stash-nav-notification-hidden-fix">.confess-global-nav a[data-nav="notifications"] .stash-nav-notif-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+/* STASH — rendu des photos identique au format de la page profil */
+.avatar,.post-avatar,.comment-avatar,.settings-person-avatar,.symbol,.publish-author-avatar,#avatar,#userAvatar,#composeAvatar{border-radius:50%!important;overflow:hidden!important;}
+.avatar img,.post-avatar img,.comment-avatar img,.settings-person-avatar img,.symbol img,.publish-author-avatar img,#avatar img,#userAvatar img,#composeAvatar img{display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border-radius:50%!important;}
+</style><script id="stash-nav-notification-counter">
 (()=>{const badge=document.getElementById('stashNavNotifCount');if(!badge||!window.supabase)return;
 const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
 let activeUser=null,channel=null;
