@@ -814,8 +814,11 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 .stash-share-person .avatar img{width:100%;height:100%;object-fit:cover}
 .stash-share-person strong{font-size:13px;font-weight:650}
 #stashShareEmpty{padding:22px 10px;color:#999;text-align:center;font-size:13px}
-#stashShareFooter{display:flex;align-items:center;gap:12px;padding:13px 16px calc(13px + env(safe-area-inset-bottom));border-top:1px solid #292929}
-#stashShareSelected{flex:1;color:#aaa;font-size:12px}
+#stashShareFooter{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px 16px calc(13px + env(safe-area-inset-bottom));border-top:1px solid #292929}
+#stashShareSelected{grid-column:1/-1;color:#aaa;font-size:12px}
+#stashShareMessage{width:100%;min-width:0;padding:12px 13px;border:1px solid #333;border-radius:12px;background:#1a1a1a;color:#fff;font-size:14px;outline:none}
+#stashShareMessage:focus{border-color:#777}
+#stashShareMessage::placeholder{color:#888}
 #stashShareSend{border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#000;font-weight:800}
 #stashShareSend:disabled{opacity:.35}
 @media(min-width:600px){#stashShareOverlay{align-items:center}#stashSharePanel{max-height:80vh}}
@@ -968,7 +971,7 @@ client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener
   <header><h3 id="stashShareTitle">Envoyer la publication</h3><button type="button" id="stashShareClose" aria-label="Fermer">×</button></header>
   <input id="stashShareSearch" type="search" placeholder="Rechercher un membre…" autocomplete="off">
   <div id="stashShareList"><div id="stashShareEmpty">Chargement des membres…</div></div>
-  <footer id="stashShareFooter"><span id="stashShareSelected">Choisis un ou plusieurs membres</span><button type="button" id="stashShareSend" disabled>Envoyer ↗</button></footer>
+  <footer id="stashShareFooter"><span id="stashShareSelected">Choisis un ou plusieurs membres</span><input id="stashShareMessage" type="text" maxlength="500" placeholder="Ajouter un message…" autocomplete="off"><button type="button" id="stashShareSend" disabled>Envoyer ↗</button></footer>
  </section>
 </div>
 <script>
@@ -1246,7 +1249,7 @@ function updateStashShareSelection(){
 async function sharePost(id){
  if(!session){toast('Connecte-toi pour envoyer une publication.');return}
  const post=postsCache.find(p=>p.id===id);if(!post)return;
- stashSharePostId=id;stashShareSelected.clear();$('stashShareSearch').value='';$('stashShareList').innerHTML='<div id="stashShareEmpty">Chargement des membres…</div>';updateStashShareSelection();$('stashShareOverlay').classList.add('open');
+ stashSharePostId=id;stashShareSelected.clear();$('stashShareSearch').value='';$('stashShareMessage').value='';$('stashShareList').innerHTML='<div id="stashShareEmpty">Chargement des membres…</div>';updateStashShareSelection();$('stashShareOverlay').classList.add('open');
  const {data,error}=await db.from('profiles').select('id,username,avatar_path').neq('id',session.user.id).order('username').limit(500);
  if(error){$('stashShareList').innerHTML='<div id="stashShareEmpty">Impossible de charger les membres.</div>';toast('Impossible de charger les membres.');return}
  stashShareDirectory=data||[];renderStashSharePeople();
@@ -1259,7 +1262,7 @@ $('stashShareSend').onclick=async()=>{
  const post=postsCache.find(p=>p.id===stashSharePostId);if(!post)return;
  const btn=$('stashShareSend');btn.disabled=true;btn.textContent='Envoi…';
  const url=new URL(location.href);url.search='';url.hash='';url.searchParams.set('post',stashSharePostId);
- const body='📌 Publication partagée sur STASH\n'+(post.body||'').slice(0,180)+'\nVoir la publication : '+url.toString();
+ const note=($('stashShareMessage').value||'').trim();const body=(note?note+'\n\n':'')+'📌 Publication partagée sur STASH\n'+(post.body||'').slice(0,180)+'\nVoir la publication : '+url.toString();
  const recipients=[...stashShareSelected];let sent=0,failed=0;
  for(const recipientId of recipients){
   const created=await db.rpc('create_direct_conversation',{p_recipient_id:recipientId});
