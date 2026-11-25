@@ -815,4 +815,24 @@ async function refresh(){if(busy)return;busy=true;try{
  client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 })();
 </script>
+
+<script id="stash-realtime-online-presence">
+(()=>{
+ if(!window.supabase?.createClient||window.__stashPresenceStarted)return;
+ window.__stashPresenceStarted=true;
+ const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
+ let channel=null,userId=null,tracked=false,starting=false;
+ const render=()=>{
+  const online=new Set();
+  if(channel){const state=channel.presenceState()||{};Object.values(state).flat().forEach(p=>{if(p?.userId)online.add(String(p.userId))})}
+  document.querySelectorAll('[data-stash-online]').forEach(el=>el.classList.toggle('stash-is-online',online.has(el.dataset.stashOnline)));
+ };
+ async function track(){if(!channel||!userId||tracked||document.visibilityState==='hidden')return;try{await channel.track({userId,onlineAt:new Date().toISOString()});tracked=true}catch(e){console.warn('STASH presence track:',e.message)}}
+ async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online',{config:{presence:{key:id}}}).on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
+ client.auth.getSession().then(({data})=>connect(data.session?.user?.id||null));
+ client.auth.onAuthStateChange((event,session)=>setTimeout(()=>connect(session?.user?.id||null),0));
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(channel&&tracked){channel.untrack();tracked=false}}else track()});
+ window.addEventListener('focus',track);window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
+})();
+</script>
 </body></html>
