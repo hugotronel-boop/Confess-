@@ -947,11 +947,10 @@ function positionEmojiPicker(){
  const margin=12,gap=8;
  const width=Math.min(220,window.innerWidth-margin*2);
  picker.style.width=width+'px';
- const left=Math.max(margin,Math.min(window.innerWidth-width-margin,rect.left+rect.width/2-width/2));
- const height=picker.offsetHeight;
- let top=rect.bottom+gap;
- if(top+height>window.innerHeight-margin)top=rect.top-height-gap;
- top=Math.max(margin,Math.min(window.innerHeight-height-margin,top));
+ // Décalage volontaire vers la gauche et vers le haut, même si le menu
+ // chevauche le bouton « Modifier le profil ».
+ const left=Math.max(margin,Math.min(window.innerWidth-width-margin,rect.left+rect.width/2-width/2-38));
+ const top=Math.max(margin,rect.bottom+gap-58);
  picker.style.left=left+'px';picker.style.top=top+'px';
 }
 $('pickEmoji').onclick=()=>{
