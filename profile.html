@@ -884,7 +884,7 @@ function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function showAvatar(path){const el=$('avatar');if(path){const {data}=db.storage.from('confess-avatars').getPublicUrl(path);const publicUrl=data.publicUrl||'';const imageUrl=publicUrl+(publicUrl.includes('?')?'&':'?')+'v='+Date.now();el.innerHTML='<img alt="Photo de profil" src="'+esc(imageUrl)+'" loading="eager">'}else el.textContent=(profile?.username||'?').slice(0,1).toUpperCase()}
 async function load(){
- const {data:{session}}=await db.auth.getSession();user=session?.user;
+ const {data:{session}}=await db.auth.getSession();user=session?.user;if(user)$('avatar').dataset.stashOnline=user.id;
  if(!user){location.href='auth.html';return}
  const {data,error}=await db.from('profiles').select('id,username,bio,avatar_path,profile_emoji,created_at').eq('id',user.id).maybeSingle();
  if(error||!data){toast("Impossible de charger ton profil.");console.error(error);return}
@@ -1295,11 +1295,11 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   document.querySelectorAll('[data-stash-online]').forEach(el=>el.classList.toggle('stash-is-online',online.has(el.dataset.stashOnline)));
  };
  async function track(){if(!channel||!userId||tracked||document.visibilityState==='hidden')return;try{await channel.track({userId,onlineAt:new Date().toISOString()});tracked=true}catch(e){console.warn('STASH presence track:',e.message)}}
- async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online',{config:{presence:{key:id}}}).on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
+ async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online').on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
  client.auth.getSession().then(({data})=>connect(data.session?.user?.id||null));
  client.auth.onAuthStateChange((event,session)=>setTimeout(()=>connect(session?.user?.id||null),0));
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(channel&&tracked){channel.untrack();tracked=false}}else track()});
  window.addEventListener('focus',track);window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
 })();
 </script>
-</body></html>
+<style id="stash-profile-online-dot">#avatar[data-stash-online]{position:relative;overflow:visible!important}#avatar[data-stash-online]::after{content:'';position:absolute;right:1px;bottom:2px;width:12px;height:12px;border-radius:50%;background:#32d36b;border:2px solid #080808;opacity:0;transform:scale(.7);transition:opacity .15s,transform .15s;pointer-events:none}#avatar[data-stash-online].stash-is-online::after{opacity:1;transform:scale(1)}</style></body></html>
