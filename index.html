@@ -597,6 +597,12 @@ html body header.top.stash-feed-top .feed-search-button{
 #commentsOverlay.show{opacity:1}
 #commentsOverlay.is-closing{opacity:0;pointer-events:none}
 #commentsOverlay.is-closing .modal{transform:translateY(105%)!important}
+/* Photos de profil : cadrage cohérent sur le fil et les commentaires */
+.avatar img,#userAvatar img,#composeAvatar img,.post-avatar img,.comment-avatar img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center;border-radius:inherit}
+#userAvatar,#composeAvatar{overflow:hidden;border-radius:50%}
+.comment-author-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.comment-avatar{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#29262e;color:#fff;font-size:12px;font-weight:700}
+.comment-author-row strong{font-size:12px}
 /* STASH — panneau commentaires plein écran avec fermeture par glissement */
 @media(max-width:620px){
  #commentsOverlay{
@@ -1107,7 +1113,8 @@ function startNotificationRealtime(){
   })
   .subscribe(status=>{if(status==='SUBSCRIBED')loadNotificationCount()});
 }
-function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').textContent=name[0].toUpperCase();$('composeAvatar').textContent=name[0].toUpperCase();$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.';if(!session)updateDraftStatus('Connecte-toi pour synchroniser tes brouillons')}
+function avatarHTML(path,fallback='?'){if(!path)return esc((fallback||'?').slice(0,1).toUpperCase());const url=db.storage.from('confess-avatars').getPublicUrl(path).data.publicUrl;return '<img src="'+esc(url)+'" alt="Photo de profil" loading="lazy" onerror="this.remove()">'}
+function setUser(){const name=profile?.username||session?.user?.email?.[0]?.toUpperCase()||'?';$('userAvatar').innerHTML=profile?.avatar_path?avatarHTML(profile.avatar_path,name):esc(name[0].toUpperCase());$('composeAvatar').innerHTML=profile?.avatar_path?avatarHTML(profile.avatar_path,name):esc(name[0].toUpperCase());$('authBtn').textContent=session?'Mon compte':'Se connecter';$('composeTitle').textContent=session?'Prêt à te confesser ?':'Une chose à raconter ?';$('composeSub').textContent=session?'Ta voix compte.':'Connecte-toi pour publier ta confession.';if(!session)updateDraftStatus('Connecte-toi pour synchroniser tes brouillons')}
 async function loadSession(){const {data}=await db.auth.getSession();session=data.session;profile=null;if(session){const {data:p}=await db.from('profiles').select('username,avatar_path').eq('id',session.user.id).maybeSingle();profile=p}setUser();if(session){if(draftLoadedForUser!==session.user.id){draftLoadedForUser=session.user.id;await restoreDraft()}}else{draftLoadedForUser=null;draftCloudLoaded=false}loadNotificationCount();startNotificationRealtime()}
 async function loadCategories(){const {data,error}=await db.from('categories').select('id,slug,label,sort_order').eq('is_active',true).order('sort_order');if(error){console.error(error);return}categories=data||[];$('categories').innerHTML='<button class="cat active" data-cat="">✨ Tout voir</button>'+categories.map(c=>`<button class="cat" data-cat="${esc(c.slug)}"># ${esc(c.label)}</button>`).join('');$('postCategory').innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');$('categoryScroller').innerHTML=categories.map((c,i)=>`<button type="button" class="publish-category-chip${i===0?' active':''}" data-publish-category="${esc(c.slug)}">${esc(c.label)}</button>`).join('');$('categoryScroller').querySelectorAll('[data-publish-category]').forEach(b=>b.addEventListener('click',()=>{$('postCategory').value=b.dataset.publishCategory;$('categoryScroller').querySelectorAll('[data-publish-category]').forEach(x=>x.classList.toggle('active',x===b));saveDraft()}));$('categories').querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{currentCategory=b.dataset.cat||null;savedOnly=false;updateCategoryUI();loadFeed()}))}
 function updateCategoryUI(){
@@ -1188,6 +1195,9 @@ async function loadFeed(reset=true){
   const c=await db.from('comments').select('post_id').eq('status','published').in('post_id',ids);comments=c.data||[];
   if(session){const m=await db.from('post_bookmarks').select('post_id').eq('user_id',session.user.id).in('post_id',ids);marks=m.data||[]}
  }
+ const authorIds=[...new Set(rows.filter(p=>!p.is_anonymous&&p.author_profile_id).map(p=>p.author_profile_id))];
+ let authorProfiles={};
+ if(authorIds.length){const {data:authors,error:authorsError}=await db.from('profiles').select('id,avatar_path').in('id',authorIds);if(authorsError)console.warn('Photos des auteurs indisponibles:',authorsError);(authors||[]).forEach(p=>authorProfiles[p.id]=p)}
  const counts={};reactions.forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1});
  const commentCounts={};comments.forEach(c=>{commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1});
  const liked=new Set(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>r.post_id));
@@ -1196,7 +1206,7 @@ async function loadFeed(reset=true){
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':'💬'}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':(authorProfiles[p.author_profile_id]?.avatar_path?avatarHTML(authorProfiles[p.author_profile_id].avatar_path,p.author_label):esc((p.author_label||'M')[0].toUpperCase()))}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
    <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}" aria-label="J'aime" title="J'aime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11A4.8 4.8 0 0 1 12 6.5a4.8 4.8 0 0 1 8.8 2.3Z"/></svg><span>${counts[p.id]||0}</span></button>
    <button class="action" data-comments="${p.id}" aria-label="Commenter" title="Commenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
@@ -1358,11 +1368,13 @@ function closeComments(){
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
  activePost=id;activeReply=null;$('replyingBar').classList.remove('show');lockCommentsPage();$('commentsOverlay').classList.remove('is-closing');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
- const {data,error}=await db.from('comments').select('id,body,author_label,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
+ const {data,error}=await db.from('comments').select('id,body,author_label,author_profile_id,is_anonymous,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
  const rows=data||[];activeCommentRows=rows;
  if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas encore de réponse. Lance la discussion !</div>';updateCommentSortUI();return}
  const ids=rows.map(x=>x.id),liveIds=rows.filter(x=>x.status==='published').map(x=>x.id);
+ const commentAuthorIds=[...new Set(rows.filter(x=>!x.is_anonymous&&x.author_profile_id).map(x=>x.author_profile_id))];let commentProfiles={};
+ if(commentAuthorIds.length){const {data:authors}=await db.from('profiles').select('id,avatar_path').in('id',commentAuthorIds);(authors||[]).forEach(p=>commentProfiles[p.id]=p)}
  let myCommentIds=new Set();
  if(session){const {data:mine,error:mineError}=await db.rpc('get_my_confess_comment_ids',{p_comment_ids:ids});if(mineError)console.error(mineError);myCommentIds=new Set((mine||[]).map(x=>x.comment_id))}
  let reactions=[];
@@ -1380,7 +1392,8 @@ async function openComments(id){
   if(x.status==='deleted')return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>Commentaire supprimé</strong><p>Ce commentaire a été supprimé par son auteur.</p><small>'+ago(x.created_at)+'</small></div>';
   const edited=x.updated_at&&new Date(x.updated_at).getTime()>new Date(x.created_at).getTime()+1000;
   const ownerActions=myCommentIds.has(x.id)?'<button type="button" data-edit-comment="'+x.id+'">✏️ Modifier</button><button type="button" data-delete-comment="'+x.id+'">🗑️ Supprimer</button>':'';
-  return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>'+esc(x.author_label)+'</strong><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
+  const commentAvatar=x.is_anonymous?'🎭':(commentProfiles[x.author_profile_id]?.avatar_path?avatarHTML(commentProfiles[x.author_profile_id].avatar_path,x.author_label):esc((x.author_label||'M')[0].toUpperCase()));
+  return '<div class="'+classes+'" id="comment-'+x.id+'"><div class="comment-author-row"><span class="comment-avatar">'+commentAvatar+'</span><strong>'+esc(x.author_label)+'</strong></div><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
  };
  $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child,true)).join('')).join('');
  $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
