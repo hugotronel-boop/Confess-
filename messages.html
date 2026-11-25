@@ -743,6 +743,7 @@ async function refresh(){if(busy)return;busy=true;try{
   if(channel){const state=channel.presenceState()||{};Object.values(state).flat().forEach(p=>{if(p?.userId)online.add(String(p.userId))})}
   document.querySelectorAll('[data-stash-online]').forEach(el=>el.classList.toggle('stash-is-online',online.has(el.dataset.stashOnline)));
  };
+ new MutationObserver(render).observe(document.body,{childList:true,subtree:true});
  async function track(){if(!channel||!userId||tracked||document.visibilityState==='hidden')return;try{await channel.track({userId,onlineAt:new Date().toISOString()});tracked=true}catch(e){console.warn('STASH presence track:',e.message)}}
  async function connect(id){if(id===userId&&channel){if(document.visibilityState!=='hidden')track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online').on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()});}
  client.auth.getSession().then(({data})=>connect(data.session?.user?.id||null));
