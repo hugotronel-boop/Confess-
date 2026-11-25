@@ -11,6 +11,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+.stash-share-message{display:flex;flex-direction:column;gap:8px;margin:2px 0 5px;min-width:0}
+.stash-share-note{font-size:13px;line-height:1.45;color:inherit;white-space:pre-wrap}
+.stash-shared-post{display:block;max-width:100%;padding:12px 13px;border:1px solid rgba(255,255,255,.2);border-radius:15px;background:linear-gradient(145deg,#242424,#151515);color:#fff;text-decoration:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:transform .16s ease,border-color .16s ease}
+.stash-shared-post:active{transform:scale(.985);border-color:rgba(255,255,255,.48)}
+.stash-shared-post-top{display:flex;align-items:center;gap:10px}
+.stash-shared-post-mark{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:#fff;color:#000;font-size:19px;font-weight:900}
+.stash-shared-post-top>span:nth-child(2){display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.stash-shared-post-top strong{font-size:13px;font-weight:800}
+.stash-shared-post-top small{font-size:10px;color:#aaa}
+.stash-shared-post-arrow{font-size:18px;color:#bbb}
+.stash-shared-post-preview{display:block;margin:10px 0 9px;color:#e5e5e5;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.stash-shared-post-cta{display:block;padding-top:9px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;font-weight:800;color:#fff}
 :root{color-scheme:dark;--bg:#000;--panel:#101010;--panel2:#171717;--line:#252525;--muted:#858585;--text:#f5f5f5;--accent:#fff}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#000;color:var(--text);font-family:Inter,system-ui,sans-serif}
@@ -268,7 +280,25 @@ body.chat-conversation-open .chat-scroll{
 const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);
 let me=null,threads=[],threadSettings={},activeId=null,activePeer=null,realtime=null,loadingMessages=false,groupDirectory=[],selectedGroupMembers=new Set(),typingTimer=null,isTyping=false,activeMessageIds=[],draftRecipientIds=[],draftProfiles=[],draftMode=false,draftGroupMode=false,recipientDirectory=[],threadPressTimer=null,suppressThreadClick=false;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function formatMessageBody(value){return esc(value).replace(/(https:\/\/[^\s<]+)/g,url=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer" style="color:#fff;text-decoration:underline;text-underline-offset:3px">Voir la publication ↗</a>')}
+function formatMessageBody(value){
+ const raw=String(value??'');
+ const marker='📌 Publication partagée sur STASH';
+ const markerAt=raw.indexOf(marker);
+ if(markerAt!==-1){
+  const note=raw.slice(0,markerAt).trim();
+  const rest=raw.slice(markerAt+marker.length).trim();
+  const match=rest.match(/Voir la publication\s*:\s*(https:\/\/[^\s]+)/i);
+  if(match){
+   let href='';
+   try{const parsed=new URL(match[1]);if(parsed.protocol==='https:'&&parsed.hostname==='hugotronel-boop.github.io')href=parsed.href}catch(e){}
+   if(href){
+    const preview=rest.slice(0,match.index).trim();
+    return '<div class="stash-share-message">'+(note?'<div class="stash-share-note">'+esc(note)+'</div>':'')+'<a class="stash-shared-post" href="'+esc(href)+'"><span class="stash-shared-post-top"><span class="stash-shared-post-mark">S</span><span><strong>Publication partagée</strong><small>STASH · Ouvrir dans le fil</small></span><span class="stash-shared-post-arrow">↗</span></span>'+(preview?'<span class="stash-shared-post-preview">'+esc(preview)+'</span>':'')+'<span class="stash-shared-post-cta">Voir la publication</span></a></div>';
+   }
+  }
+ }
+ return esc(raw).replace(/(https:\/\/[^\s<]+)/g,url=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer" style="color:#fff;text-decoration:underline;text-underline-offset:3px">Voir le lien ↗</a>');
+}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600)}
 function ago(v){const d=Math.max(0,Date.now()-new Date(v).getTime());if(d<60000)return "à l'instant";if(d<3600000)return Math.floor(d/60000)+' min';if(d<86400000)return Math.floor(d/3600000)+' h';if(d<604800000)return Math.floor(d/86400000)+' j';return new Date(v).toLocaleDateString('fr-FR')}
 function avatar(p){if(p?.group)return '<span class="avatar">👥</span>';return p?.avatar_path?'<span class="avatar"><img src="'+esc(db.storage.from('confess-avatars').getPublicUrl(p.avatar_path).data.publicUrl)+'" alt=""></span>':'<span class="avatar">'+esc((p?.username||'?')[0].toUpperCase())+'</span>'}
