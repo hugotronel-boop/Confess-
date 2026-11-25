@@ -669,6 +669,7 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:0 0 24px!im
 .notification-day .item{width:100%;display:flex;align-items:center;gap:13px;text-align:left;padding:14px 18px;border:0;border-bottom:1px solid rgba(255,255,255,.075);border-radius:0;background:transparent!important;color:#fff}
 .notification-day .item.unread{background:rgba(255,108,171,.055)!important}
 .notification-day .symbol{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.09);font-size:19px}
+.notification-day .symbol img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%}
 .notification-day .copy{min-width:0;flex:1}
 .notification-day .copy strong{display:block;font-size:12px;font-weight:650;line-height:1.45}
 .notification-day .copy p{margin:4px 0 0;color:#96939d;font-size:10px;line-height:1.45}
@@ -766,13 +767,13 @@ startNotificationRealtime();
 const {data,error}=await db.from('notifications').select('id,user_id,actor_id,kind,post_id,comment_id,conversation_id,sanction_id,appeal_id,is_read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(100);
 if(error){console.error(error);$('list').innerHTML='<div class="empty">Impossible de charger tes notifications.</div>';loading=false;return}
 items=(data||[]).filter(n=>n.kind!=='message');const actorIds=[...new Set(items.map(x=>x.actor_id).filter(Boolean))];let actors={};
-if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
+if(actorIds.length){const {data:profiles}=await db.from('profiles').select('id,username,avatar_path').in('id',actorIds);(profiles||[]).forEach(p=>actors[p.id]=p)}
 if(!items.length){$('list').innerHTML='<div class="empty">Tu es à jour ! ✨<br>Quand quelqu’un interagira avec toi, tu le verras ici.</div>';loading=false;return}
 const groups=new Map();
 items.forEach(n=>{const d=new Date(n.created_at);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)});
 const today=new Date();today.setHours(0,0,0,0);const yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);
 const dateTitle=key=>{const [y,m,d]=key.split('-').map(Number);const date=new Date(y,m-1,d);if(date.getTime()===today.getTime())return "Aujourd’hui";if(date.getTime()===yesterday.getTime())return "Hier";return date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:date.getFullYear()===today.getFullYear()?undefined:'numeric'})};
-$('list').innerHTML=[...groups.entries()].map(([day,rows])=>'<section class="notification-day"><h2>'+esc(dateTitle(day))+'</h2>'+rows.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+m.icon+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('')+'</section>').join('');
+$('list').innerHTML=[...groups.entries()].map(([day,rows])=>'<section class="notification-day"><h2>'+esc(dateTitle(day))+'</h2>'+rows.map(n=>{const m=message(n,actors[n.actor_id]);return '<button class="item '+(!n.is_read?'unread':'')+'" data-notif="'+n.id+'"><span class="symbol">'+(actors[n.actor_id]?.avatar_path?'<img src="'+esc(db.storage.from(\'confess-avatars\').getPublicUrl(actors[n.actor_id].avatar_path).data.publicUrl)+'" alt="" loading="lazy">':m.icon)+'</span><span class="copy"><strong>'+esc(m.title)+'</strong><p>'+esc(m.sub)+' · '+esc(ago(n.created_at))+'</p></span>'+(!n.is_read?'<span class="dot"></span>':'')+'</button>'}).join('')+'</section>').join('');
 
 $('list').querySelectorAll('[data-notif]').forEach(b=>{
  let holdTimer=null,longPressed=false;
