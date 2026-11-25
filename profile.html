@@ -944,7 +944,7 @@ function closeEmojiPicker(){$('emojiPicker').hidden=true}
 function positionEmojiPicker(){
  const picker=$('emojiPicker'),button=$('pickEmoji');
  const rect=button.getBoundingClientRect();
- const margin=12,gap=8;
+ const margin=24,gap=8;
  const width=Math.min(220,window.innerWidth-margin*2);
  picker.style.width=width+'px';
  // Décalage volontaire vers la gauche et vers le haut, même si le menu
