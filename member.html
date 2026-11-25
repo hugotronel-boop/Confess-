@@ -786,7 +786,7 @@ main{width:min(680px,100%)!important;margin:0 auto!important;padding:22px 16px 3
 .section-head{margin-top:5px!important}
 .confess-global-nav a[data-nav="notifications"]{display:none!important}
 </style>
-</head><body><header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'" aria-label="Retour au fil">&lt;</button><button class="confess-bell" id="confessBell" aria-label="Notifications">🔔<span class="confess-bell-count" id="confessBellCount" hidden>0</span></button></header><main><section class="hero"><div class="profile"><div class="member-avatar-wrap"><div class="avatar" id="avatar">?</div><span class="member-profile-emoji" id="profileEmoji" hidden></span></div><div class="info"><h1 id="name">Profil membre</h1><p class="handle" id="handle"></p><p class="since" id="since"></p><p class="bio" id="bio"></p><button class="follow" id="followBtn" hidden>S'abonner</button><button class="message-btn" id="messageBtn" hidden>💬 Message</button><div class="moderation-actions" id="moderationActions" hidden><button id="blockBtn">🚫 Bloquer</button><button id="muteBtn">🙈 Masquer</button><button id="reportMemberBtn">⚑ Signaler</button></div></div></div><div class="stats"><div class="stat"><strong id="postsCount">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="followersCount">—</strong><span>Abonnés</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="followingCount">—</strong><span>Abonnements</span></button></div></section><div class="section-head"><h2>Publications</h2></div><div id="posts"><div class="loading">Chargement du profil…</div></div></main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
+</head><body><header class="top"><div class="brand"><img class="stash-brand-image" src="./assets/stash-logo.png" alt="STASH"><strong>STASH</strong></div><button class="back" onclick="location.href='index.html'" aria-label="Retour au fil">&lt;</button></header><main><section class="hero"><div class="profile"><div class="member-avatar-wrap"><div class="avatar" id="avatar">?</div><span class="member-profile-emoji" id="profileEmoji" hidden></span></div><div class="info"><h1 id="name">Profil membre</h1><p class="handle" id="handle"></p><p class="since" id="since"></p><p class="bio" id="bio"></p><button class="follow" id="followBtn" hidden>S'abonner</button><button class="message-btn" id="messageBtn" hidden>💬 Message</button><div class="moderation-actions" id="moderationActions" hidden><button id="blockBtn">🚫 Bloquer</button><button id="muteBtn">🙈 Masquer</button><button id="reportMemberBtn">⚑ Signaler</button></div></div></div><div class="stats"><div class="stat"><strong id="postsCount">—</strong><span>Publications</span></div><button class="stat stat-action" type="button" data-follow-list="followers"><strong id="followersCount">—</strong><span>Abonnés</span></button><button class="stat stat-action" type="button" data-follow-list="following"><strong id="followingCount">—</strong><span>Abonnements</span></button></div></section><div class="section-head"><h2>Publications</h2></div><div id="posts"><div class="loading">Chargement du profil…</div></div></main><div class="follow-modal" id="followModal" hidden><div class="follow-shade" data-follow-close></div><section class="follow-dialog" role="dialog" aria-modal="true" aria-labelledby="followModalTitle"><header class="follow-dialog-head"><div><h2 id="followModalTitle">Abonnés</h2><p id="followModalSubtitle">Les personnes de cette communauté</p></div><button class="follow-close" type="button" data-follow-close aria-label="Fermer">×</button></header><div class="follow-switch"><button type="button" data-follow-type="followers" class="active">Abonnés</button><button type="button" data-follow-type="following">Abonnements</button></div><div class="follow-list" id="followList"><div class="loading">Chargement…</div></div></section></div><div class="toast" id="toast"></div>
 <script>(()=>{const URL='https://hhntssweslmmqskhoaje.supabase.co',KEY='sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3',db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),memberId=new URLSearchParams(location.search).get('id');let me=null,following=false,isPrivate=false,requestPending=false;
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function load(){if(!memberId){$('posts').innerHTML='<div class="empty">Profil introuvable.</div>';return}const {data:{session}}=await db.auth.getSession();me=session?.user||null;const {data:p,error}=await db.from('profiles').select('id,username,bio,avatar_path,profile_emoji,created_at').eq('id',memberId).maybeSingle();if(error||!p){$('posts').innerHTML='<div class="empty">Ce profil est introuvable ou indisponible.</div>';return}
@@ -852,42 +852,7 @@ document.querySelectorAll('[data-follow-close]').forEach(b=>b.addEventListener('
 document.querySelectorAll('[data-follow-type]').forEach(b=>b.addEventListener('click',()=>loadFollowList(b.dataset.followType)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('followModal').hidden)closeFollowModal()});
 
-load()})();</script><script>
-(()=> {
- if(!window.supabase?.createClient)return;
- const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');
- const badge=document.getElementById('confessBellCount');
- let channel=null,userId=null;
- async function countUnread(){
-  const {data:{session}}=await client.auth.getSession();
-  const id=session?.user?.id||null;
-  if(!id){badge.hidden=true;return}
-  const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',id).eq('is_read',false);
-  if(error){console.warn('STASH notifications:',error.message);return}
-  badge.textContent=(count||0)>99?'99+':String(count||0);
-  badge.hidden=!count;
- }
- async function connect(id){
-  if(id===userId&&channel)return;
-  if(channel){await client.removeChannel(channel);channel=null}
-  userId=id;
-  if(!id){badge.hidden=true;return}
-  channel=client.channel('confess-page-notifications-'+id)
-   .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread)
-   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'notifications',filter:'user_id=eq.'+id},countUnread)
-   .subscribe();
-  countUnread();
- }
- async function init(){const {data:{session}}=await client.auth.getSession();await connect(session?.user?.id||null)}
- document.getElementById('confessBell').addEventListener('click',()=>location.href='notifications.html');
- client.auth.onAuthStateChange((event,session)=>{
-  if(event==='SIGNED_OUT'){connect(null);return}
-  if(session?.user?.id)setTimeout(()=>connect(session.user.id),0);
- });
- init();
- window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
-})();
-</script>
+load()})();</script>
 <nav class="bottomnav confess-global-nav" aria-label="Navigation principale">
 <a href="./index.html" data-nav="home"><span>Feed</span></a>
 <a href="./messages.html" data-nav="messages"><span>Message</span><span class="stash-nav-message-count" id="stashNavMessageCount" hidden>0</span></a>
