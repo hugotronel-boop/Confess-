@@ -58,6 +58,7 @@ main{width:min(920px,100%);margin:0 auto;padding:18px 18px 30px}
 .search-empty{padding:22px 16px;color:#888;font-size:13px;text-align:center}
 .avatar{width:48px;height:48px;min-width:48px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#242424;color:#fff;font-weight:700;border:1px solid #333}
 .avatar img{width:100%;height:100%;object-fit:cover}
+.bubble-sender{display:flex;align-items:center;gap:7px;margin-bottom:6px}.bubble-sender .avatar{width:22px;height:22px;min-width:22px;flex:0 0 22px;font-size:10px}.bubble-sender strong{font-size:10px;color:#ffb6d7}
 .thread-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .thread-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .thread-top strong{font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -432,10 +433,10 @@ async function loadMessages(){
  loadingMessages=false;
  if(error){toast('Impossible de charger les messages.');console.error(error);return}
  const rows=(data||[]).reverse();activeMessageIds=rows.map(m=>m.id);
- let senders={},readCounts={};
+ let senders={},senderProfiles={},readCounts={};
  if(activePeer&&activePeer.group&&rows.length){
   const ids=[...new Set(rows.map(m=>m.sender_id).filter(id=>id&&id!==me.id))];
-  if(ids.length){const {data:people}=await db.from('profiles').select('id,username').in('id',ids);(people||[]).forEach(p=>senders[p.id]=p.username)}
+  if(ids.length){const {data:people}=await db.from('profiles').select('id,username,avatar_path').in('id',ids);(people||[]).forEach(p=>{senders[p.id]=p.username;senderProfiles[p.id]=p})}
   const {data:reads,error:readError}=await db.from('message_reads').select('message_id,user_id').in('message_id',activeMessageIds);
   if(!readError)(reads||[]).forEach(r=>{readCounts[r.message_id]=(readCounts[r.message_id]||0)+1});
  }
@@ -443,7 +444,7 @@ async function loadMessages(){
  $('chatScroll').innerHTML=rows.length?rows.map(m=>{
   const mine=m.sender_id===me.id;
   const receipt=mine?(activePeer?.group?(readCounts[m.id]?' · Lu par '+readCounts[m.id]+'/'+totalReaders:''):(m.read_at?' · Lu':'')):'';
-  const sender=activePeer&&activePeer.group&&!mine?'<strong style="display:block;font-size:10px;color:#ffb6d7;margin-bottom:4px">'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong>':'';
+  const sender=activePeer&&activePeer.group&&!mine?'<div class="bubble-sender">'+avatar(senderProfiles[m.sender_id]||{username:senders[m.sender_id]||'Membre'})+'<strong>'+esc(m.sender_id?(senders[m.sender_id]||'Membre'):'Compte supprimé')+'</strong></div>':'';
   return '<div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+receipt+'</time></div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
