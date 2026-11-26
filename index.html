@@ -765,12 +765,14 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
 }
 </style>
 <style id="stash-navigation-no-glass">
-/* Navigation sans effet verre : conservation de la disposition et des libellés */
+/* Barre de navigation translucide avec flou réel de l'arrière-plan */
 .confess-global-nav{
- background:#171717!important;background-image:none!important;
- -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ background:rgba(8,8,10,.38)!important;background-image:none!important;
+ -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
+ backdrop-filter:blur(24px) saturate(165%)!important;
  border:1px solid rgba(255,255,255,.12)!important;
- box-shadow:none!important;
+ border-bottom:0!important;
+ box-shadow:0 -8px 24px rgba(0,0,0,.12)!important;
 }
 .confess-global-nav a:not(.nav-publish-center)::before{
  content:none!important;display:none!important;
