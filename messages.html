@@ -218,7 +218,7 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
  body.chat-conversation-open .chat-scroll{
   flex:1 1 0!important;min-height:0!important;max-height:none!important;height:auto!important;
   overflow-y:auto!important;overscroll-behavior:contain!important;
-  padding:18px 14px 22px!important;
+  padding:18px 14px 112px!important;
  }
  body.chat-conversation-open .composer{
   flex:0 0 auto!important;position:relative!important;z-index:5!important;
@@ -282,9 +282,10 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
  body.chat-conversation-open .composer{
   display:flex!important;align-items:center!important;gap:0!important;
   min-height:64px!important;padding:9px 12px calc(9px + env(safe-area-inset-bottom))!important;
-  background:rgba(8,8,10,.48)!important;border-top:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(8,8,10,.42)!important;border-top:1px solid rgba(255,255,255,.08)!important;
   -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
-  box-shadow:0 -8px 24px rgba(0,0,0,.12)!important;position:relative!important;
+  box-shadow:0 -8px 24px rgba(0,0,0,.12)!important;
+  position:absolute!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;
  }
  body.chat-conversation-open .composer textarea{
   flex:1 1 100%!important;width:100%!important;min-width:0!important;
