@@ -926,6 +926,16 @@ async function refresh(){if(busy)return;busy=true;try{
  window.addEventListener('focus',track);window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)});
 })();
 </script>
+
+<style id="stash-chat-composer-glass-correct-page">
+@media(max-width:700px){
+ body.chat-conversation-open .composer{
+  background:rgba(22,22,28,.24)!important;background-color:rgba(22,22,28,.24)!important;background-image:none!important;
+  -webkit-backdrop-filter:blur(28px) saturate(180%)!important;backdrop-filter:blur(28px) saturate(180%)!important;
+  border:0!important;border-top:1px solid rgba(255,255,255,.12)!important;box-shadow:0 -8px 26px rgba(0,0,0,.12)!important;
+ }
+}
+</style>
 </body></html>
 
 <style id="stash-composer-glass-final-override">
