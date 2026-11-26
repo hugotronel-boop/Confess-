@@ -948,3 +948,39 @@ async function refresh(){if(busy)return;busy=true;try{
  }
 }
 </style>
+
+
+<style id="stash-keyboard-composer-only">
+@media(max-width:700px){
+ body.chat-conversation-open .composer{
+  position:fixed!important;
+  left:0!important;right:0!important;bottom:var(--stash-keyboard-gap,0px)!important;
+  z-index:2147482000!important;
+  width:100%!important;
+ }
+}
+</style>
+<script id="stash-keyboard-composer-only-script">
+(()=>{
+ const composer=document.querySelector('body.chat-conversation-open .composer')||document.querySelector('.composer');
+ if(!composer)return;
+ const vv=window.visualViewport;
+ let raf=0;
+ const update=()=>{
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(()=>{
+   const active=document.body.classList.contains('chat-conversation-open') &&
+    document.activeElement && document.activeElement.matches('textarea#messageBody');
+   const gap=active&&vv?Math.max(0,Math.round(window.innerHeight-(vv.height+vv.offsetTop))):0;
+   composer.style.setProperty('--stash-keyboard-gap',gap+'px');
+   composer.style.bottom=gap+'px';
+  });
+ };
+ if(vv){vv.addEventListener('resize',update);vv.addEventListener('scroll',update)}
+ window.addEventListener('resize',update);
+ document.addEventListener('focusin',e=>{if(e.target.matches('textarea#messageBody'))update()});
+ document.addEventListener('focusout',e=>{if(e.target.matches('textarea#messageBody'))setTimeout(update,180)});
+ document.addEventListener('visibilitychange',update);
+ update();
+})();
+</script>
