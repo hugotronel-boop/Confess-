@@ -1495,12 +1495,15 @@ async function openComments(id){
   if(x.status==='deleted')return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>Commentaire supprimé</strong><p>Ce commentaire a été supprimé.</p><small>'+ago(x.created_at)+'</small></div>';
   const edited=x.updated_at&&new Date(x.updated_at).getTime()>new Date(x.created_at).getTime()+1000;
   const isMyComment=myCommentIds.has(x.id);
-  const ownerActions=(isMyComment?'<button type="button" data-edit-comment="'+x.id+'">✏️ Modifier</button>':'')+((isMyComment||canModerateComments)?'<button type="button" data-delete-comment="'+x.id+'">🗑️ Supprimer</button>':'');
+  const canDelete=isMyComment||canModerateComments;
+  const menuItems='<button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+(isMyComment?'<button type="button" data-edit-comment="'+x.id+'">✎ Modifier</button>':'')+(canDelete?'<button type="button" data-delete-comment="'+x.id+'">⌫ Supprimer</button>':'');
   const commentAvatar=x.is_anonymous?'🎭':(commentProfiles[x.author_profile_id]?.avatar_path?avatarHTML(commentProfiles[x.author_profile_id].avatar_path,x.author_label):esc((x.author_label||'M')[0].toUpperCase()));
-  return '<div class="'+classes+'" id="comment-'+x.id+'"><div class="comment-author-row"><span class="comment-avatar">'+commentAvatar+'</span><strong>'+esc(x.author_label)+'</strong></div><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
+  return '<div class="'+classes+'" id="comment-'+x.id+'"><div class="comment-author-row"><span class="comment-avatar">'+commentAvatar+'</span><strong>'+esc(x.author_label)+'</strong><div class="comment-menu-wrap"><button type="button" class="comment-menu-trigger" data-comment-menu="'+x.id+'" aria-label="Options du commentaire" aria-expanded="false">···</button><div class="comment-menu">'+menuItems+'</div></div></div><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button></div></div>';
  };
  $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child,true)).join('')).join('');
- $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{if(document.body.classList.contains('stash-post-detail'))document.body.classList.add('stash-comment-compose-open');activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
+ $('commentsList').querySelectorAll('[data-comment-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const wrap=b.closest('.comment-menu-wrap');const wasOpen=wrap.classList.contains('open');$('commentsList').querySelectorAll('.comment-menu-wrap.open').forEach(w=>{w.classList.remove('open');w.querySelector('[data-comment-menu]')?.setAttribute('aria-expanded','false')});if(!wasOpen){wrap.classList.add('open');b.setAttribute('aria-expanded','true')}});
+ $('commentsList').querySelectorAll('.comment-menu button').forEach(b=>b.onclick=()=>b.closest('.comment-menu-wrap').classList.remove('open'));
+ $('commentsList').querySelectorAll('[data-reply]').forEach(b=>{if(document.body.classList.contains('stash-post-detail'))document.body.classList.add('stash-comment-compose-open');activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
  $('commentsList').querySelectorAll('[data-comment-like]').forEach(b=>b.onclick=()=>toggleCommentLike(b.dataset.commentLike));
  $('commentsList').querySelectorAll('[data-report-comment]').forEach(b=>b.onclick=()=>reportTarget('comment_id',b.dataset.reportComment));
  $('commentsList').querySelectorAll('[data-edit-comment]').forEach(b=>b.onclick=()=>editComment(b.dataset.editComment));
@@ -1856,4 +1859,15 @@ async function refresh(){if(busy)return;busy=true;try{
 </script>
 
 
-</body></html>
+<style id="stash-comment-mini-menu">
+.comment-author-row{position:relative;padding-right:34px}
+.comment-menu-wrap{position:absolute;right:0;top:-3px;z-index:20}
+.comment-menu-trigger{width:28px;height:28px;padding:0;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:rgba(255,255,255,.055);color:#aaa;font-size:19px;line-height:18px;letter-spacing:1px;display:grid;place-items:center}
+.comment-menu-trigger:active{background:rgba(255,255,255,.15);color:#fff}
+.comment-menu{display:none;position:absolute;right:0;top:33px;min-width:142px;padding:5px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:#17171b;box-shadow:0 12px 30px rgba(0,0,0,.45);z-index:100}
+.comment-menu-wrap.open .comment-menu{display:grid}
+.comment-menu button{border:0;background:transparent;color:#eee;text-align:left;padding:10px 11px;border-radius:8px;font-size:12px;white-space:nowrap}
+.comment-menu button:active{background:rgba(255,255,255,.1)}
+.comment-menu button[data-delete-comment]{color:#ff9292}
+.comment-menu button[data-report-comment]{color:#ffb5d4}
+</style></body></html>
