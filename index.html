@@ -1916,4 +1916,29 @@ html body nav.bottomnav.confess-global-nav::after{
  border-radius:0 0 999px 999px!important;
  pointer-events:none!important;
 }
+
+<style id="stash-nav-compact-height">
+/* Barre compacte : le contour épouse les boutons */
+html body nav.bottomnav.confess-global-nav{
+  height:calc(76px + env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  padding:4px 14px calc(4px + env(safe-area-inset-bottom))!important;
+  align-items:center!important;
+}
+html body nav.bottomnav.confess-global-nav a{
+  min-height:0!important;
+  padding:2px 1px!important;
+  gap:3px!important;
+}
+html body nav.bottomnav.confess-global-nav a.nav-publish-center{
+  height:62px!important;
+  min-height:62px!important;
+  margin-top:-10px!important;
+}
+html body nav.bottomnav.confess-global-nav a.nav-publish-center b{
+  width:38px!important;height:38px!important;
+  font-size:30px!important;
+}
+</style>
 </body></html>
