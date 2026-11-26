@@ -838,6 +838,18 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 .confess-global-nav a[data-nav="messages"] .stash-nav-message-count{position:absolute!important;top:0!important;left:calc(50% + 9px)!important;z-index:6!important;display:flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;font-family:Arial,Helvetica,sans-serif!important;font-size:10px!important;font-weight:900!important;line-height:16px!important;opacity:1!important;visibility:inherit!important;white-space:nowrap!important}
 .confess-global-nav a[data-nav="messages"] .stash-nav-message-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 </style>
+<style id="stash-post-reactions">
+#feed .post-actions{position:relative!important}
+#feed .post-actions [data-like]{-webkit-touch-callout:none!important;user-select:none!important;touch-action:manipulation!important}
+#feed .post-actions .post-reaction-symbol{font-size:21px!important;line-height:1!important;min-width:22px;text-align:center}
+#feed .post-actions [data-like].selected{color:#fff!important}
+#feed .post-reaction-picker{position:absolute;z-index:500;left:-8px;bottom:calc(100% + 9px);display:flex;align-items:center;gap:4px;padding:8px 9px;border:1px solid rgba(255,255,255,.2);border-radius:28px;background:rgba(25,25,28,.97);box-shadow:0 12px 35px #000b;backdrop-filter:blur(18px);white-space:nowrap;animation:stashReactionPop .16s ease-out}
+#feed .post-reaction-picker[hidden]{display:none!important}
+#feed .post-reaction-picker button{width:34px;height:36px;flex:0 0 34px;border:0!important;border-radius:50%;background:transparent!important;color:#fff;font-size:25px;line-height:1;padding:0;transition:transform .12s ease}
+#feed .post-reaction-picker button:active{transform:scale(1.35)}
+@keyframes stashReactionPop{from{opacity:0;transform:translateY(7px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:420px){#feed .post-reaction-picker{gap:1px;padding:7px 6px}#feed .post-reaction-picker button{width:31px;flex-basis:31px;font-size:23px}}
+</style>
 </head>
 <body>
 
@@ -1204,7 +1216,7 @@ async function loadFeed(reset=true){
  if(authorIds.length){const {data:authors,error:authorsError}=await db.from('profiles').select('id,avatar_path').in('id',authorIds);if(authorsError)console.warn('Photos des auteurs indisponibles:',authorsError);(authors||[]).forEach(p=>authorProfiles[p.id]=p)}
  const counts={};reactions.forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1});
  const commentCounts={};comments.forEach(c=>{commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1});
- const liked=new Set(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>r.post_id));
+ const myReactions=new Map(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>[r.post_id,r.reaction]));
  const bookmarked=new Set(marks.map(m=>m.post_id));
  if($('sortSelect')?.value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
  postsCache=rows;
@@ -1212,7 +1224,7 @@ async function loadFeed(reset=true){
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
   <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':(authorProfiles[p.author_profile_id]?.avatar_path?avatarHTML(authorProfiles[p.author_profile_id].avatar_path,p.author_label):esc((p.author_label||'M')[0].toUpperCase()))}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
-   <button class="action ${liked.has(p.id)?'selected':''}" data-like="${p.id}" aria-label="J'aime" title="J'aime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.8c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11A4.8 4.8 0 0 1 12 6.5a4.8 4.8 0 0 1 8.8 2.3Z"/></svg><span>${counts[p.id]||0}</span></button>
+   <button class="action ${myReactions.has(p.id)?'selected':''}" data-like="${p.id}" data-current-reaction="${esc(myReactions.get(p.id)||'')}" aria-label="J'aime" title="Maintenir pour choisir une réaction"><span class="post-reaction-symbol">${myReactions.has(p.id)?(myReactions.get(p.id)==='like'?'❤️':esc(myReactions.get(p.id))):'♡'}</span><span class="post-reaction-count">${counts[p.id]||0}</span></button><div class="post-reaction-picker" data-post-reaction-picker="${p.id}" hidden>${['❤️','😂','😮','😢','😡','👍','🔥','👏','😍','🙏'].map(emoji=>'<button type="button" data-post-reaction="${p.id}" data-post-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('')}</div>
    <button class="action" data-comments="${p.id}" aria-label="Commenter" title="Commenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
    <button class="action" data-share="${p.id}" aria-label="Partager" title="Partager"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-7.5 18-3.8-7.7L2 9.5 21 3Z"/><path d="M9.7 13.3 21 3"/></svg></button>
   </div></article>`}).join('');
@@ -1245,8 +1257,23 @@ async function loadFeed(reset=true){
   toast('Ton vote est enregistré ✓');
  });
  $('feed').querySelectorAll('[data-post-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const panel=document.querySelector('[data-post-menu-panel="'+b.dataset.postMenu+'"]');const willOpen=!panel.classList.contains('open');document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));$('feed').querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(willOpen){panel.classList.add('open');b.setAttribute('aria-expanded','true')}});
- if(!window.stashPostMenuOutside){document.addEventListener('click',()=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'))});window.stashPostMenuOutside=true}
- $('feed').querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
+ if(!window.stashPostMenuOutside){document.addEventListener('click',e=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(!e.target.closest('.post-reaction-picker')&&!e.target.closest('[data-like]'))closePostReactionPickers()});window.stashPostMenuOutside=true}
+ $('feed').querySelectorAll('[data-like]').forEach(b=>{
+  let holdTimer=0;
+  b.addEventListener('pointerdown',e=>{
+   if(e.pointerType==='mouse'&&e.button!==0)return;
+   b.dataset.longPress='0';
+   clearTimeout(holdTimer);
+   holdTimer=setTimeout(()=>{b.dataset.longPress='1';openPostReactionPicker(b.dataset.like);},430);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(type=>b.addEventListener(type,()=>clearTimeout(holdTimer)));
+  b.onclick=()=>{if(b.dataset.longPress==='1'){b.dataset.longPress='0';return}toggleLike(b.dataset.like)};
+ });
+ $('feed').querySelectorAll('[data-post-reaction]').forEach(b=>b.onclick=async e=>{
+  e.stopPropagation();
+  await setPostReaction(b.dataset.postReaction,b.dataset.postEmoji);
+ });
+ $('feed').querySelectorAll('[data-post-reaction-picker]').forEach(p=>p.addEventListener('click',e=>e.stopPropagation()));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
@@ -1298,25 +1325,46 @@ $('stashShareSend').onclick=async()=>{
  if(sent){closeStashShare();toast(sent===1?'Publication envoyée en message privé ✓': 'Publication envoyée à '+sent+' membres ✓')}
  if(failed)toast(failed+' envoi(s) impossible(s).');
 };
-async function toggleLike(id){
+function openPostReactionPicker(id){
+ const picker=document.querySelector('[data-post-reaction-picker="'+CSS.escape(id)+'"]');
+ if(!picker)return;
+ document.querySelectorAll('[data-post-reaction-picker]').forEach(x=>{if(x!==picker)x.hidden=true});
+ picker.hidden=false;
+}
+function closePostReactionPickers(){document.querySelectorAll('[data-post-reaction-picker]').forEach(x=>x.hidden=true)}
+async function setPostReaction(id,emoji){
  if(!session)return toast('Connecte-toi pour réagir à une publication.');
  const button=document.querySelector('[data-like="'+CSS.escape(id)+'"]');
  if(!button||button.dataset.busy==='1')return;
- const wasLiked=button.classList.contains('selected'),countNode=button.querySelector('span');
+ const oldReaction=button.dataset.currentReaction||'';
+ const nextReaction=oldReaction===emoji?'':emoji;
+ const countNode=button.querySelector('.post-reaction-count');
+ const symbol=button.querySelector('.post-reaction-symbol');
  const oldCount=Number(countNode?.textContent||0);
  button.dataset.busy='1';
- button.classList.toggle('selected',!wasLiked);
- if(countNode)countNode.textContent=String(Math.max(0,oldCount+(wasLiked?-1:1)));
+ button.dataset.currentReaction=nextReaction;
+ button.classList.toggle('selected',!!nextReaction);
+ if(symbol)symbol.textContent=nextReaction?(nextReaction==='like'?'❤️':nextReaction):'♡';
+ if(countNode)countNode.textContent=String(Math.max(0,oldCount+(oldReaction?0:(nextReaction?1:0))-(oldReaction&&!nextReaction?1:0)));
+ closePostReactionPickers();
  let result;
- if(wasLiked)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);
- else result=await db.from('post_reactions').insert({post_id:id,user_id:session.user.id,reaction:'like'});
+ if(!nextReaction)result=await db.from('post_reactions').delete().eq('post_id',id).eq('user_id',session.user.id);
+ else result=await db.from('post_reactions').upsert({post_id:id,user_id:session.user.id,reaction:nextReaction},{onConflict:'post_id,user_id'});
  delete button.dataset.busy;
  if(result.error){
-  button.classList.toggle('selected',wasLiked);
+  button.dataset.currentReaction=oldReaction;
+  button.classList.toggle('selected',!!oldReaction);
+  if(symbol)symbol.textContent=oldReaction?(oldReaction==='like'?'❤️':oldReaction):'♡';
   if(countNode)countNode.textContent=String(oldCount);
-  toast('Action impossible : '+result.error.message);
+  toast('Réaction impossible : '+result.error.message);
   console.error(result.error);
  }
+}
+async function toggleLike(id){
+ const button=document.querySelector('[data-like="'+CSS.escape(id)+'"]');
+ if(!button)return;
+ const current=button.dataset.currentReaction||'';
+ await setPostReaction(id,current==='like'?'like':current?'❤️':'like');
 }
 async function toggleSave(id){
  if(!session)return toast('Connecte-toi pour enregistrer une publication.');
