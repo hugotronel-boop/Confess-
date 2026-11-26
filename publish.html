@@ -681,7 +681,9 @@ body{padding-bottom:0!important}
 
 .publish-crane-button{position:fixed!important;left:17px!important;bottom:calc(18px + env(safe-area-inset-bottom))!important;z-index:1100!important;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;padding:0!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:16px!important;background:rgba(255,255,255,.09)!important;color:#fff!important;font-size:23px!important;line-height:1!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;box-shadow:0 5px 22px rgba(0,0,0,.25)!important}
 .publish-crane-button:active{transform:scale(.96)}
-/* Le bouton Annuler descend lorsqu'on actionne la grue */
+/* Le titre reste immobile ; Annuler rejoint d'abord le centre puis descend vers la grue */
+.publish-compose-header{position:sticky!important}
+.publish-compose-header>strong{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;white-space:nowrap!important}
 body.stash-crane-lowered #cancelPublish{
  position:fixed!important;top:10px!important;left:17px!important;right:auto!important;
  z-index:1201!important;justify-self:auto!important;
@@ -691,20 +693,25 @@ body.stash-crane-lowered #cancelPublish{
  background:rgba(25,25,29,.92)!important;color:#fff!important;
  box-shadow:0 5px 20px rgba(0,0,0,.32)!important;
  backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;
- transform:translateY(calc(100dvh - 124px - env(safe-area-inset-bottom)))!important;
- transition:transform 2.7s cubic-bezier(.22,.72,.25,1)!important;
+ animation:stash-crane-button-path 3.2s cubic-bezier(.22,.72,.25,1) forwards!important;
 }
 body.stash-crane-lowered #cancelPublish::before{
  content:"";position:absolute;left:50%;bottom:calc(100% - 1px);
  width:2px;height:0;transform:translateX(-50%);
  background:repeating-linear-gradient(to bottom,rgba(235,220,190,.95) 0 7px,rgba(235,220,190,.22) 7px 11px);
  filter:drop-shadow(0 0 2px rgba(255,255,255,.2));
- animation:stash-crane-rope 2.7s cubic-bezier(.22,.72,.25,1) forwards;
+ animation:stash-crane-rope 3.2s cubic-bezier(.22,.72,.25,1) forwards;
  pointer-events:none;
+}
+@keyframes stash-crane-button-path{
+ 0%{transform:translate(0,0)}
+ 22%{transform:translateX(calc(50vw - 17px - 50%))}
+ 82%{transform:translate(calc(50vw - 17px - 50%),calc(100dvh - 124px - env(safe-area-inset-bottom)))}
+ 100%{transform:translate(0,calc(100dvh - 124px - env(safe-area-inset-bottom)))}
 }
 @keyframes stash-crane-rope{to{height:calc(100dvh - 124px - env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){
- body.stash-crane-lowered #cancelPublish{transition:none!important}
+ body.stash-crane-lowered #cancelPublish{animation-duration:.01ms!important}
  body.stash-crane-lowered #cancelPublish::before{animation-duration:.01ms}
 }
 
