@@ -312,11 +312,15 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
   min-height:42px!important;height:42px!important;
  }
  body.chat-conversation-open .send{
-  flex:0 0 76px!important;min-width:76px!important;height:42px!important;
-  margin-left:-7px!important;padding:0 12px!important;
+  flex:0 0 52px!important;min-width:52px!important;height:42px!important;
+  margin-left:-7px!important;padding:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
   border:1px solid #ff6cab!important;border-radius:0 22px 22px 0!important;
-  background:#ff6cab!important;color:#160810!important;
-  font-size:12px!important;font-weight:800!important;
+  background:#ff6cab!important;color:#fff!important;
+ }
+ body.chat-conversation-open .send .send-icon{
+  display:block!important;width:21px!important;height:21px!important;
+  color:#fff!important;
  }
 }
 </style>
@@ -357,7 +361,7 @@ body.chat-conversation-open .chat-scroll{
 <section class="chat">
 <div class="chat-head" id="chatHead"><div class="placeholder">Choisis une conversation pour commencer.</div></div>
 <div class="chat-scroll" id="chatScroll"><div class="placeholder">Tes échanges privés apparaîtront ici.</div></div>
-<div class="composer"><textarea id="messageBody" maxlength="5000" placeholder="Écris ton message…" disabled></textarea><button class="send" id="sendBtn" disabled>Envoyer ↗</button></div>
+<div class="composer"><textarea id="messageBody" maxlength="5000" placeholder="Écris ton message…" disabled></textarea><button class="send" id="sendBtn" type="button" aria-label="Envoyer le message" title="Envoyer" disabled><svg class="send-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21.5 2.8 14.2 21c-.4 1-1.8 1-2.2 0l-2.7-6.1-6.1-2.7c-1-.4-1-1.8 0-2.2l18.3-7.3ZM9.8 14.2l3.8 3.8 5.2-13-13 5.2 4 1.8 6.1-4.1-4.1 6.3Z" fill="currentColor"/></svg></button></div>
 </section>
 </section>
 </main>
