@@ -850,6 +850,52 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 @keyframes stashReactionPop{from{opacity:0;transform:translateY(7px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:420px){#feed .post-reaction-picker{gap:1px;padding:7px 6px}#feed .post-reaction-picker button{width:31px;flex-basis:31px;font-size:23px}}
 </style>
+
+<style id="stash-post-detail-page">
+body.stash-post-detail{padding-bottom:24px!important;overflow-x:hidden}
+body.stash-post-detail .layout{display:block!important;width:min(680px,100%)!important;padding:12px 0 30px!important}
+body.stash-post-detail .layout>.leftside,
+body.stash-post-detail .layout>.rightside,
+body.stash-post-detail .stash-hero-3d,
+body.stash-post-detail .welcome,
+body.stash-post-detail .composer,
+body.stash-post-detail .feed-head,
+body.stash-post-detail #feedSearch,
+body.stash-post-detail #feedSearchBtn,
+body.stash-post-detail #feedTabs,
+body.stash-post-detail #visibilityFilters,
+body.stash-post-detail .confess-global-nav,
+body.stash-post-detail #loadMorePosts{display:none!important}
+body.stash-post-detail .center{width:100%;min-width:0}
+body.stash-post-detail #feed{padding:0 12px}
+body.stash-post-detail #feed .post{border:1px solid rgba(255,255,255,.13)!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;padding:18px 16px!important;margin:0!important}
+body.stash-post-detail #feed .post-body{margin:14px 0!important;font-size:15px!important;line-height:1.65!important}
+body.stash-post-detail #feed .post-actions{margin:12px 0 0!important;max-width:none!important}
+body.stash-post-detail #commentsOverlay{
+ display:block!important;position:relative!important;inset:auto!important;z-index:1!important;
+ padding:0 12px 28px!important;margin:0!important;background:transparent!important;
+ opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ pointer-events:auto!important
+}
+body.stash-post-detail #commentsOverlay .modal{
+ width:100%!important;max-width:none!important;max-height:none!important;height:auto!important;
+ overflow:visible!important;margin:0!important;padding:18px 16px!important;
+ border:1px solid rgba(255,255,255,.13)!important;border-radius:18px!important;
+ background:rgba(255,255,255,.035)!important;box-shadow:none!important;
+ transform:none!important;transition:none!important;display:flex!important;flex-direction:column!important
+}
+body.stash-post-detail #commentsOverlay .modal:before{display:none!important}
+body.stash-post-detail #commentsOverlay .modalhead{cursor:default!important;touch-action:auto!important}
+body.stash-post-detail #commentsOverlay .close{display:none!important}
+body.stash-post-detail #commentsOverlay #commentsList{overflow:visible!important;max-height:none!important}
+body.stash-post-detail #commentsOverlay .rule{margin-top:16px!important;padding-top:14px!important}
+body.stash-post-detail #commentsOverlay .empty{padding:22px 10px!important}
+body.stash-post-detail .feed-header-label{cursor:pointer!important;font-size:13px!important;color:#fff!important}
+@media(max-width:620px){
+ body.stash-post-detail .layout{padding-top:10px!important}
+ body.stash-post-detail #commentsOverlay .modal{padding:16px 14px!important}
+}
+</style>
 </head>
 <body>
 
@@ -1157,6 +1203,7 @@ async function loadFeed(reset=true){
  const pageParams=reset?new URLSearchParams(location.search):new URLSearchParams();
  const linkedPostId=pageParams.get('post');
  const newlyPublishedId=pageParams.get('newpost');
+ document.body.classList.toggle('stash-post-detail',!!linkedPostId);
  let query=db.from('posts').select('id,body,is_anonymous,author_label,author_profile_id,category_id,created_at,categories(label)').eq('status','published').order('created_at',{ascending:false}).range(feedOffset,feedOffset+39);
  if(linkedPostId){query=query.eq('id',linkedPostId);followedIds=null;savedOnly=false}
  else {
@@ -1281,13 +1328,23 @@ async function loadFeed(reset=true){
  });
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
+ $('feed').querySelectorAll('[data-post]').forEach(card=>card.addEventListener('click',e=>{
+  if(document.body.classList.contains('stash-post-detail'))return;
+  if(e.target.closest('button,a,input,textarea,select,.post-menu-wrap,.post-reaction-picker'))return;
+  location.href=location.pathname+'?post='+encodeURIComponent(card.dataset.post);
+ }));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
  $('feed').querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>reportPost(b.dataset.report));
  $('feed').querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
  $('feed').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
  $('feed').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
  renderLoadMoreButton()
- if(linkedPostId){const el=document.querySelector('[data-post=\"'+CSS.escape(linkedPostId)+'\"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--pink)';el.style.transition='outline .25s';setTimeout(()=>el.style.outline='',2600);history.replaceState({},'',location.pathname+location.hash)}else if(reset){$('feed').innerHTML='<div class=\"empty\">Cette publication est introuvable ou n’est plus disponible.</div>';history.replaceState({},'',location.pathname+location.hash)}}
+ if(linkedPostId){const el=document.querySelector('[data-post=\"'+CSS.escape(linkedPostId)+'\"]');if(el){
+  const back=document.querySelector('.feed-header-label');if(back){back.textContent='‹ Retour';back.style.cursor='pointer';back.onclick=()=>location.href=location.pathname}
+  $('feedTitle').textContent='Publication';
+  openComments(linkedPostId);
+ }else if(reset){$('feed').innerHTML='<div class=\"empty\">Cette publication est introuvable ou n’est plus disponible.</div>';}}
+ else {const back=document.querySelector('.feed-header-label');if(back){back.textContent='Feed';back.onclick=null;back.style.cursor='default'}}
 }
 let stashSharePostId=null,stashShareDirectory=[],stashShareSelected=new Set();
 function closeStashShare(){const overlay=$('stashShareOverlay');if(overlay)overlay.classList.remove('open');stashSharePostId=null;stashShareSelected.clear()}
@@ -1425,11 +1482,11 @@ function closeComments(){
 }
 function updateCommentSortUI(){document.querySelectorAll('[data-comment-sort]').forEach(b=>b.classList.toggle('selected',b.dataset.commentSort===activeCommentSort))}
 async function openComments(id){
- activePost=id;activeReply=null;$('replyingBar').classList.remove('show');lockCommentsPage();$('commentsOverlay').classList.remove('is-closing');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
+ activePost=id;activeReply=null;$('replyingBar').classList.remove('show');if(!document.body.classList.contains('stash-post-detail'))lockCommentsPage();$('commentsOverlay').classList.remove('is-closing');$('commentsOverlay').classList.add('show');$('commentsList').innerHTML='<div class="loading">Chargement des réponses…</div>';
  const {data,error}=await db.from('comments').select('id,body,author_label,author_profile_id,is_anonymous,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
  const rows=data||[];activeCommentRows=rows;
- if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas encore de réponse. Lance la discussion !</div>';updateCommentSortUI();return}
+ if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas de commentaire</div>';updateCommentSortUI();return}
  const ids=rows.map(x=>x.id),liveIds=rows.filter(x=>x.status==='published').map(x=>x.id);
  const commentAuthorIds=[...new Set(rows.filter(x=>!x.is_anonymous&&x.author_profile_id).map(x=>x.author_profile_id))];let commentProfiles={};
  if(commentAuthorIds.length){const {data:authors}=await db.from('profiles').select('id,avatar_path').in('id',commentAuthorIds);(authors||[]).forEach(p=>commentProfiles[p.id]=p)}
