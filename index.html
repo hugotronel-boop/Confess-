@@ -1472,6 +1472,8 @@ async function openComments(id){
  const {data,error}=await db.from('comments').select('id,body,author_label,author_profile_id,is_anonymous,created_at,updated_at,parent_comment_id,status').eq('post_id',id).eq('status','published').order('created_at');
  if(error){$('commentsList').textContent='Impossible de charger les réponses.';console.error(error);return}
  const rows=data||[];activeCommentRows=rows;
+ let canModerateComments=false;
+ if(session){const {data:postOwner}=await db.from('posts').select('author_profile_id').eq('id',id).maybeSingle();canModerateComments=postOwner?.author_profile_id===session.user.id}
  if(!rows.length){$('commentsList').innerHTML='<div class="empty">Pas de commentaire</div>';updateCommentSortUI();return}
  const ids=rows.map(x=>x.id),liveIds=rows.filter(x=>x.status==='published').map(x=>x.id);
  const commentAuthorIds=[...new Set(rows.filter(x=>!x.is_anonymous&&x.author_profile_id).map(x=>x.author_profile_id))];let commentProfiles={};
@@ -1490,9 +1492,10 @@ async function openComments(id){
  updateCommentSortUI();
  const renderComment=(x,isReply=false)=>{
   const classes='comment'+(isReply?' reply':'')+(x.status==='deleted'?' deleted':'');
-  if(x.status==='deleted')return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>Commentaire supprimé</strong><p>Ce commentaire a été supprimé par son auteur.</p><small>'+ago(x.created_at)+'</small></div>';
+  if(x.status==='deleted')return '<div class="'+classes+'" id="comment-'+x.id+'"><strong>Commentaire supprimé</strong><p>Ce commentaire a été supprimé.</p><small>'+ago(x.created_at)+'</small></div>';
   const edited=x.updated_at&&new Date(x.updated_at).getTime()>new Date(x.created_at).getTime()+1000;
-  const ownerActions=myCommentIds.has(x.id)?'<button type="button" data-edit-comment="'+x.id+'">✏️ Modifier</button><button type="button" data-delete-comment="'+x.id+'">🗑️ Supprimer</button>':'';
+  const isMyComment=myCommentIds.has(x.id);
+  const ownerActions=(isMyComment?'<button type="button" data-edit-comment="'+x.id+'">✏️ Modifier</button>':'')+((isMyComment||canModerateComments)?'<button type="button" data-delete-comment="'+x.id+'">🗑️ Supprimer</button>':'');
   const commentAvatar=x.is_anonymous?'🎭':(commentProfiles[x.author_profile_id]?.avatar_path?avatarHTML(commentProfiles[x.author_profile_id].avatar_path,x.author_label):esc((x.author_label||'M')[0].toUpperCase()));
   return '<div class="'+classes+'" id="comment-'+x.id+'"><div class="comment-author-row"><span class="comment-avatar">'+commentAvatar+'</span><strong>'+esc(x.author_label)+'</strong></div><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
  };
@@ -1513,7 +1516,7 @@ async function editComment(id){
 }
 async function deleteComment(id){
  const row=activeCommentRows.find(x=>x.id===id);if(!session||!row||row.status!=='published')return;
- if(!confirm('Supprimer définitivement le texte de cette réponse ? Les réponses associées resteront visibles.'))return;
+ if(!confirm('Supprimer ce commentaire ? Les réponses associées resteront visibles.'))return;
  const {error}=await db.rpc('delete_confess_comment',{p_comment_id:id});
  if(error){toast('Suppression impossible : '+error.message);console.error(error);return}
  /* Retire immédiatement le commentaire de l’interface, puis synchronise le compteur. */
