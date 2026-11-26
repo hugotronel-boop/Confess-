@@ -672,7 +672,19 @@ function subscribe(id){
  renderTyping();
 }
 
+let lastReactionTap={id:null,time:0};
 $('chatScroll').addEventListener('click',async event=>{
+ const bubble=event.target.closest('.bubble:not(.mine)');
+ if(bubble&&!event.target.closest('a,button')){
+  const line=bubble.closest('[data-message-line]'),id=line?.dataset.messageLine,now=Date.now();
+  if(id&&lastReactionTap.id===id&&now-lastReactionTap.time<380){
+   lastReactionTap={id:null,time:0};
+   const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
+   if(picker){$('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);picker.hidden=false;requestAnimationFrame(()=>{initReactionWheel(picker);const wheel=picker.querySelector('.reaction-wheel');if(wheel)updateReactionWheel(wheel)});}
+   return;
+  }
+  lastReactionTap={id,time:now};
+ }else if(!event.target.closest('.reaction-picker'))lastReactionTap={id:null,time:0};
  const open=event.target.closest('[data-reaction-open]');
  if(open){
   const id=open.dataset.reactionOpen;
@@ -927,3 +939,4 @@ async function refresh(){if(busy)return;busy=true;try{
  }
 }
 </style>
+\n<style id="stash-message-reaction-double-tap">\n/* Le bouton d'ajout reste fonctionnel en secours mais n'est plus visible : double-clic/tap sur un message pour réagir. */\n.message-reaction-tools .reaction-add{display:none!important}\n</style>\n
