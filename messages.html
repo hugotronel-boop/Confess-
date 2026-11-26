@@ -278,6 +278,49 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
  }
 }
 </style>
+<style id="stash-compact-message-composer">
+@media(max-width:700px){
+ body.chat-conversation-open .composer{
+  display:flex!important;align-items:center!important;gap:7px!important;
+  min-height:64px!important;padding:9px 12px calc(9px + env(safe-area-inset-bottom))!important;
+  background:#000!important;border-top:1px solid #1c1c1c!important;box-shadow:none!important;
+ }
+ body.chat-conversation-open .composer textarea{
+  flex:1 1 auto!important;width:0!important;min-width:0!important;
+  min-height:25px!important;max-height:112px!important;height:25px!important;
+  padding:3px 4px!important;margin:0!important;resize:none!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  color:#fff!important;font-size:16px!important;line-height:19px!important;
+  outline:none!important;box-shadow:none!important;
+ }
+ body.chat-conversation-open .composer:has(textarea){
+  position:relative!important;
+ }
+ body.chat-conversation-open .composer textarea{
+  align-self:center!important;
+ }
+ body.chat-conversation-open .composer{
+  --composer-pill:#171717;
+ }
+ body.chat-conversation-open .composer{
+  background:#000!important;
+ }
+ body.chat-conversation-open .composer textarea{
+  background:var(--composer-pill)!important;
+  border:1px solid #343434!important;border-right:0!important;
+  border-radius:22px 0 0 22px!important;
+  padding-left:13px!important;
+  min-height:42px!important;height:42px!important;
+ }
+ body.chat-conversation-open .send{
+  flex:0 0 76px!important;min-width:76px!important;height:42px!important;
+  margin-left:-7px!important;padding:0 12px!important;
+  border:1px solid #ff6cab!important;border-radius:0 22px 22px 0!important;
+  background:#ff6cab!important;color:#160810!important;
+  font-size:12px!important;font-weight:800!important;
+ }
+}
+</style>
 <style id="stash-pure-black-message-background">
 html,body,main,#shell,.shell,.inbox,.chat,.chat-scroll{
  background-color:#000!important;
