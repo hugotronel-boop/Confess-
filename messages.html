@@ -280,47 +280,31 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
 <style id="stash-compact-message-composer">
 @media(max-width:700px){
  body.chat-conversation-open .composer{
-  display:flex!important;align-items:center!important;gap:7px!important;
-  min-height:64px!important;padding:9px 0 calc(9px + env(safe-area-inset-bottom)) 12px!important;
+  display:flex!important;align-items:center!important;gap:0!important;
+  min-height:64px!important;padding:9px 12px calc(9px + env(safe-area-inset-bottom))!important;
   background:#000!important;border-top:1px solid #1c1c1c!important;box-shadow:none!important;
- }
- body.chat-conversation-open .composer textarea{
-  flex:1 1 auto!important;width:0!important;min-width:0!important;
-  min-height:25px!important;max-height:112px!important;height:25px!important;
-  padding:3px 4px!important;margin:0!important;resize:none!important;
-  border:0!important;border-radius:0!important;background:transparent!important;
-  color:#fff!important;font-size:16px!important;line-height:19px!important;
-  outline:none!important;box-shadow:none!important;
- }
- body.chat-conversation-open .composer:has(textarea){
   position:relative!important;
  }
  body.chat-conversation-open .composer textarea{
-  align-self:center!important;
- }
- body.chat-conversation-open .composer{
-  --composer-pill:#171717;
- }
- body.chat-conversation-open .composer{
-  background:#000!important;
- }
- body.chat-conversation-open .composer textarea{
-  background:var(--composer-pill)!important;
-  border:1px solid #343434!important;border-right:0!important;
-  border-radius:22px 0 0 22px!important;
-  padding-left:13px!important;
-  min-height:42px!important;height:42px!important;
+  flex:1 1 100%!important;width:100%!important;min-width:0!important;
+  min-height:42px!important;height:42px!important;max-height:112px!important;
+  padding:3px 68px 3px 13px!important;margin:0!important;resize:none!important;
+  border:1px solid #343434!important;border-radius:22px!important;
+  background:#171717!important;color:#fff!important;
+  font-size:16px!important;line-height:19px!important;
+  outline:none!important;box-shadow:none!important;align-self:center!important;
  }
  body.chat-conversation-open .send{
-  flex:0 0 52px!important;min-width:52px!important;height:42px!important;
-  margin-left:-7px!important;padding:0!important;
+  position:absolute!important;right:12px!important;top:50%!important;
+  transform:translateY(-50%)!important;
+  flex:0 0 52px!important;width:52px!important;min-width:52px!important;height:42px!important;
+  margin:0!important;padding:0!important;
   display:flex!important;align-items:center!important;justify-content:center!important;
   border:1px solid #ff6cab!important;border-radius:22px!important;
   background:#ff6cab!important;color:#fff!important;
  }
  body.chat-conversation-open .send .send-icon{
-  display:block!important;width:21px!important;height:21px!important;
-  color:#fff!important;
+  display:block!important;width:21px!important;height:21px!important;color:#fff!important;
  }
 }
 </style>
