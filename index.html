@@ -1811,7 +1811,8 @@ nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===cur
   }
   nav.style.removeProperty('display');
   const gap=vv?Math.max(0,window.innerHeight-(vv.height+vv.offsetTop)):0;
-  nav.style.setProperty('bottom',gap+'px','important');
+  // Garde toujours un espace visible sous la barre, même quand le clavier est fermé.
+  nav.style.setProperty('bottom','calc('+gap+'px + 12px)','important');
  };
  update();
  if(vv){vv.addEventListener('resize',update);vv.addEventListener('scroll',update)}
@@ -1900,7 +1901,7 @@ html body nav.bottomnav.confess-global-nav a[aria-current="page"]{
 <style id="stash-feed-nav-bottom-gap">
 /* La barre reste à sa place : seul le contour inférieur remonte */
 html body nav.bottomnav.confess-global-nav{
- left:9px!important;right:9px!important;bottom:20!important;
+ left:9px!important;right:9px!important;bottom:12px!important;top:auto!important;
  width:auto!important;max-width:742px!important;margin:0 auto!important;
  border:1px solid rgba(255,255,255,.18)!important;
  border-bottom:0!important;border-radius:999px!important;
