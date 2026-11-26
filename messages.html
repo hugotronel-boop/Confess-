@@ -282,8 +282,9 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
  body.chat-conversation-open .composer{
   display:flex!important;align-items:center!important;gap:0!important;
   min-height:64px!important;padding:9px 12px calc(9px + env(safe-area-inset-bottom))!important;
-  background:transparent!important;border-top:0!important;box-shadow:none!important;
-  position:relative!important;
+  background:rgba(8,8,10,.48)!important;border-top:1px solid rgba(255,255,255,.08)!important;
+  -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
+  box-shadow:0 -8px 24px rgba(0,0,0,.12)!important;position:relative!important;
  }
  body.chat-conversation-open .composer textarea{
   flex:1 1 100%!important;width:100%!important;min-width:0!important;
