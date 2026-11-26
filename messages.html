@@ -672,19 +672,32 @@ function subscribe(id){
  renderTyping();
 }
 
-let lastReactionTap={id:null,time:0};
-$('chatScroll').addEventListener('click',async event=>{
+function openMessageReactionPicker(id){
+ const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
+ if(!picker)return;
+ $('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);
+ picker.hidden=false;
+ requestAnimationFrame(()=>{initReactionWheel(picker);const wheel=picker.querySelector('.reaction-wheel');if(wheel)updateReactionWheel(wheel)});
+}
+let lastTouchTap={id:null,time:0,x:0,y:0};
+$('chatScroll').addEventListener('touchend',event=>{
  const bubble=event.target.closest('.bubble:not(.mine)');
- if(bubble&&!event.target.closest('a,button')){
-  const line=bubble.closest('[data-message-line]'),id=line?.dataset.messageLine,now=Date.now();
-  if(id&&lastReactionTap.id===id&&now-lastReactionTap.time<380){
-   lastReactionTap={id:null,time:0};
-   const picker=$('chatScroll').querySelector('[data-reaction-picker="'+id+'"]');
-   if(picker){$('chatScroll').querySelectorAll('[data-reaction-picker]').forEach(p=>p.hidden=true);picker.hidden=false;requestAnimationFrame(()=>{initReactionWheel(picker);const wheel=picker.querySelector('.reaction-wheel');if(wheel)updateReactionWheel(wheel)});}
-   return;
-  }
-  lastReactionTap={id,time:now};
- }else if(!event.target.closest('.reaction-picker'))lastReactionTap={id:null,time:0};
+ if(!bubble||event.target.closest('a,button')){lastTouchTap={id:null,time:0,x:0,y:0};return}
+ const line=bubble.closest('[data-message-line]'),id=line?.dataset.messageLine,touch=event.changedTouches?.[0];
+ if(!id||!touch)return;
+ const now=Date.now(),dx=Math.abs(touch.clientX-lastTouchTap.x),dy=Math.abs(touch.clientY-lastTouchTap.y);
+ if(lastTouchTap.id===id&&now-lastTouchTap.time<550&&dx<35&&dy<35){
+  lastTouchTap={id:null,time:0,x:0,y:0};
+  openMessageReactionPicker(id);
+ }else lastTouchTap={id,time:now,x:touch.clientX,y:touch.clientY};
+},{passive:true});
+$('chatScroll').addEventListener('dblclick',event=>{
+ const bubble=event.target.closest('.bubble:not(.mine)');
+ if(!bubble||event.target.closest('a,button'))return;
+ const id=bubble.closest('[data-message-line]')?.dataset.messageLine;
+ if(id)openMessageReactionPicker(id);
+});
+$('chatScroll').addEventListener('click',async event=>{
  const open=event.target.closest('[data-reaction-open]');
  if(open){
   const id=open.dataset.reactionOpen;
