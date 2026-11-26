@@ -852,49 +852,33 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 </style>
 
 <style id="stash-post-detail-page">
-body.stash-post-detail{padding-bottom:24px!important;overflow-x:hidden}
-body.stash-post-detail .layout{display:block!important;width:min(680px,100%)!important;padding:12px 0 30px!important}
-body.stash-post-detail .layout>.leftside,
-body.stash-post-detail .layout>.rightside,
-body.stash-post-detail .stash-hero-3d,
-body.stash-post-detail .welcome,
-body.stash-post-detail .composer,
-body.stash-post-detail .feed-head,
-body.stash-post-detail #feedSearch,
-body.stash-post-detail #feedSearchBtn,
-body.stash-post-detail #feedTabs,
-body.stash-post-detail #visibilityFilters,
-body.stash-post-detail .confess-global-nav,
-body.stash-post-detail #loadMorePosts{display:none!important}
+body.stash-post-detail{padding-bottom:32px!important;overflow-x:hidden}
+body.stash-post-detail .top.stash-feed-top{border-bottom:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
+body.stash-post-detail .layout{display:block!important;width:min(680px,100%)!important;padding:10px 0 30px!important}
+body.stash-post-detail .layout>.leftside,body.stash-post-detail .layout>.rightside,body.stash-post-detail .stash-hero-3d,body.stash-post-detail .welcome,body.stash-post-detail .composer,body.stash-post-detail .feed-head,body.stash-post-detail #feedSearch,body.stash-post-detail #feedSearchBtn,body.stash-post-detail #feedTabs,body.stash-post-detail #visibilityFilters,body.stash-post-detail .confess-global-nav,body.stash-post-detail #loadMorePosts{display:none!important}
 body.stash-post-detail .center{width:100%;min-width:0}
-body.stash-post-detail #feed{padding:0 12px}
-body.stash-post-detail #feed .post{border:1px solid rgba(255,255,255,.13)!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;padding:18px 16px!important;margin:0!important}
-body.stash-post-detail #feed .post-body{margin:14px 0!important;font-size:15px!important;line-height:1.65!important}
-body.stash-post-detail #feed .post-actions{margin:12px 0 0!important;max-width:none!important}
-body.stash-post-detail #commentsOverlay{
- display:block!important;position:relative!important;inset:auto!important;z-index:1!important;
- padding:0 12px 28px!important;margin:0!important;background:transparent!important;
- opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
- pointer-events:auto!important
-}
-body.stash-post-detail #commentsOverlay .modal{
- width:100%!important;max-width:none!important;max-height:none!important;height:auto!important;
- overflow:visible!important;margin:0!important;padding:18px 16px!important;
- border:1px solid rgba(255,255,255,.13)!important;border-radius:18px!important;
- background:rgba(255,255,255,.035)!important;box-shadow:none!important;
- transform:none!important;transition:none!important;display:flex!important;flex-direction:column!important
-}
+body.stash-post-detail #feed{padding:0 18px}
+body.stash-post-detail #feed .post{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:17px 0 15px!important;margin:0!important}
+body.stash-post-detail #feed .post-head{display:flex!important;align-items:center!important;gap:11px!important}
+body.stash-post-detail #feed .post-avatar{flex:0 0 44px!important;width:44px!important;height:44px!important}
+body.stash-post-detail #feed .post-author-line{min-width:0!important;flex:1!important}
+body.stash-post-detail #feed .post-author-line .author{font-size:14px!important;font-weight:750!important}
+body.stash-post-detail #feed .post-author-line .meta{font-size:11px!important;opacity:.72!important;margin-top:3px!important}
+body.stash-post-detail #feed .post-body{margin:18px 0 14px!important;font-size:15px!important;line-height:1.7!important;white-space:pre-wrap!important}
+body.stash-post-detail #feed .post-actions{margin:14px 0 0!important;padding-top:12px!important;border-top:1px solid rgba(255,255,255,.09)!important;max-width:none!important}
+body.stash-post-detail #commentsOverlay{display:block!important;position:relative!important;inset:auto!important;z-index:1!important;padding:0 18px 30px!important;margin:0!important;background:transparent!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important}
+body.stash-post-detail #commentsOverlay .modal{width:100%!important;max-width:none!important;max-height:none!important;height:auto!important;overflow:visible!important;margin:0!important;padding:16px 0 0!important;border:0!important;border-top:1px solid rgba(255,255,255,.16)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;transition:none!important;display:flex!important;flex-direction:column!important}
 body.stash-post-detail #commentsOverlay .modal:before{display:none!important}
-body.stash-post-detail #commentsOverlay .modalhead{cursor:default!important;touch-action:auto!important}
+body.stash-post-detail #commentsOverlay .modalhead{cursor:default!important;touch-action:auto!important;margin:0 0 14px!important;padding:0!important}
+body.stash-post-detail #commentsOverlay .modalhead h3{font-size:15px!important;font-weight:750!important}
 body.stash-post-detail #commentsOverlay .close{display:none!important}
+body.stash-post-detail #commentsOverlay #commentSort{margin:0 0 14px!important}
 body.stash-post-detail #commentsOverlay #commentsList{overflow:visible!important;max-height:none!important}
-body.stash-post-detail #commentsOverlay .rule{margin-top:16px!important;padding-top:14px!important}
-body.stash-post-detail #commentsOverlay .empty{padding:22px 10px!important}
+body.stash-post-detail #commentsOverlay .comment{border-radius:0!important}
+body.stash-post-detail #commentsOverlay .rule{margin-top:16px!important;padding-top:14px!important;border-top:1px solid rgba(255,255,255,.09)!important}
+body.stash-post-detail #commentsOverlay .empty{padding:18px 0!important;text-align:left!important}
 body.stash-post-detail .feed-header-label{cursor:pointer!important;font-size:13px!important;color:#fff!important}
-@media(max-width:620px){
- body.stash-post-detail .layout{padding-top:10px!important}
- body.stash-post-detail #commentsOverlay .modal{padding:16px 14px!important}
-}
+@media(max-width:620px){body.stash-post-detail .layout{padding-top:6px!important}body.stash-post-detail #feed{padding:0 16px}body.stash-post-detail #commentsOverlay{padding-left:16px!important;padding-right:16px!important}}
 </style>
 </head>
 <body>
@@ -1043,7 +1027,7 @@ const n=count||0;badge.textContent=n>99?'99+':String(n);badge.hidden=n===0;
 client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});refresh();
 })();
 </script>
-<div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>La discussion</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentSort" style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="action selected" data-comment-sort="recent" style="border:1px solid var(--line);border-radius:10px">🕒 Plus récents</button><button type="button" class="action" data-comment-sort="popular" style="border:1px solid var(--line);border-radius:10px">❤️ Plus aimés</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
+<div class="overlay" id="commentsOverlay"><section class="modal"><div class="modalhead"><h3>Commentaires</h3><button class="close" id="closeComments">Fermer ✕</button></div><div id="commentSort" style="display:flex;gap:8px;margin:0 0 10px"><button type="button" class="action selected" data-comment-sort="recent" style="border:1px solid var(--line);border-radius:10px">🕒 Plus récents</button><button type="button" class="action" data-comment-sort="popular" style="border:1px solid var(--line);border-radius:10px">❤️ Plus aimés</button></div><div id="commentsList"></div><div class="rule"><div class="replying" id="replyingBar"><span id="replyingText">Réponse à un commentaire</span><button type="button" id="cancelReply">Annuler ✕</button></div><textarea class="compose-input" id="commentBody" placeholder="Écris une réponse…" style="min-height:65px"></textarea><div class="compose-bottom"><label class="anon-label"><input type="checkbox" id="commentAnonymous"> Répondre anonymement</label><button class="primary" id="sendComment">Répondre</button></div></div></section></div>
 <div class="toast" id="toast"></div><div id="stashShareOverlay" role="dialog" aria-modal="true" aria-labelledby="stashShareTitle">
  <section id="stashSharePanel">
   <header><h3 id="stashShareTitle">Envoyer la publication</h3><button type="button" id="stashShareClose" aria-label="Fermer">×</button></header>
@@ -1269,7 +1253,7 @@ async function loadFeed(reset=true){
  postsCache=rows;
  if(!rows.length){if(reset)$('feed').innerHTML="<div class='empty'>Aucune publication ici pour le moment.<br>À toi d'ouvrir le bal 👀</div>";renderLoadMoreButton();return}
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
-  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':(authorProfiles[p.author_profile_id]?.avatar_path?avatarHTML(authorProfiles[p.author_profile_id].avatar_path,p.author_label):esc((p.author_label||'M')[0].toUpperCase()))}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
+  <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':(authorProfiles[p.author_profile_id]?.avatar_path?avatarHTML(authorProfiles[p.author_profile_id].avatar_path,p.author_label):esc((p.author_label||'M')[0].toUpperCase()))}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${document.body.classList.contains('stash-post-detail') ? new Date(p.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
    <button class="action ${myReactions.has(p.id)?'selected':''}" data-like="${p.id}" data-current-reaction="${esc(myReactions.get(p.id)||'')}" aria-label="J'aime" title="Maintenir pour choisir une réaction"><span class="post-reaction-symbol">${myReactions.has(p.id)?esc(postReactionDisplay(myReactions.get(p.id))):'♡'}</span><span class="post-reaction-count">${counts[p.id]||0}</span></button><div class="post-reaction-picker" data-post-reaction-picker="${p.id}" hidden>${['❤️','😂','😮','😢','😡','👍','🔥','👏','😍','🙏'].map(emoji=>'<button type="button" data-post-reaction="'+p.id+'" data-post-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('')}</div>
    <button class="action" data-comments="${p.id}" aria-label="Commenter" title="Commenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
