@@ -1896,13 +1896,23 @@ html body nav.bottomnav.confess-global-nav a[aria-current="page"]{
   background:transparent!important;background-image:none!important;
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
 }
+</style>
 <style id="stash-feed-nav-bottom-gap">
-/* Même marge sous la capsule que l’espace visuel au-dessus de ses éléments */
+/* La barre reste à sa place : seul le contour inférieur remonte */
 html body nav.bottomnav.confess-global-nav{
- left:9px!important;right:9px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
+ left:9px!important;right:9px!important;bottom:0!important;
  width:auto!important;max-width:742px!important;margin:0 auto!important;
- border:1px solid rgba(255,255,255,.18)!important;border-radius:999px!important;
+ border:1px solid rgba(255,255,255,.18)!important;
+ border-bottom:0!important;border-radius:999px!important;
 }
-</style>
-</style>
+html body nav.bottomnav.confess-global-nav::after{
+ content:""!important;position:absolute!important;
+ left:-1px!important;right:-1px!important;bottom:10px!important;
+ height:14px!important;box-sizing:border-box!important;
+ border-left:1px solid rgba(255,255,255,.18)!important;
+ border-right:1px solid rgba(255,255,255,.18)!important;
+ border-bottom:1px solid rgba(255,255,255,.18)!important;
+ border-radius:0 0 999px 999px!important;
+ pointer-events:none!important;
+}
 </body></html>
