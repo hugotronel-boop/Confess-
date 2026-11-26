@@ -1000,3 +1000,29 @@ async function refresh(){if(busy)return;busy=true;try{
  update();
 })();
 </script>
+
+<script id="stash-keyboard-swipe-dismiss">
+(()=>{
+ let startX=0,startY=0,startTarget=null;
+ const eligible=el=>!!el?.closest?.('.chat-scroll,.composer');
+ document.addEventListener('touchstart',e=>{
+  if(!document.body.classList.contains('chat-conversation-open')||
+     !document.activeElement?.matches?.('textarea#messageBody')||
+     !eligible(e.target)||!e.touches?.length)return;
+  startX=e.touches[0].clientX;
+  startY=e.touches[0].clientY;
+  startTarget=e.target;
+ },{passive:true});
+ document.addEventListener('touchend',e=>{
+  if(!startTarget||!document.activeElement?.matches?.('textarea#messageBody')||!e.changedTouches?.length)return;
+  const dx=e.changedTouches[0].clientX-startX;
+  const dy=e.changedTouches[0].clientY-startY;
+  if(dy>55&&Math.abs(dx)<85){
+   document.activeElement.blur();
+  }
+  startTarget=null;
+ },{passive:true});
+ document.addEventListener('touchcancel',()=>{startTarget=null},{passive:true});
+})();
+</script>
+
