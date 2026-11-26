@@ -300,7 +300,7 @@ body.chat-conversation-open>.confess-global-nav,body.group-creation-open>.confes
   text-align:left!important;opacity:1!important;
  }
  body.chat-conversation-open .send{
-  position:absolute!important;right:12px!important;top:50%!important;
+  position:absolute!important;right:12px!important;top:calc(50% - env(safe-area-inset-bottom)/2)!important;
   transform:translateY(-50%)!important;
   flex:0 0 52px!important;width:52px!important;min-width:52px!important;height:42px!important;
   margin:0!important;padding:0!important;
