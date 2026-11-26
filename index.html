@@ -876,6 +876,8 @@ body.stash-post-detail #commentsOverlay #commentSort{margin:0 0 14px!important}
 body.stash-post-detail #commentsOverlay #commentsList{overflow:visible!important;max-height:none!important}
 body.stash-post-detail #commentsOverlay .comment{border-radius:0!important}
 body.stash-post-detail #commentsOverlay .rule{margin-top:16px!important;padding-top:14px!important;border-top:1px solid rgba(255,255,255,.09)!important}
+body.stash-post-detail #commentsOverlay .rule{display:none!important}
+body.stash-post-detail.stash-comment-compose-open #commentsOverlay .rule{display:block!important}
 body.stash-post-detail #commentsOverlay .empty{padding:18px 0!important;text-align:left!important}
 body.stash-post-detail .feed-header-label{cursor:pointer!important;font-size:13px!important;color:#fff!important}
 @media(max-width:620px){body.stash-post-detail .layout{padding-top:6px!important}body.stash-post-detail #feed{padding:0 16px}body.stash-post-detail #commentsOverlay{padding-left:16px!important;padding-right:16px!important}}
@@ -1311,7 +1313,7 @@ async function loadFeed(reset=true){
   });
  });
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
- $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
+ $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>{if(document.body.classList.contains('stash-post-detail'))document.body.classList.add('stash-comment-compose-open');openComments(b.dataset.comments)});
  $('feed').querySelectorAll('[data-post]').forEach(card=>card.addEventListener('click',e=>{
   if(document.body.classList.contains('stash-post-detail'))return;
   if(e.target.closest('button,a,input,textarea,select,.post-menu-wrap,.post-reaction-picker'))return;
@@ -1495,7 +1497,7 @@ async function openComments(id){
   return '<div class="'+classes+'" id="comment-'+x.id+'"><div class="comment-author-row"><span class="comment-avatar">'+commentAvatar+'</span><strong>'+esc(x.author_label)+'</strong></div><p>'+esc(x.body)+'</p><small>'+ago(x.created_at)+(edited?' · Modifié':'')+'</small><div class="comment-actions"><button type="button" data-comment-like="'+x.id+'" class="'+(liked.has(x.id)?'selected':'')+'">♡ J’aime · '+(counts[x.id]||0)+'</button><button type="button" data-reply="'+x.id+'">↳ Répondre</button><button type="button" data-report-comment="'+x.id+'">⚑ Signaler</button>'+ownerActions+'</div></div>';
  };
  $('commentsList').innerHTML=roots.map(root=>renderComment(root)+children.filter(x=>x.parent_comment_id===root.id).map(child=>renderComment(child,true)).join('')).join('');
- $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
+ $('commentsList').querySelectorAll('[data-reply]').forEach(b=>b.onclick=()=>{if(document.body.classList.contains('stash-post-detail'))document.body.classList.add('stash-comment-compose-open');activeReply=b.dataset.reply;const target=byId.get(activeReply);$('replyingText').textContent='Réponse à '+(target?.author_label||'ce membre');$('replyingBar').classList.add('show');$('commentBody').placeholder='Écris une réponse…';$('commentBody').focus()});
  $('commentsList').querySelectorAll('[data-comment-like]').forEach(b=>b.onclick=()=>toggleCommentLike(b.dataset.commentLike));
  $('commentsList').querySelectorAll('[data-report-comment]').forEach(b=>b.onclick=()=>reportTarget('comment_id',b.dataset.reportComment));
  $('commentsList').querySelectorAll('[data-edit-comment]').forEach(b=>b.onclick=()=>editComment(b.dataset.editComment));
