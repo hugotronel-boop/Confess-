@@ -678,6 +678,9 @@ body{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
 body{padding-bottom:0!important}
 #publishBtn{bottom:calc(18px + env(safe-area-inset-bottom))!important}
 @media(max-width:620px){#composer{padding:19px 17px 130px!important}#postBody{min-height:12vh!important;height:12vh!important}#publishBtn{right:17px!important}}
+
+.publish-crane-button{position:fixed!important;left:17px!important;bottom:calc(18px + env(safe-area-inset-bottom))!important;z-index:1100!important;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;padding:0!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:16px!important;background:rgba(255,255,255,.09)!important;color:#fff!important;font-size:23px!important;line-height:1!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;box-shadow:0 5px 22px rgba(0,0,0,.25)!important}
+.publish-crane-button:active{transform:scale(.96)}
 </style>
 <style id="stash-nav-message-badge-style">.confess-global-nav a[data-nav="messages"]{position:relative!important}.confess-global-nav a[data-nav="messages"] .stash-nav-message-count{position:absolute!important;top:0!important;left:calc(50% + 9px)!important;z-index:6!important;display:flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;font-family:Arial,Helvetica,sans-serif!important;font-size:10px!important;font-weight:900!important;line-height:16px!important;opacity:1!important;visibility:inherit!important;white-space:nowrap!important}.confess-global-nav a[data-nav="messages"] .stash-nav-message-count[hidden]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style></head>
 <body>
@@ -709,7 +712,7 @@ body{padding-bottom:0!important}
    <div class="compose-bottom"><div class="compose-controls">
     <select class="field" id="postCategory" aria-label="Catégorie" style="display:none"><option value="confession">STASHion</option></select><div id="categoryScroller" class="publish-category-scroller" role="group" aria-label="Choisir une catégorie"></div>
     <label class="anon-label"><input type="checkbox" id="anonymous"> Publier anonymement</label>
-   </div><button class="primary" id="publishBtn">Publier</button></div>
+   </div><button type="button" class="publish-crane-button" aria-label="Outil grue">🏗️</button><button class="primary" id="publishBtn">Publier</button></div>
    <div class="compose-bottom" style="margin-top:9px"><small id="draftStatus" style="color:var(--muted);font-size:11px">Brouillon synchronisé avec ton compte</small><button type="button" class="action" id="clearDraft" style="padding:6px 8px">Effacer le brouillon</button></div>
   </section>
   <div class="feed-head"><h2 id="feedTitle">Le fil STASH</h2><select id="sortSelect"><option value="new">Plus récents</option><option value="popular">Populaires</option></select></div>
