@@ -1257,7 +1257,7 @@ async function loadFeed(reset=true){
   toast('Ton vote est enregistré ✓');
  });
  $('feed').querySelectorAll('[data-post-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const panel=document.querySelector('[data-post-menu-panel="'+b.dataset.postMenu+'"]');const willOpen=!panel.classList.contains('open');document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));$('feed').querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(willOpen){panel.classList.add('open');b.setAttribute('aria-expanded','true')}});
- if(!window.stashPostMenuOutside){document.addEventListener('click',e=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(!e.target.closest('.post-reaction-picker')&&!e.target.closest('[data-like]'))closePostReactionPickers()});window.stashPostMenuOutside=true}
+ if(!window.stashPostMenuOutside){document.addEventListener('click',e=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(!e.target.closest('.post-reaction-picker')&&!e.target.closest('[data-like]'))closePostReactionPickers()});document.addEventListener('pointerup',e=>{if(e.target.closest('.post-reaction-picker'))e.stopPropagation()},true);window.stashPostMenuOutside=true}
  $('feed').querySelectorAll('[data-like]').forEach(b=>{
   let holdTimer=0;
   b.addEventListener('pointerdown',e=>{
@@ -1269,11 +1269,17 @@ async function loadFeed(reset=true){
   ['pointerup','pointercancel','pointerleave'].forEach(type=>b.addEventListener(type,()=>clearTimeout(holdTimer)));
   b.onclick=()=>{if(b.dataset.longPress==='1'){b.dataset.longPress='0';return}toggleLike(b.dataset.like)};
  });
- $('feed').querySelectorAll('[data-post-reaction]').forEach(b=>b.onclick=async e=>{
-  e.stopPropagation();
-  await setPostReaction(b.dataset.postReaction,b.dataset.postEmoji);
+ // iOS : sélection au relâchement du doigt, sans dépendre du clic synthétique.
+ $('feed').querySelectorAll('[data-post-reaction-picker]').forEach(p=>{
+  p.addEventListener('pointerdown',e=>e.stopPropagation(),{passive:true});
+  p.addEventListener('pointerup',async e=>{
+   const choice=e.target.closest('[data-post-reaction][data-post-emoji]');
+   if(!choice)return;
+   e.preventDefault();e.stopPropagation();
+   await setPostReaction(choice.dataset.postReaction,choice.dataset.postEmoji);
+  });
+  p.addEventListener('click',e=>e.stopPropagation());
  });
- $('feed').querySelectorAll('[data-post-reaction-picker]').forEach(p=>p.addEventListener('click',e=>e.stopPropagation()));
  $('feed').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>location.href='member.html?id='+encodeURIComponent(b.dataset.member));
  $('feed').querySelectorAll('[data-comments]').forEach(b=>b.onclick=()=>openComments(b.dataset.comments));
  $('feed').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
