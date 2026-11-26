@@ -843,11 +843,6 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 #feed .post-actions [data-like]{-webkit-touch-callout:none!important;user-select:none!important;touch-action:manipulation!important}
 #feed .post-actions .post-reaction-symbol{font-size:21px!important;line-height:1!important;min-width:22px;text-align:center}
 #feed .post-actions [data-like].selected{color:#fff!important}
-#feed .post-reaction-summary{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 0 48px;min-height:0}
-#feed .post-reaction-summary:empty{display:none}
-#feed .post-reaction-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.06);font-size:13px;line-height:1.2;color:#eee}
-#feed .post-reaction-pill.mine{border-color:rgba(255,255,255,.48);background:rgba(255,255,255,.13)}
-#feed .post-reaction-pill span{font-size:11px;color:#bbb}
 #feed .post-reaction-picker{position:absolute;z-index:500;left:-8px;bottom:calc(100% + 9px);display:flex;align-items:center;gap:4px;padding:8px 9px;border:1px solid rgba(255,255,255,.2);border-radius:28px;background:rgba(25,25,28,.97);box-shadow:0 12px 35px #000b;backdrop-filter:blur(18px);white-space:nowrap;animation:stashReactionPop .16s ease-out}
 #feed .post-reaction-picker[hidden]{display:none!important}
 #feed .post-reaction-picker button{width:34px;height:36px;flex:0 0 34px;border:0!important;border-radius:50%;background:transparent!important;color:#fff;font-size:25px;line-height:1;padding:0;transition:transform .12s ease}
@@ -1222,7 +1217,6 @@ async function loadFeed(reset=true){
  const counts={};reactions.forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1});
  const commentCounts={};comments.forEach(c=>{commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1});
  const myReactions=new Map(reactions.filter(r=>session&&r.user_id===session.user.id).map(r=>[r.post_id,r.reaction]));
- const reactionGroups={};reactions.forEach(r=>{(reactionGroups[r.post_id]||(reactionGroups[r.post_id]={}))[r.reaction]=(reactionGroups[r.post_id][r.reaction]||0)+1});
  const bookmarked=new Set(marks.map(m=>m.post_id));
  if($('sortSelect')?.value==='popular')rows.sort((a,b)=>(counts[b.id]||0)-(counts[a.id]||0));
  postsCache=rows;
@@ -1230,10 +1224,10 @@ async function loadFeed(reset=true){
  $('feed').innerHTML=rows.map(p=>{const category=p.categories?.label||'Discussion';return `<article class="post" data-post="${p.id}">
   <div class="post-head"><div class="post-avatar">${p.is_anonymous?'🎭':(authorProfiles[p.author_profile_id]?.avatar_path?avatarHTML(authorProfiles[p.author_profile_id].avatar_path,p.author_label):esc((p.author_label||'M')[0].toUpperCase()))}</div><div class="post-author-line"><div class="author">${!p.is_anonymous&&p.author_profile_id?`<button class="author-link" data-member="${p.author_profile_id}" style="border:0;background:none;color:inherit;font:inherit;font-weight:750;padding:0;text-align:left;cursor:pointer">${esc(p.author_label)}</button>`:esc(p.author_label)}</div><div class="meta">${ago(p.created_at)}</div></div><span class="post-thread-mark" aria-hidden="true">◎</span><span class="category-badge">${esc(category)}</span><div class="post-menu-wrap"><button class="post-menu-trigger" type="button" data-post-menu="${p.id}" aria-label="Plus d’options" aria-expanded="false">···</button><div class="post-menu-panel" data-post-menu-panel="${p.id}"><button class="post-menu-item" data-save="${p.id}">${bookmarked.has(p.id)?'✓ Enregistré':'♧ Enregistrer'}</button><button class="post-menu-item" data-report="${p.id}">⚑ Signaler</button>${session&&p.author_profile_id===session.user.id?'<div class="post-menu-separator"></div><button class="post-menu-item" data-edit="'+p.id+'">✎ Modifier</button><button class="post-menu-item danger" data-delete="'+p.id+'">× Supprimer</button>':''}</div></div></div>
   <div class="post-body">${esc(p.body)}</div><div class="poll-slot" data-poll-slot="${p.id}"></div><div class="post-actions">
-   <button class="action" data-like="${p.id}" data-current-reaction="${esc(myReactions.get(p.id)||'')}" aria-label="J'aime" title="Maintenir pour choisir une réaction"><span class="post-reaction-symbol">♡</span><span class="post-reaction-count">${counts[p.id]||0}</span></button><div class="post-reaction-picker" data-post-reaction-picker="${p.id}" hidden>${['❤️','😂','😮','😢','😡','👍','🔥','👏','😍','🙏'].map(emoji=>'<button type="button" data-post-reaction="'+p.id+'" data-post-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('')}</div>
+   <button class="action ${myReactions.has(p.id)?'selected':''}" data-like="${p.id}" data-current-reaction="${esc(myReactions.get(p.id)||'')}" aria-label="J'aime" title="Maintenir pour choisir une réaction"><span class="post-reaction-symbol">${myReactions.has(p.id)?esc(postReactionDisplay(myReactions.get(p.id))):'♡'}</span><span class="post-reaction-count">${counts[p.id]||0}</span></button><div class="post-reaction-picker" data-post-reaction-picker="${p.id}" hidden>${['❤️','😂','😮','😢','😡','👍','🔥','👏','😍','🙏'].map(emoji=>'<button type="button" data-post-reaction="'+p.id+'" data-post-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('')}</div>
    <button class="action" data-comments="${p.id}" aria-label="Commenter" title="Commenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg><span>${commentCounts[p.id]||0}</span></button>
    <button class="action" data-share="${p.id}" aria-label="Partager" title="Partager"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-7.5 18-3.8-7.7L2 9.5 21 3Z"/><path d="M9.7 13.3 21 3"/></svg></button>
-  </div><div class="post-reaction-summary" data-reaction-summary="${p.id}">${Object.entries(reactionGroups[p.id]||{}).sort((a,b)=>b[1]-a[1]).map(([emoji,n])=>`<span class="post-reaction-pill ${myReactions.get(p.id)===emoji?'mine':''}">${esc(postReactionDisplay(emoji))}<span>${n}</span></span>`).join('')}</div></article>`}).join('');
+  </div></article>`}).join('');
  const pollQuery=await db.from('polls').select('post_id').in('post_id',ids);
  const pollIds=(pollQuery.data||[]).map(x=>x.post_id);
  for(const pollId of pollIds){
@@ -1352,9 +1346,12 @@ async function setPostReaction(id,emoji){
  const oldReaction=button.dataset.currentReaction||'';
  const nextReaction=oldReaction===emoji?'':emoji;
  const countNode=button.querySelector('.post-reaction-count');
+ const symbol=button.querySelector('.post-reaction-symbol');
  const oldCount=Number(countNode?.textContent||0);
  button.dataset.busy='1';
  button.dataset.currentReaction=nextReaction;
+ button.classList.toggle('selected',!!nextReaction);
+ if(symbol)symbol.textContent=nextReaction?postReactionDisplay(nextReaction):'♡';
  if(countNode)countNode.textContent=String(Math.max(0,oldCount+(oldReaction?0:(nextReaction?1:0))-(oldReaction&&!nextReaction?1:0)));
  closePostReactionPickers();
  let result;
@@ -1363,20 +1360,11 @@ async function setPostReaction(id,emoji){
  delete button.dataset.busy;
  if(result.error){
   button.dataset.currentReaction=oldReaction;
+  button.classList.toggle('selected',!!oldReaction);
+  if(symbol)symbol.textContent=oldReaction?postReactionDisplay(oldReaction):'♡';
   if(countNode)countNode.textContent=String(oldCount);
   toast('Réaction impossible : '+result.error.message);
   console.error(result.error);
-  return;
- }
- const refreshed=await db.from('post_reactions').select('user_id,reaction').eq('post_id',id);
- if(!refreshed.error){
-  const rows=refreshed.data||[];
-  if(countNode)countNode.textContent=String(rows.length);
-  const summary=document.querySelector('[data-reaction-summary="'+CSS.escape(id)+'"]');
-  if(summary){
-   const grouped={};rows.forEach(r=>{grouped[r.reaction]=(grouped[r.reaction]||0)+1});
-   summary.innerHTML=Object.entries(grouped).sort((a,b)=>b[1]-a[1]).map(([value,n])=>'<span class="post-reaction-pill '+(value===nextReaction?'mine':'')+'">'+esc(postReactionDisplay(value))+'<span>'+n+'</span></span>').join('');
-  }
  }
 }
 async function toggleLike(id){
