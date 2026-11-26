@@ -566,7 +566,7 @@ async function loadMessages(){
   const groups={};(reactionsByMessage[m.id]||[]).forEach(r=>{groups[r.emoji]??=[];groups[r.emoji].push(r.user_id)});
   const reactionPills=Object.entries(groups).map(([emoji,users])=>'<button class="reaction-pill '+(users.includes(me.id)?'mine-reacted':'')+'" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="'+emoji+' '+users.length+' réactions">'+emoji+' <span>'+users.length+'</span></button>').join('');
   const picker=mine?'':REACTION_EMOJIS.map(emoji=>'<button type="button" class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
-  const reactionAction=mine?'':'<button class="reaction-add" data-reaction-open="'+m.id+'" aria-label="Ajouter une réaction">☺︎</button>';
+  const reactionAction='';
   const reactionPicker=mine?'':'<div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden><div class="reaction-wheel">'+picker+'</div></div>';
   return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div>'+reactionAction+'</div>'+reactionPicker+receipt+'</div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
