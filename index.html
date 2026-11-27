@@ -1265,32 +1265,41 @@ async function loadFeed(reset=true){
   </div></article>`}).join('');
  const pollQuery=await db.from('polls').select('post_id').in('post_id',ids);
  const pollIds=(pollQuery.data||[]).map(x=>x.post_id);
+ const renderPollResults=(slot,options)=>{
+  if(!slot||!options?.length)return;
+  const total=Number(options[0].total_votes||0);
+  const mine=options.some(o=>o.my_vote);
+  const closed=options[0].closes_at&&new Date(options[0].closes_at)<=new Date();
+  slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage</strong>'+options.map(o=>{
+   const pct=total?Math.round(Number(o.votes)*100/total):0;
+   return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" aria-pressed="'+(o.my_vote?'true':'false')+'" '+(closed?'disabled':'')+' style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid '+(o.my_vote?'var(--pink)':'var(--line)')+';border-radius:10px;padding:9px;'+(closed?'opacity:.7;':'')+'"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>';
+  }).join('')+(closed?'<small style="display:block;margin-top:8px;color:var(--muted)">Sondage terminé</small>':(mine?'<small style="display:block;margin-top:8px;color:var(--muted)">'+total+' personne'+(total>1?'s':'')+(total>1?' ont':' a')+' répondu · Appuie à nouveau sur ton choix pour retirer ton vote.</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">'+(total?total+' personne'+(total>1?'s':'')+(total>1?' ont':' a')+' déjà répondu · ':'')+'Choisis une réponse pour voter.</small>'))+'</div>';
+ };
  for(const pollId of pollIds){
   const result=await db.rpc('get_confess_poll_results',{p_post_id:pollId});
   if(result.error||!result.data?.length)continue;
-  const options=result.data,total=Number(options[0].total_votes||0),mine=options.some(x=>x.my_vote);
-  const closed=options[0].closes_at&&new Date(options[0].closes_at)<=new Date();
-  const slot=document.querySelector('[data-poll-slot="'+pollId+'"]');if(!slot)continue;
-  slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':total+' personne'+(total>1?'s':'')+(total>1?' ont':' a')+' répondu')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
+  const slot=document.querySelector('[data-poll-slot="'+pollId+'"]');
+  renderPollResults(slot,result.data);
  }
- $('feed').querySelectorAll('[data-option]').forEach(b=>b.onclick=async()=>{
-  if(!session)return toast('Connecte-toi pour voter.');
-  if(b.dataset.busy==='1')return;
-  b.dataset.busy='1';b.style.opacity='.65';
-  const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});
-  delete b.dataset.busy;b.style.opacity='';
-  if(vote.error){toast('Vote impossible : '+vote.error.message);console.error(vote.error);return}
-  const slot=b.closest('.poll-slot'),pollId=slot?.dataset.pollSlot;
-  if(slot&&pollId){
+ if(!window.stashPollVoteHandler){
+  $('feed').addEventListener('click',async e=>{
+   const b=e.target.closest('.poll-vote');
+   if(!b||!$('feed').contains(b)||b.disabled)return;
+   if(!session)return toast('Connecte-toi pour voter.');
+   if(b.dataset.busy==='1')return;
+   const slot=b.closest('.poll-slot'),pollId=slot?.dataset.pollSlot;
+   if(!slot||!pollId)return;
+   b.dataset.busy='1';b.style.opacity='.55';
+   const vote=await db.rpc('vote_confess_poll',{p_option_id:b.dataset.option});
+   if(vote.error){delete b.dataset.busy;b.style.opacity='';toast('Vote impossible : '+vote.error.message);console.error(vote.error);return}
    const result=await db.rpc('get_confess_poll_results',{p_post_id:pollId});
-   if(!result.error&&result.data?.length){
-    const options=result.data,total=Number(options[0].total_votes||0),mine=options.some(x=>x.my_vote),closed=options[0].closes_at&&new Date(options[0].closes_at)<=new Date();
-    slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage</strong>'+options.map(o=>{const pct=total?Math.round(Number(o.votes)*100/total):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+(mine||closed?'<small style="display:block;margin-top:8px;color:var(--muted)">'+(closed?'Sondage terminé':total+' personne'+(total>1?'s':'')+(total>1?' ont':' a')+' répondu')+'</small>':'<small style="display:block;margin-top:8px;color:var(--muted)">Choisis une réponse pour voter.</small>')+'</div>';
-    slot.querySelectorAll('[data-option]').forEach(btn=>btn.onclick=async()=>{if(!session)return toast('Connecte-toi pour voter.');const v=await db.rpc('vote_confess_poll',{p_option_id:btn.dataset.option});if(v.error){toast('Vote impossible : '+v.error.message);return}const again=await db.rpc('get_confess_poll_results',{p_post_id:pollId});if(!again.error&&again.data?.length){const data=again.data,t=Number(data[0].total_votes||0);slot.innerHTML='<div style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:14px;background:#ffffff08"><strong>📊 Sondage</strong>'+data.map(o=>{const pct=t?Math.round(Number(o.votes)*100/t):0;return '<div style="margin-top:9px"><button type="button" class="action poll-vote" data-option="'+o.option_id+'" style="width:100%;text-align:left;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;padding:9px"><span style="position:absolute;inset:0 auto 0 0;width:'+pct+'%;background:var(--pink);opacity:.15"></span><span style="position:relative;display:flex;justify-content:space-between;gap:8px"><span>'+esc(o.label)+(o.my_vote?' ✓':'')+'</span><b>'+pct+'%</b></span></button></div>'}).join('')+'<small style="display:block;margin-top:8px;color:var(--muted);font-size:11px">'+t+' personne'+(t>1?'s':'')+(t>1?' ont':' a')+' répondu</small></div>';slot.querySelectorAll('[data-option]').forEach(x=>x.onclick=btn.onclick)}});
-   }
-  }
-  toast('Ton vote est enregistré ✓');
- });
+   if(result.error||!result.data?.length){delete b.dataset.busy;toast('Vote mis à jour, mais impossible d’actualiser les résultats.');return}
+   const stillVoted=result.data.some(o=>o.my_vote);
+   renderPollResults(slot,result.data);
+   toast(stillVoted?'Ton vote est enregistré ✓':'Ton vote a été retiré ✓');
+  });
+  window.stashPollVoteHandler=true;
+ }
  $('feed').querySelectorAll('[data-post-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const panel=document.querySelector('[data-post-menu-panel="'+b.dataset.postMenu+'"]');const willOpen=!panel.classList.contains('open');document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));$('feed').querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(willOpen){panel.classList.add('open');b.setAttribute('aria-expanded','true')}});
  if(!window.stashPostMenuOutside){document.addEventListener('click',e=>{document.querySelectorAll('.post-menu-panel.open').forEach(x=>x.classList.remove('open'));document.querySelectorAll('[data-post-menu]').forEach(x=>x.setAttribute('aria-expanded','false'));if(!e.target.closest('.post-reaction-picker')&&!e.target.closest('[data-like]'))closePostReactionPickers()});window.stashPostMenuOutside=true}
  $('feed').querySelectorAll('[data-like]').forEach(b=>{
