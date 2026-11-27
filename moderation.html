@@ -794,9 +794,9 @@ client.auth.onAuthStateChange(()=>setTimeout(refresh,0));window.addEventListener
 <script id="stash-nav-current-page">
 (()=>{const nav=document.querySelector('.confess-global-nav');if(!nav)return;
 const file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-const map={'index.html':'home','messages.html':'messages','publish.html':'publish','notifications.html':'notifications','explore.html':'home','profile.html':'profile','settings.html':'profile','member.html':'profile','admin.html':'profile','moderation.html':'profile','appeals.html':'profile','sanctions.html':'profile'};
+const map={'index.html':'home','messages.html':'messages','explore.html':'search','publish.html':'publish','notifications.html':'notifications','profile.html':'profile','settings.html':'profile','member.html':'profile','admin.html':'profile','moderation.html':'profile','appeals.html':'profile','sanctions.html':'profile'};
 const current=map[file]||'home';
-nav.querySelectorAll('a[data-nav]').forEach(a=>{const active=a.dataset.nav===current;a.classList.toggle('stash-nav-current',active);a.classList.toggle('stash-bubble-active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+nav.querySelectorAll('a[data-nav]').forEach(a=>{const selected=a.dataset.nav===current;a.classList.toggle('stash-nav-current',selected);a.classList.toggle('stash-bubble-active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 })();
 </script>
 <script id="stash-nav-message-counter">
@@ -837,16 +837,49 @@ async function refresh(){if(busy)return;busy=true;try{
 (()=>{if(!window.supabase?.createClient||window.__stashPresenceStarted)return;window.__stashPresenceStarted=true;const client=window.supabase.createClient('https://hhntssweslmmqskhoaje.supabase.co','sb_publishable_QTzVtS2OeSMsL6lHZZ1WLA_BnGPLpy3');let channel=null,userId=null,tracked=false;const render=()=>{const online=new Set();if(channel)Object.values(channel.presenceState()||{}).flat().forEach(p=>{if(p?.userId)online.add(String(p.userId))});document.querySelectorAll('[data-stash-online]').forEach(el=>el.classList.toggle('stash-is-online',online.has(el.dataset.stashOnline)))};async function track(){if(!channel||!userId||tracked||document.visibilityState==='hidden')return;try{await channel.track({userId,onlineAt:new Date().toISOString()});tracked=true}catch(e){console.warn('STASH presence track:',e.message)}}async function connect(id){if(id===userId&&channel){track();return}if(channel){try{await client.removeChannel(channel)}catch(e){}channel=null}userId=id;tracked=false;if(!id){render();return}channel=client.channel('stash-global-online').on('presence',{event:'sync'},render).on('presence',{event:'join'},render).on('presence',{event:'leave'},render).subscribe(status=>{if(status==='SUBSCRIBED')track()})}client.auth.getSession().then(({data})=>connect(data.session?.user?.id||null));client.auth.onAuthStateChange((event,session)=>setTimeout(()=>connect(session?.user?.id||null),0));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(channel&&tracked){channel.untrack();tracked=false}}else track()});window.addEventListener('focus',track);window.addEventListener('beforeunload',()=>{if(channel)client.removeChannel(channel)})})();
 </script>
 <style id="stash-threads-bottom-navigation">
-html body nav.bottomnav.confess-global-nav.stash-threads-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;transform:none!important;width:100%!important;max-width:none!important;margin:0!important;height:calc(58px + env(safe-area-inset-bottom))!important;min-height:0!important;display:flex!important;align-items:center!important;justify-content:space-around!important;gap:0!important;padding:4px 12px calc(4px + env(safe-area-inset-bottom))!important;box-sizing:border-box!important;border:0!important;border-top:1px solid rgba(255,255,255,.13)!important;border-radius:0!important;background:rgba(5,5,6,.94)!important;-webkit-backdrop-filter:blur(22px) saturate(160%)!important;backdrop-filter:blur(22px) saturate(160%)!important;box-shadow:0 -4px 18px rgba(0,0,0,.18)!important;isolation:isolate!important}
+/* Navigation STASH inspirée de Threads : icônes seules, barre fine et pleine largeur */
+html body nav.bottomnav.confess-global-nav.stash-threads-nav{
+ position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+ transform:none!important;width:100%!important;max-width:none!important;margin:0 auto!important;
+ height:calc(58px + env(safe-area-inset-bottom))!important;min-height:0!important;
+ display:flex!important;align-items:center!important;justify-content:space-around!important;
+ gap:0!important;padding:4px 12px calc(4px + env(safe-area-inset-bottom))!important;
+ box-sizing:border-box!important;border:0!important;border-top:1px solid rgba(255,255,255,.13)!important;
+ border-radius:0!important;background:rgba(5,5,6,.94)!important;
+ -webkit-backdrop-filter:blur(22px) saturate(160%)!important;backdrop-filter:blur(22px) saturate(160%)!important;
+ box-shadow:0 -4px 18px rgba(0,0,0,.18)!important;isolation:isolate!important;
+}
 html body nav.bottomnav.confess-global-nav.stash-threads-nav::after{display:none!important;content:none!important}
-html body nav.bottomnav.confess-global-nav.stash-threads-nav>a{position:relative!important;flex:1 1 20%!important;min-width:0!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#aaa!important;text-decoration:none!important;font-size:0!important;box-shadow:none!important}
-html body nav.bottomnav.confess-global-nav.stash-threads-nav>a svg{display:block!important;width:25px!important;height:25px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.75!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-html body nav.confess-global-nav.stash-threads-nav>a[aria-current="page"],html body nav.confess-global-nav.stash-threads-nav>a.stash-nav-current{color:#fff!important;background:transparent!important}
-html body nav.confess-global-nav.stash-threads-nav>a.nav-publish-center{flex:1 1 20%!important;width:auto!important;min-width:0!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;border-radius:12px!important;background:transparent!important;color:#fff!important;box-shadow:none!important}
+html body nav.bottomnav.confess-global-nav.stash-threads-nav>a{
+ position:relative!important;flex:1 1 20%!important;min-width:0!important;height:48px!important;min-height:48px!important;
+ margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:0!important;border:0!important;border-radius:12px!important;background:transparent!important;
+ color:#aaa!important;text-decoration:none!important;font-size:0!important;box-shadow:none!important;
+}
+html body nav.bottomnav.confess-global-nav.stash-threads-nav>a svg{
+ display:block!important;width:25px!important;height:25px!important;fill:none!important;stroke:currentColor!important;
+ stroke-width:1.75!important;stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+html body nav.confess-global-nav.stash-threads-nav>a[aria-current="page"],
+html body nav.confess-global-nav.stash-threads-nav>a.stash-nav-current{color:#fff!important;background:transparent!important}
+html body nav.confess-global-nav.stash-threads-nav>a.nav-publish-center{
+ flex:1 1 20%!important;width:auto!important;min-width:0!important;height:48px!important;min-height:48px!important;
+ margin:0!important;padding:0!important;border-radius:12px!important;background:transparent!important;
+ color:#fff!important;box-shadow:none!important;
+}
 html body nav.confess-global-nav.stash-threads-nav>a.nav-publish-center svg{width:27px!important;height:27px!important;stroke-width:1.8!important}
-html body nav.confess-global-nav.stash-threads-nav .stash-nav-notif-count{position:absolute!important;top:3px!important;left:calc(50% + 7px)!important;z-index:5!important;display:flex!important;align-items:center!important;justify-content:center!important;min-width:16px!important;height:16px!important;padding:0 4px!important;border-radius:99px!important;background:#fff!important;color:#050506!important;font:800 9px/16px Arial,sans-serif!important}
-html body nav.confess-global-nav.stash-threads-nav .stash-nav-notif-count[hidden],html body nav.confess-global-nav.stash-threads-nav .stash-nav-message-count{display:none!important}
+html body nav.confess-global-nav.stash-threads-nav .stash-nav-notif-count{
+ position:absolute!important;top:3px!important;left:calc(50% + 7px)!important;z-index:5!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;min-width:16px!important;height:16px!important;
+ padding:0 4px!important;border-radius:99px!important;background:#fff!important;color:#050506!important;
+ font:800 9px/16px Arial,sans-serif!important;
+}
+html body nav.confess-global-nav.stash-threads-nav .stash-nav-notif-count[hidden]{display:none!important}
+html body nav.confess-global-nav.stash-threads-nav .stash-nav-message-count{display:none!important}
 html body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
-@media(max-width:420px){html body nav.bottomnav.confess-global-nav.stash-threads-nav{padding-left:8px!important;padding-right:8px!important}html body nav.confess-global-nav.stash-threads-nav>a svg{width:24px!important;height:24px!important}}
+@media(max-width:420px){
+ html body nav.bottomnav.confess-global-nav.stash-threads-nav{padding-left:8px!important;padding-right:8px!important}
+ html body nav.confess-global-nav.stash-threads-nav>a svg{width:24px!important;height:24px!important}
+}
 </style>
 </body></html>
