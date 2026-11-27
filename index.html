@@ -884,6 +884,19 @@ body.stash-post-detail #commentsOverlay .empty{padding:18px 0!important;text-ali
 body.stash-post-detail .feed-header-label{cursor:pointer!important;font-size:13px!important;color:#fff!important}
 @media(max-width:620px){body.stash-post-detail .layout{padding-top:6px!important}body.stash-post-detail #feed{padding:0 16px}body.stash-post-detail #commentsOverlay{padding-left:16px!important;padding-right:16px!important}}
 </style>
+
+<style id="stash-feed-nav-scroll">
+/* Navigation façon Instagram : elle glisse sous l'écran quand on descend */
+html body nav.bottomnav.confess-global-nav.stash-threads-nav{
+ transition:transform .32s cubic-bezier(.22,.75,.25,1)!important;
+ will-change:transform;
+}
+html body.stash-feed-nav-hidden nav.bottomnav.confess-global-nav.stash-threads-nav{
+ transform:translateY(calc(100% + 8px))!important;
+ pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){html body nav.bottomnav.confess-global-nav.stash-threads-nav{transition:none!important}}
+</style>
 </head>
 <body>
 
@@ -1955,4 +1968,35 @@ html body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
  html body nav.confess-global-nav.stash-threads-nav>a svg{width:24px!important;height:24px!important}
 }
 </style>
+
+<script id="stash-feed-nav-scroll-handler">
+(()=>{
+ const nav=document.querySelector('body:not(.stash-post-detail) nav.bottomnav.confess-global-nav.stash-threads-nav');
+ if(!nav||document.body.dataset.feedNavScroll==='1')return;
+ document.body.dataset.feedNavScroll='1';
+ let lastY=Math.max(0,window.scrollY||0),lastDirection=0,accumulated=0;
+ const show=()=>document.body.classList.remove('stash-feed-nav-hidden');
+ const hide=()=>document.body.classList.add('stash-feed-nav-hidden');
+ let ticking=false;
+ const onScroll=()=>{
+  if(ticking)return;
+  ticking=true;
+  requestAnimationFrame(()=>{
+   const y=Math.max(0,window.scrollY||0),delta=y-lastY;
+   if(y<45){show();accumulated=0;lastDirection=0}
+   else if(Math.abs(delta)>=1){
+    const direction=delta>0?1:-1;
+    if(direction!==lastDirection){accumulated=0;lastDirection=direction}
+    accumulated+=Math.abs(delta);
+    if(direction===1&&y>90&&accumulated>=12)hide();
+    else if(direction===-1&&accumulated>=8)show();
+   }
+   lastY=y;ticking=false;
+  });
+ };
+ window.addEventListener('scroll',onScroll,{passive:true});
+ window.addEventListener('pageshow',()=>{lastY=Math.max(0,window.scrollY||0);show()});
+ show();
+})();
+</script>
 </body></html>
