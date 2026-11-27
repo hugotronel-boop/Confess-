@@ -945,7 +945,7 @@ body.stash-post-detail .feed-header-label{cursor:pointer!important;font-size:13p
 </script>
 
 <header class="top stash-feed-top">
- <div class="feed-header-label">Feed</div>
+ <div class="feed-header-label"></div>
  <img class="stash-brand-image feed-logo-image" src="./assets/stash-logo.png" alt="STASH">
  <button class="feed-search-button" id="feedSearchOpen" type="button" aria-label="Rechercher"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
  <div class="topright" aria-hidden="true" style="display:none"><button class="msgbtn" id="messagesBtn">💬</button><button class="bell" id="notificationsBtn">🔔<span class="bell-count" id="notificationCount" hidden>0</span></button><button class="pill" id="authBtn">Se connecter</button><div class="avatar" id="userAvatar">?</div></div>
@@ -1341,7 +1341,7 @@ async function loadFeed(reset=true){
   $('feedTitle').textContent='Publication';
   openComments(linkedPostId);
  }else if(reset){$('feed').innerHTML='<div class=\"empty\">Cette publication est introuvable ou n’est plus disponible.</div>';}}
- else {const back=document.querySelector('.feed-header-label');if(back){back.textContent='Feed';back.onclick=null;back.style.cursor='default'}}
+ else {const back=document.querySelector('.feed-header-label');if(back){back.textContent='';back.onclick=null;back.style.cursor='default'}}
 }
 let stashSharePostId=null,stashShareDirectory=[],stashShareSelected=new Set();
 function closeStashShare(){const overlay=$('stashShareOverlay');if(overlay)overlay.classList.remove('open');stashSharePostId=null;stashShareSelected.clear()}
