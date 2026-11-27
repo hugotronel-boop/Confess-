@@ -855,7 +855,7 @@ html:not(.stash-launch-active) #stash-launch-screen{display:none!important}
 
 <style id="stash-post-detail-page">
 body.stash-post-detail{padding-bottom:32px!important;overflow-x:hidden}
-body.stash-post-detail .top.stash-feed-top{border-bottom:1px solid rgba(255,255,255,.18)!important;box-shadow:0 18px 30px -5px rgba(0,0,0,.78),0 8px 14px -4px rgba(0,0,0,.55)!important;position:relative;z-index:50;isolation:isolate}
+body.stash-post-detail .top.stash-feed-top{border-bottom:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important;position:sticky!important;top:0!important;z-index:50!important;isolation:isolate;transform:translateY(0);transition:transform .32s cubic-bezier(.22,.75,.25,1)!important;will-change:transform}
 body.stash-post-detail .layout{display:block!important;width:min(680px,100%)!important;margin-top:100px!important;padding:10px 0 30px!important}
 body.stash-post-detail .layout>.leftside,body.stash-post-detail .layout>.rightside,body.stash-post-detail .stash-hero-3d,body.stash-post-detail .welcome,body.stash-post-detail .composer,body.stash-post-detail .feed-head,body.stash-post-detail #feedSearch,body.stash-post-detail #feedSearchBtn,body.stash-post-detail #feedTabs,body.stash-post-detail #visibilityFilters,body.stash-post-detail .confess-global-nav,body.stash-post-detail #loadMorePosts{display:none!important}
 body.stash-post-detail .center{width:100%;min-width:0}
@@ -1978,6 +1978,45 @@ html body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
  const show=()=>document.body.classList.remove('stash-feed-nav-hidden');
  const hide=()=>document.body.classList.add('stash-feed-nav-hidden');
  let ticking=false;
+ const onScroll=()=>{
+  if(ticking)return;
+  ticking=true;
+  requestAnimationFrame(()=>{
+   const y=Math.max(0,window.scrollY||0),delta=y-lastY;
+   if(y<45){show();accumulated=0;lastDirection=0}
+   else if(Math.abs(delta)>=1){
+    const direction=delta>0?1:-1;
+    if(direction!==lastDirection){accumulated=0;lastDirection=direction}
+    accumulated+=Math.abs(delta);
+    if(direction===1&&y>90&&accumulated>=12)hide();
+    else if(direction===-1&&accumulated>=8)show();
+   }
+   lastY=y;ticking=false;
+  });
+ };
+ window.addEventListener('scroll',onScroll,{passive:true});
+ window.addEventListener('pageshow',()=>{lastY=Math.max(0,window.scrollY||0);show()});
+ show();
+})();
+</script>
+
+<style id="stash-detail-banner-scroll">
+body.stash-post-detail.stash-detail-banner-hidden .top.stash-feed-top{
+ transform:translateY(-105%)!important;
+ pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+ body.stash-post-detail .top.stash-feed-top{transition:none!important}
+}
+</style>
+<script id="stash-detail-banner-scroll-handler">
+(()=>{
+ const banner=document.querySelector('body.stash-post-detail .top.stash-feed-top');
+ if(!banner||document.body.dataset.detailBannerScroll==='1')return;
+ document.body.dataset.detailBannerScroll='1';
+ let lastY=Math.max(0,window.scrollY||0),lastDirection=0,accumulated=0,ticking=false;
+ const show=()=>document.body.classList.remove('stash-detail-banner-hidden');
+ const hide=()=>document.body.classList.add('stash-detail-banner-hidden');
  const onScroll=()=>{
   if(ticking)return;
   ticking=true;
