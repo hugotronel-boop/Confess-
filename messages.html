@@ -1156,4 +1156,16 @@ html body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
  html body nav.confess-global-nav.stash-threads-nav>a svg{width:24px!important;height:24px!important}
 }
 </style>
+
+<style id="stash-no-long-press-message-selection">
+/* Les bulles de conversation restent réactives sans sélectionner leur texte au toucher prolongé. */
+.message-line .bubble,.message-line .message-reaction-tools,.message-line .reaction-picker{
+ -webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+.message-line .bubble *{
+ -webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+</style>
 </body></html>
