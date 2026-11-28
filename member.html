@@ -1053,4 +1053,19 @@ html body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
  html body nav.confess-global-nav.stash-threads-nav>a svg{width:24px!important;height:24px!important}
 }
 </style>
+
+<style id="stash-no-long-press-global">
+/* STASH : désactive la sélection accidentelle au toucher prolongé sur toutes les pages. */
+html,body,body *{
+ -webkit-user-select:none!important;
+ user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+/* Les zones de saisie et éditeurs restent sélectionnables et modifiables. */
+input,textarea,select,[contenteditable="true"],[contenteditable=""],[role="textbox"]{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+}
+</style>
 </body></html>
