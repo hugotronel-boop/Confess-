@@ -218,5 +218,20 @@ const current=map[file]||'home';
 nav.querySelectorAll('a[data-nav]').forEach(a=>{const selected=a.dataset.nav===current;a.classList.toggle('stash-nav-current',selected);a.classList.toggle('stash-bubble-active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 })();
 </script>
+
+<style id="stash-no-long-press-global">
+/* STASH : désactive la sélection accidentelle au toucher prolongé sur toutes les pages. */
+html,body,body *{
+ -webkit-user-select:none!important;
+ user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+/* Les zones de saisie et éditeurs restent sélectionnables et modifiables. */
+input,textarea,select,[contenteditable="true"],[contenteditable=""],[role="textbox"]{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+}
+</style>
 </body>
 </html>
