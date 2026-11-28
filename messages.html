@@ -568,7 +568,7 @@ async function loadMessages(){
   const picker=mine?'':REACTION_EMOJIS.map(emoji=>'<button type="button" class="reaction-choice" data-reaction-message="'+m.id+'" data-reaction-emoji="'+emoji+'" aria-label="Réagir avec '+emoji+'">'+emoji+'</button>').join('');
   const reactionAction='';
   const reactionPicker=mine?'':'<div class="reaction-picker" data-reaction-picker="'+m.id+'" hidden><div class="reaction-wheel">'+picker+'</div></div>';
-  return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div>'+reactionAction+'</div>'+reactionPicker+receipt+'</div>';
+  return '<div class="message-line '+(mine?'mine':'')+'" data-message-line="'+m.id+'"><div class="bubble '+(mine?'mine':'')+'" data-copy-text="'+esc(m.body)+'">'+sender+formatMessageBody(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</time></div><div class="message-copy-menu" data-copy-menu="'+m.id+'" hidden><button type="button" data-copy-message="'+m.id+'">Copier</button></div><div class="message-reaction-tools"><div class="message-reaction-list">'+reactionPills+'</div>'+reactionAction+'</div>'+reactionPicker+receipt+'</div>';
  }).join(''):'<div class="placeholder">Début de votre conversation. Dis bonjour 👋</div>';
  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
 }
@@ -679,8 +679,56 @@ function openMessageReactionPicker(id){
  picker.hidden=false;
  requestAnimationFrame(()=>{initReactionWheel(picker);const wheel=picker.querySelector('.reaction-wheel');if(wheel)updateReactionWheel(wheel)});
 }
+let messageLongPressTimer=null,messageLongPressTriggered=false;
+function closeMessageCopyMenus(){
+ document.querySelectorAll('.message-copy-menu').forEach(menu=>menu.hidden=true);
+}
+function showMessageCopyMenu(bubble){
+ const line=bubble?.closest('[data-message-line]');
+ if(!line)return;
+ closeMessageCopyMenus();
+ const menu=line.querySelector('.message-copy-menu');
+ if(menu)menu.hidden=false;
+}
+$('chatScroll').addEventListener('touchstart',event=>{
+ const bubble=event.target.closest('.bubble');
+ if(!bubble||event.target.closest('a,button'))return;
+ clearTimeout(messageLongPressTimer);messageLongPressTriggered=false;
+ messageLongPressTimer=setTimeout(()=>{
+  messageLongPressTriggered=true;
+  showMessageCopyMenu(bubble);
+ },550);
+},{passive:true});
+$('chatScroll').addEventListener('touchmove',()=>clearTimeout(messageLongPressTimer),{passive:true});
+['touchcancel'].forEach(name=>$('chatScroll').addEventListener(name,()=>clearTimeout(messageLongPressTimer),{passive:true}));
+$('chatScroll').addEventListener('click',async event=>{
+ const copy=event.target.closest('[data-copy-message]');
+ if(!copy)return;
+ event.preventDefault();event.stopPropagation();
+ const line=copy.closest('[data-message-line]'),bubble=line?.querySelector('.bubble');
+ const value=bubble?.dataset.copyText||'';
+ if(!value)return;
+ try{
+  if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);
+  else{
+   const area=document.createElement('textarea');area.value=value;
+   area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);
+   area.select();const ok=document.execCommand('copy');area.remove();
+   if(!ok)throw new Error('copy failed');
+  }
+  closeMessageCopyMenus();
+  toast('Message copié.');
+ }catch(error){toast('Impossible de copier ce message.');console.error(error)}
+});
+document.addEventListener('click',event=>{
+ if(!event.target.closest('.message-copy-menu'))closeMessageCopyMenus();
+});
 let lastTouchTap={id:null,time:0,x:0,y:0};
 $('chatScroll').addEventListener('touchend',event=>{
+ clearTimeout(messageLongPressTimer);
+ if(messageLongPressTriggered){
+  messageLongPressTriggered=false;lastTouchTap={id:null,time:0,x:0,y:0};return;
+ }
  const bubble=event.target.closest('.bubble:not(.mine)');
  if(!bubble||event.target.closest('a,button')){lastTouchTap={id:null,time:0,x:0,y:0};return}
  const line=bubble.closest('[data-message-line]'),id=line?.dataset.messageLine,touch=event.changedTouches?.[0];
@@ -1182,5 +1230,18 @@ input,textarea,select,[contenteditable="true"],[contenteditable=""],[role="textb
  user-select:text!important;
  -webkit-touch-callout:default!important;
 }
+</style>
+
+<style id="stash-message-longpress-copy">
+.message-copy-menu{display:flex;align-items:center;margin-top:5px;align-self:flex-start}
+.message-line.mine .message-copy-menu{align-self:flex-end}
+.message-copy-menu[hidden]{display:none!important}
+.message-copy-menu button{
+ display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 15px;
+ border:1px solid rgba(255,255,255,.16);border-radius:18px;
+ background:#242428;color:#fff;font-size:13px;font-weight:600;
+ box-shadow:0 5px 16px rgba(0,0,0,.24);touch-action:manipulation;
+}
+.message-copy-menu button:active{background:#38383e;transform:scale(.97)}
 </style>
 </body></html>
