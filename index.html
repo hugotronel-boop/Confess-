@@ -2061,4 +2061,19 @@ body:not(.stash-post-detail).stash-feed-banner-hidden .top.stash-feed-top{
  -webkit-touch-callout:none!important;
 }
 </style>
+
+<style id="stash-no-long-press-global">
+/* STASH : désactive la sélection accidentelle au toucher prolongé sur toutes les pages. */
+html,body,body *{
+ -webkit-user-select:none!important;
+ user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+/* Les zones de saisie et éditeurs restent sélectionnables et modifiables. */
+input,textarea,select,[contenteditable="true"],[contenteditable=""],[role="textbox"]{
+ -webkit-user-select:text!important;
+ user-select:text!important;
+ -webkit-touch-callout:default!important;
+}
+</style>
 </body></html>
