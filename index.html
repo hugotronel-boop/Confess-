@@ -2049,4 +2049,16 @@ body:not(.stash-post-detail).stash-feed-banner-hidden .top.stash-feed-top{
  show();
 })();
 </script>
+
+<style id="stash-no-long-press-text-selection">
+/* Évite la sélection de texte au toucher prolongé sur les publications et leurs réactions. */
+#feed .post,body.stash-post-detail .post{
+ -webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+#feed .post button,body.stash-post-detail .post button{
+ -webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+</style>
 </body></html>
